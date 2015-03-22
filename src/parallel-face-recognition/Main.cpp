@@ -1,36 +1,35 @@
-/*
- ============================================================================
- Name        : face-recognition.c
- Author      : 
- Version     :
- Copyright   : Your copyright notice
- Description : Hello OpenMP World in C
- ============================================================================
- */
+
+#include <iostream>
 #include <omp.h>
-#include <stdio.h>
-#include <stdlib.h>
-/**
- * Hello OpenMP World prints the number of threads and the current thread id
- */
-int main (int argc, char *argv[]) {
+#include <boost/thread.hpp>
 
-  int numThreads, tid;
-
-  /* This creates a team of threads; each thread has own copy of variables  */
-#pragma omp parallel private(numThreads, tid)
- {
-   tid = omp_get_thread_num();
-   printf("Hello World from thread number %d\n", tid);
-
-   /* The following is executed by the master thread only (tid=0) */
-   if (tid == 0)
-     {
-       numThreads = omp_get_num_threads();
-       printf("Number of threads is %d\n", numThreads);
-     }
- }
- return 0;
+void printHelloWorld(int tid)
+{
+	std::cout << "Hello World from thread number: " << tid << std::endl;
 }
 
+void printWithOpenMP(int numThreads)
+{
+	std::cout << "########## Printing with OpenMP" << std::endl;
+#pragma omp parallel shared(numThreads) num_threads(numThreads)
+	printHelloWorld(omp_get_thread_num());
+}
 
+void printWithBoost(int numThreads)
+{
+	std::cout << "########## Printing with Boost" << std::endl;
+	boost::thread_group group;
+	for(int i=0; i<numThreads; i++)
+	     group.create_thread(boost::bind(&printHelloWorld, i));
+	group.join_all();
+}
+
+int main (int argc, char *argv[])
+{
+	const int numThreads(8);
+
+	printWithOpenMP(numThreads);
+	printWithBoost(numThreads);
+
+	return 0;
+}
