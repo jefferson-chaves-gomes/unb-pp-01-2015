@@ -9,7 +9,7 @@ int main(int argc, char *argv[]) {
     int numThreads, threadId;
 
     /* This creates a team of threads; each thread has own copy of variables  */
-    #pragma omp parallel private(numThreads, tid)
+    #pragma omp parallel private(numThreads, threadId)
     {
         threadId = omp_get_thread_num();
         printf("Hello World from thread number %d\n", threadId);
