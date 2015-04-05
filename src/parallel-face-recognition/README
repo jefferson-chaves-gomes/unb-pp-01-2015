@@ -1,3 +1,0 @@
-Para compilar com a boost é necessário instalar seus módulos principais:
-
-# sudo apt-get install libboost-dev libboost-thread-dev
