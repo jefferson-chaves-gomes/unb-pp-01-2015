@@ -40,7 +40,8 @@ CvRect detectFaceInImage(IplImage *inputImg, CvHaarClassifierCascade* cascade)
     t = (double)cvGetTickCount() - t;
     ms = cvRound( t / ((double)cvGetTickFrequency() * 1000.0) );
     nFaces = rects->total;
-    printf("Face Detection took %d ms and found %d objects\n", ms, nFaces);
+
+    std::cout << "Face Detection took [" << ms << "] ms and found [" << nFaces << "] objects" << std::endl;
 
     // Get the first detected face (the biggest).
     if (nFaces > 0)
@@ -65,7 +66,7 @@ int main (int argc, char **argv)
     CvHaarClassifierCascade* faceCascade;
     faceCascade = (CvHaarClassifierCascade*)cvLoad(faceCascadeFilename.c_str(), 0, 0, 0);
     if( !faceCascade ) {
-        std::cout << "Couldnt load Face detector '" << faceCascadeFilename << "'";
+        std::cout << "Couldnt load Face detector '" << faceCascadeFilename << "'"  << std::endl;
         exit(1);
     }
 
@@ -75,7 +76,7 @@ int main (int argc, char **argv)
 
     if(!inputImg)
     {
-        printf("Image not loaded\n");
+        std::cout << "Image not loaded" << std::endl;
         exit(1);
     }
 
@@ -83,15 +84,10 @@ int main (int argc, char **argv)
     CvRect faceRect = detectFaceInImage(inputImg, faceCascade);
 
     // Make sure a valid face was detected.
-    if (faceRect.width > 0) {
-        printf("Detected a face at (%d,%d)!\n", faceRect.x, faceRect.y);
-    }
+    if (faceRect.width > 0)
+        std::cout << "Detected a face at (" << faceRect.x << "," << faceRect.y << ")" << std::endl;
     else
-    {
-        printf("No face detected");
-    }
-
-//    .... Use 'faceRect' and 'inputImg' ....
+        std::cout << "No face detected" << std::endl;
 
     // Free the Face Detector resources when the program is finished
     cvReleaseHaarClassifierCascade( &faceCascade );
