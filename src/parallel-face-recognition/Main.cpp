@@ -2,6 +2,14 @@
 #include <opencv/highgui.h>
 #include <opencv/ml.h>
 
+const std::string haarcascade_dir("../../system/share/OpenCV/haarcascades");
+
+// Haar Cascade file, used for Face Detection.
+const std::string faceCascadeFilenameAlt = haarcascade_dir + "/haarcascade_frontalface_alt.xml";
+const std::string faceCascadeFilenameDefault = haarcascade_dir + "/haarcascade_frontalface_default.xml";
+
+
+#if 0
 // Perform face detection on the input image, using the given Haar Cascade.
 // Returns a rectangle for the detected region in the given image.
 CvRect detectFaceInImage(IplImage *inputImg, CvHaarClassifierCascade* cascade)
@@ -56,17 +64,13 @@ CvRect detectFaceInImage(IplImage *inputImg, CvHaarClassifierCascade* cascade)
     return rc;  // Return the biggest face found, or (-1,-1,-1,-1).
 }
 
-const std::string haarcascade_dir("../../system/share/OpenCV/haarcascades");
-
 int main (int argc, char **argv)
 {
-    // Haar Cascade file, used for Face Detection.
-    std::string faceCascadeFilename = haarcascade_dir + "/haarcascade_frontalface_alt.xml";
     // Load the HaarCascade classifier for face detection.
     CvHaarClassifierCascade* faceCascade;
-    faceCascade = (CvHaarClassifierCascade*)cvLoad(faceCascadeFilename.c_str(), 0, 0, 0);
+    faceCascade = (CvHaarClassifierCascade*)cvLoad(faceCascadeFilenameAlt.c_str(), 0, 0, 0);
     if( !faceCascade ) {
-        std::cout << "Couldnt load Face detector '" << faceCascadeFilename << "'"  << std::endl;
+        std::cout << "Couldnt load Face detector '" << faceCascadeFilenameAlt << "'"  << std::endl;
         exit(1);
     }
 
@@ -92,3 +96,69 @@ int main (int argc, char **argv)
     // Free the Face Detector resources when the program is finished
     cvReleaseHaarClassifierCascade( &faceCascade );
 }
+#else
+
+
+void DetectMyFace ()
+{
+    // image structure in opencv
+    IplImage *inImg = 0;
+    // face detector classifer
+    CvHaarClassifierCascade *clCascade = 0;
+    CvMemStorage *mStorage = 0;
+    CvSeq *faceRectSeq;
+
+    std::string file("resource/people.jpg");
+    inImg = cvLoadImage(file.c_str());
+
+    mStorage = cvCreateMemStorage(0);
+    clCascade = (CvHaarClassifierCascade *)cvLoad(faceCascadeFilenameDefault.c_str(), 0, 0, 0);
+
+    if ( !inImg || !mStorage || !clCascade )
+    {
+        printf("Initilization error : %s" , (!inImg)? "cant load image" : (!clCascade)?
+            "cant load haar cascade" :
+            "unable to locate memory storage");
+
+        return;
+    }
+
+    faceRectSeq = cvHaarDetectObjects(inImg,clCascade,mStorage,
+        1.2,
+        3,
+        CV_HAAR_DO_CANNY_PRUNING,
+        cvSize(25,25));
+
+    // window name
+    const char *winName = "Display Face";
+    cvNamedWindow(winName,CV_WINDOW_AUTOSIZE);
+
+    for ( int i = 0; i < (faceRectSeq? faceRectSeq->total:0); i++ )
+    {
+
+        CvRect *r = (CvRect*)cvGetSeqElem(faceRectSeq,i);
+        CvPoint p1 = { r->x, r->y };
+        CvPoint p2 = { r->x + r->width, r->y + r->height };
+
+        // printf(" %d %d %d %d\n", r->x, r->y, r->width, r->height);
+        cvRectangle(inImg,p1,p2,CV_RGB(0,255,0),1,4,0);
+    }
+
+    cvShowImage(winName, inImg);
+    cvWaitKey(0);
+    // destroy the view window
+    cvDestroyWindow(winName);
+
+    // release the variables
+    cvReleaseImage(&inImg);
+    if(clCascade) cvReleaseHaarClassifierCascade(&clCascade);
+    if(mStorage)  cvReleaseMemStorage(&mStorage);
+}
+
+int main()
+{
+    DetectMyFace();
+    return 0;
+}
+
+#endif
