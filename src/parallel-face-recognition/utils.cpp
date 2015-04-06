@@ -2,8 +2,8 @@
 
 void showDetectedFaceWithRectangle(CvSeq *rects, IplImage * inputImg)
 {
-    const char *winName = "Display Face";
-    cvNamedWindow(winName,CV_WINDOW_AUTOSIZE);
+    const char *winName = "Display Faces";
+    cvNamedWindow(winName,CV_WINDOW_NORMAL);
 
     for ( int i = 0; i < (rects? rects->total:0); i++ )
     {
