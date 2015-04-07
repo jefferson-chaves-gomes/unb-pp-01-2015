@@ -29,7 +29,9 @@ void DetectMyFace2 (std::string const& imgFile)
             1.2,
             3,
             CV_HAAR_DO_CANNY_PRUNING,
-            cvSize(25,25));
+            cvSize(25,25)
+    );
+    std::cout << "Face Detection found [" << rects->total << "] objects" << std::endl;
 
     showDetectedFaceWithRectangle(rects, inputImg);
 

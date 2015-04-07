@@ -10,7 +10,7 @@ const std::string haarcascade_dir("../../system/share/OpenCV/haarcascades");
 // Haar Cascade file, used for Face Detection.
 const std::string faceCascadeFilenameAlt = haarcascade_dir + "/haarcascade_frontalface_alt.xml";
 const std::string faceCascadeFilenameDefault = haarcascade_dir + "/haarcascade_frontalface_default.xml";
-#if 1
+#if 0
 const std::string image_file("resource/image1.jpg");
 #else
 const std::string image_file("resource/image2.jpg");
