@@ -224,52 +224,17 @@ CharVectList* addVectLexOrder(CharVectList* start, CharVectList* vetor)
         greater = false;
         smaller = false;
 
-        if(vetor->vect.c[0] > aux->vect.c[0])
-            greater = true;
-        else if(vetor->vect.c[0] == aux->vect.c[0])
+        for(int i=0; i<CHARS_SIZE; i++)
         {
-            if(vetor->vect.c[1] > aux->vect.c[1])
+            if(vetor->vect.c[i] == aux->vect.c[i])
+                continue;
+            else if(vetor->vect.c[i] > aux->vect.c[i])
                 greater = true;
-            else if(vetor->vect.c[1] == aux->vect.c[1])
-            {
-                if(vetor->vect.c[2] > aux->vect.c[2])
-                    greater = true;
-                else if(vetor->vect.c[2] == aux->vect.c[2])
-                {
-                    if(vetor->vect.c[3] > aux->vect.c[3])
-                        greater = true;
-                    else if(vetor->vect.c[3] == aux->vect.c[3])
-                    {
-                        if(vetor->vect.c[4] > aux->vect.c[4])
-                            greater = true;
-                        else if(vetor->vect.c[4] == aux->vect.c[4])
-                        {
-                            if(vetor->vect.c[5] > aux->vect.c[5])
-                                greater = true;
-                            else if(vetor->vect.c[5] == aux->vect.c[5])
-                            {
-                                if(vetor->vect.c[6] > aux->vect.c[6])
-                                    greater = true;
-                                else if(vetor->vect.c[6] < aux->vect.c[6])
-                                    smaller = true;
-                            }
-                            else
-                                smaller = true;
-                        }
-                        else
-                            smaller = true;
-                    }
-                    else
-                        smaller = true;
-                }
-                else
-                    smaller = true;
-            }
             else
                 smaller = true;
+
+            break;
         }
-        else
-            smaller = true;
 
         if(greater == true)
         {
