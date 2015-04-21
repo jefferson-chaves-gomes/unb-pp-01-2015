@@ -22,18 +22,20 @@ typedef struct _maxshifts
     int dx3, dy3;
 } MaxShifts;
 
+const int CHARS_SIZE = 7;
 /* para o algoritmo de vetor de caracteristicas */
 typedef struct _charvect
 {
     int x;       // coordenada inicial x do bloco
     int y;       // coordenada inicial y do bloco
-    double c1;   // media R
-    double c2;   // media G
-    double c3;   // media B
-    double c4;   // soma(part(1))/soma(part(1)+part(2)) regiao tipo 1
-    double c5;   // soma(part(1))/soma(part(1)+part(2)) regiao tipo 2
-    double c6;   // soma(part(1))/soma(part(1)+part(2)) regiao tipo 3
-    double c7;   // soma(part(1))/soma(part(1)+part(2)) regiao tipo 4
+//     c1:   // media R
+//     c2:   // media G
+//     c3:   // media B
+//     c4:   // soma(part(1))/soma(part(1)+part(2)) regiao tipo 1
+//     c5:   // soma(part(1))/soma(part(1)+part(2)) regiao tipo 2
+//     c6:   // soma(part(1))/soma(part(1)+part(2)) regiao tipo 3
+//     c7:   // soma(part(1))/soma(part(1)+part(2)) regiao tipo 4
+    double c[CHARS_SIZE];
 } CharVect;
 
 typedef struct _vectlist

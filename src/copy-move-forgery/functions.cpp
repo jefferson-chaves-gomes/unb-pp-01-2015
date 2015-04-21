@@ -177,13 +177,9 @@ CharVectList* newCharVect()
 {
     CharVectList* vetor = new CharVectList;
 
-    vetor->vect.c1 = 0;
-    vetor->vect.c2 = 0;
-    vetor->vect.c3 = 0;
-    vetor->vect.c4 = 0.0;
-    vetor->vect.c5 = 0.0;
-    vetor->vect.c6 = 0.0;
-    vetor->vect.c7 = 0.0;
+    for(int i=0; i<CHARS_SIZE; i++)
+        vetor->vect.c[i] = 0.0;
+
     vetor->next = NULL;
 
     return vetor;
@@ -228,33 +224,33 @@ CharVectList* addVectLexOrder(CharVectList* start, CharVectList* vetor)
         greater = false;
         smaller = false;
 
-        if(vetor->vect.c1 > aux->vect.c1)
+        if(vetor->vect.c[0] > aux->vect.c[0])
             greater = true;
-        else if(vetor->vect.c1 == aux->vect.c1)
+        else if(vetor->vect.c[0] == aux->vect.c[0])
         {
-            if(vetor->vect.c2 > aux->vect.c2)
+            if(vetor->vect.c[1] > aux->vect.c[1])
                 greater = true;
-            else if(vetor->vect.c2 == aux->vect.c2)
+            else if(vetor->vect.c[1] == aux->vect.c[1])
             {
-                if(vetor->vect.c3 > aux->vect.c3)
+                if(vetor->vect.c[2] > aux->vect.c[2])
                     greater = true;
-                else if(vetor->vect.c3 == aux->vect.c3)
+                else if(vetor->vect.c[2] == aux->vect.c[2])
                 {
-                    if(vetor->vect.c4 > aux->vect.c4)
+                    if(vetor->vect.c[3] > aux->vect.c[3])
                         greater = true;
-                    else if(vetor->vect.c4 == aux->vect.c4)
+                    else if(vetor->vect.c[3] == aux->vect.c[3])
                     {
-                        if(vetor->vect.c5 > aux->vect.c5)
+                        if(vetor->vect.c[4] > aux->vect.c[4])
                             greater = true;
-                        else if(vetor->vect.c5 == aux->vect.c5)
+                        else if(vetor->vect.c[4] == aux->vect.c[4])
                         {
-                            if(vetor->vect.c6 > aux->vect.c6)
+                            if(vetor->vect.c[5] > aux->vect.c[5])
                                 greater = true;
-                            else if(vetor->vect.c6 == aux->vect.c6)
+                            else if(vetor->vect.c[5] == aux->vect.c[5])
                             {
-                                if(vetor->vect.c7 > aux->vect.c7)
+                                if(vetor->vect.c[6] > aux->vect.c[6])
                                     greater = true;
-                                else if(vetor->vect.c7 < aux->vect.c7)
+                                else if(vetor->vect.c[6] < aux->vect.c[6])
                                     smaller = true;
                             }
                             else
@@ -578,7 +574,7 @@ bool forgeringByCharact(Bitmap image, bool multiregion, int bSize)
 
     CharVectList* b1Vector = vList;
     CharVectList* b2Vector = NULL;
-    double diff1, diff2, diff3, diff4, diff5, diff6, diff7;
+    double diff[CHARS_SIZE] = {0,0,0,0,0,0,0};
 
     // percorrer toda a lista de blocos; execucao em O(n)
     // somente sao comparados dois blocos consecutivos, pois ja estao ordenados
@@ -593,30 +589,26 @@ bool forgeringByCharact(Bitmap image, bool multiregion, int bSize)
         if(b2Vector != NULL)
         {
             // calcular diferencas
-            diff1 = ABS((b1Vector->vect.c1 - b2Vector->vect.c1));
-            diff2 = ABS((b1Vector->vect.c2 - b2Vector->vect.c2));
-            diff3 = ABS((b1Vector->vect.c3 - b2Vector->vect.c3));
-            diff4 = ABS((b1Vector->vect.c4 - b2Vector->vect.c4));
-            diff5 = ABS((b1Vector->vect.c5 - b2Vector->vect.c5));
-            diff6 = ABS((b1Vector->vect.c6 - b2Vector->vect.c6));
-            diff7 = ABS((b1Vector->vect.c7 - b2Vector->vect.c7));
 
-            if((diff1 < vectorP[0]) &&
-                (diff2 < vectorP[1]) &&
-                (diff3 < vectorP[2]) &&
-                (diff4 < vectorP[3]) &&
-                (diff5 < vectorP[4]) &&
-                (diff6 < vectorP[5]) &&
-                (diff7 < vectorP[6]) &&
-                (diff1 + diff2 + diff3 < t1) &&
-                (diff4 + diff5 + diff6 + diff7 < t2))
+            bool diffVector = true;
+
+            for(int i=0; i<CHARS_SIZE && diffVector; i++)
+            {
+                diff[i] = ABS((b1Vector->vect.c[i] - b2Vector->vect.c[i]));
+                diffVector = diffVector && (diff[i] < vectorP[i]);
+            }
+
+            if(diffVector &&
+                (diff[0] + diff[1] + diff[2] < t1) &&
+                (diff[3] + diff[4] + diff[5] + diff[6] < t2))
             {
                 if(ABS(getShift(b1Vector->vect.x, b2Vector->vect.x,
                       b1Vector->vect.y, b2Vector->vect.y)) > L)
                 {
-                    bool equal = (diff1 == diff2 == diff3 == diff4
-                                   == diff5 == diff6 == diff7 == 0);
-                    equal = false;
+                      // nao e necessario
+//                    bool equal = (diff1 == diff2 == diff3 == diff4
+//                                   == diff5 == diff6 == diff7 == 0);
+                    bool equal = false;
 
                     // blocos b1 e b2 sao similares
                     simBlock = newSimilarBlock(b1Vector->vect.x,
@@ -836,9 +828,9 @@ CharVectList* charactVector(Bitmap image, int bSize)
             {
                 image.getPixel(i, j, red, green, blue);
 
-                vetor->vect.c1 += (int)red;
-                vetor->vect.c2 += (int)green;
-                vetor->vect.c3 += (int)blue;
+                vetor->vect.c[0] += (int)red;
+                vetor->vect.c[1] += (int)green;
+                vetor->vect.c[2] += (int)blue;
 
                 // converter o pixel para escala de cinza conforme canal y
                 grey = toUnsignedChar(0.299*(int)red + 0.587*(int)green + 0.114*(int)blue);
@@ -847,9 +839,8 @@ CharVectList* charactVector(Bitmap image, int bSize)
         }
 
         // calcular media RGB
-        vetor->vect.c1 = (int)vetor->vect.c1/(bSize*bSize);
-        vetor->vect.c2 = (int)vetor->vect.c2/(bSize*bSize);
-        vetor->vect.c3 = (int)vetor->vect.c3/(bSize*bSize);
+        for(int i=0; i<3; i++)
+            vetor->vect.c[i] = (int)vetor->vect.c[i]/(bSize*bSize);
 
         // percorrer bloco no canal Y
         for(int i = 0; i < bSize; i++)
@@ -886,10 +877,8 @@ CharVectList* charactVector(Bitmap image, int bSize)
             }
         }
 
-        vetor->vect.c4 = part[0][0]/(part[0][0] + part[0][1]);
-        vetor->vect.c5 = part[1][0]/(part[1][0] + part[1][1]);
-        vetor->vect.c6 = part[2][0]/(part[2][0] + part[2][1]);
-        vetor->vect.c7 = part[3][0]/(part[3][0] + part[3][1]);
+        for(int i=0; i<4; i++)
+            vetor->vect.c[i+3] = part[i][0]/(part[i][0] + part[i][1]);
 
         // adicionar o bloco lido ao conjunto de vetores de caracteristicas
         if(vList == NULL)
