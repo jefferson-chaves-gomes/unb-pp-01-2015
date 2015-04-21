@@ -1,5 +1,7 @@
 
 #include "functions.h"
+#include "ForgingDetector.h"
+#include "ImgUtils.h"
 
 #include <cstdlib>
 #include <iostream>
@@ -33,7 +35,7 @@ int main(int argc, char *argv[])
             multi = true;
         if(argc == 4)
             bSize = atoi(argv[3]);
-        tampered = forgeringByCharact(Bitmap(argv[2]), multi, bSize);
+        tampered = ForgingDetector::byCharact(Bitmap(argv[2]), multi, bSize);
         
         if(tampered)
             std::cout << "Tampering was detected in image '" << argv[2] << "'." << std::endl;
@@ -44,34 +46,34 @@ int main(int argc, char *argv[])
     }
     else if(std::string(argv[1]) == GRAYSCALE)
     {
-        imgGrayScale(Bitmap(argv[2]), true);
+        ImgUtils::imgGrayScale(Bitmap(argv[2]), true);
         std::cout << "Done." << std::endl;
     }
     else if(std::string(argv[1]) == EROSION)
     {
-        Bitmap eroded = erosion(Bitmap(argv[2]), atoi(argv[3]));
+        Bitmap eroded = ForgingDetector::erosion(Bitmap(argv[2]), atoi(argv[3]));
         std::string path;
-        path.append(imgTrueName(argv[2]));
+        path.append(ImgUtils::imgTrueName(argv[2]));
         path.append(std::string("_eroded.bmp"));
-        saveImageAs(eroded, path);
+        ImgUtils::saveImageAs(eroded, path);
         std::cout << "Done." << std::endl;
     }
     else if(std::string(argv[1]) == DILATION)
     {
-        Bitmap dilated = dilation(Bitmap(argv[2]), atoi(argv[3]));
+        Bitmap dilated = ForgingDetector::dilation(Bitmap(argv[2]), atoi(argv[3]));
         std::string path;
-        path.append(imgTrueName(argv[2]));
+        path.append(ImgUtils::imgTrueName(argv[2]));
         path.append(std::string("_dilated.bmp"));
-        saveImageAs(dilated, path);
+        ImgUtils::saveImageAs(dilated, path);
         std::cout << "Done." << std::endl;
     }
     else if(std::string(argv[1]) == OPENING)
     {
-        Bitmap opened = opening(Bitmap(argv[2]), atoi(argv[3]));
+        Bitmap opened = ForgingDetector::opening(Bitmap(argv[2]), atoi(argv[3]));
         std::string path;
-        path.append(imgTrueName(argv[2]));
+        path.append(ImgUtils::imgTrueName(argv[2]));
         path.append(std::string("_opened.bmp"));
-        saveImageAs(opened, path);
+        ImgUtils::saveImageAs(opened, path);
         std::cout << "Done." << std::endl;
     }
     else

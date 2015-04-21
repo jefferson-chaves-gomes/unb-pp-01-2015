@@ -113,8 +113,15 @@ void Bitmap::setPixel(const unsigned int x, const unsigned int y,
 }
 
 /* recupera as dimensoes da imagem */
-unsigned int Bitmap::getWidth() const { return width_; }
-unsigned int Bitmap::getHeight() const { return height_; }
+unsigned int Bitmap::getWidth() const
+{
+    return width_;
+}
+
+unsigned int Bitmap::getHeight() const
+{
+    return height_;
+}
 
 /* grava a imagem em arquivo */
 void Bitmap::saveImage(const std::string& file_name)
@@ -148,8 +155,7 @@ void Bitmap::saveImage(const std::string& file_name)
     fileHeader.reserved2 = 0;
     fileHeader.off_bits = infoHeader.struct_size() + fileHeader.struct_size();
 
-    writeFileHeader(stream,fileHeader);
-    writeInfoHeader(stream,infoHeader);
+    BitmapFile::writeFileHeader(stream,fileHeader,infoHeader);
 
     unsigned int padding = (4 - ((3 * width_) % 4)) % 4;
     char padding_data[4] = {0x0,0x0,0x0,0x0};
@@ -161,32 +167,32 @@ void Bitmap::saveImage(const std::string& file_name)
     }
     stream.close();
 }
-
-/* tratamento de imagem colorida para tons de cinza */
-void Bitmap::convertToGrayscale()
-{
-    double r_scaler = 0.299;
-    double g_scaler = 0.587;
-    double b_scaler = 0.114;
-
-    if (rgb_mode == channel_mode_)
-    {
-        double tmp = r_scaler;
-        r_scaler = b_scaler;
-        b_scaler = tmp;
-    }
-
-    for(unsigned char* it = data_; it < (data_ + length_);)
-    {
-        unsigned char gray_value = static_cast<unsigned char>(
-            (r_scaler * (*(it + 2))) +
-            (g_scaler * (*(it + 1))) +
-            (b_scaler * (*(it + 0))) );
-        *(it++) = gray_value;
-        *(it++) = gray_value;
-        *(it++) = gray_value;
-    }
-}
+//
+///* tratamento de imagem colorida para tons de cinza */
+//void Bitmap::convertToGrayscale()
+//{
+//    double r_scaler = 0.299;
+//    double g_scaler = 0.587;
+//    double b_scaler = 0.114;
+//
+//    if (rgb_mode == channel_mode_)
+//    {
+//        double tmp = r_scaler;
+//        r_scaler = b_scaler;
+//        b_scaler = tmp;
+//    }
+//
+//    for(unsigned char* it = data_; it < (data_ + length_);)
+//    {
+//        unsigned char gray_value = static_cast<unsigned char>(
+//            (r_scaler * (*(it + 2))) +
+//            (g_scaler * (*(it + 1))) +
+//            (b_scaler * (*(it + 0))) );
+//        *(it++) = gray_value;
+//        *(it++) = gray_value;
+//        *(it++) = gray_value;
+//    }
+//}
 
 /* retorna conteudo da area de memoria da imagem */
 const unsigned char* Bitmap::data() { return data_; }
@@ -223,8 +229,7 @@ void Bitmap::load_bitmap()
     BMPFileHeader fileHeader;
     BMPInfoHeader infoHeader;
 
-    readFileHeader(stream,fileHeader);
-    readInfoHeader(stream,infoHeader);
+    BitmapFile::readFileHeader(stream,fileHeader,infoHeader);
 
     if(fileHeader.type != 19778)
     {
@@ -261,7 +266,114 @@ void Bitmap::load_bitmap()
     valid_ = true;
 }
 
-std::string Bitmap::getPath() { return file_name_; }
+std::string Bitmap::getPath()
+{
+    return file_name_;
+}
+
+
+/* Escreve cabecalho do arquivo em memoria */
+void BitmapFile::writeFileHeader(std::ofstream& stream, const BMPFileHeader& fileHeader, BMPInfoHeader const& infoHeader)
+{
+    if(big_endian())
+    {
+        flip(fileHeader.type);
+        flip(fileHeader.size);
+        flip(fileHeader.reserved1);
+        flip(fileHeader.reserved2);
+        flip(fileHeader.off_bits);
+    }
+    write_to_stream(stream,fileHeader.type);
+    write_to_stream(stream,fileHeader.size);
+    write_to_stream(stream,fileHeader.reserved1);
+    write_to_stream(stream,fileHeader.reserved2);
+    write_to_stream(stream,fileHeader.off_bits);
+
+    writeInfoHeader(stream,infoHeader);
+}
+
+/* Le cabecalho do arquivo em memoria */
+void BitmapFile::readFileHeader(std::ifstream& stream, BMPFileHeader& fileHeader, BMPInfoHeader &infoHeader)
+{
+    read_from_stream(stream,fileHeader.type);
+    read_from_stream(stream,fileHeader.size);
+    read_from_stream(stream,fileHeader.reserved1);
+    read_from_stream(stream,fileHeader.reserved2);
+    read_from_stream(stream,fileHeader.off_bits);
+
+    if(big_endian())
+    {
+        flip(fileHeader.type);
+        flip(fileHeader.size);
+        flip(fileHeader.reserved1);
+        flip(fileHeader.reserved2);
+        flip(fileHeader.off_bits);
+    }
+
+    readInfoHeader(stream,infoHeader);
+}
+
+/* Le informacoes do arquivo em memoria */
+void BitmapFile::readInfoHeader(std::ifstream& stream, BMPInfoHeader& infoHeader)
+{
+    read_from_stream(stream,infoHeader.size);
+    read_from_stream(stream,infoHeader.width);
+    read_from_stream(stream,infoHeader.height);
+    read_from_stream(stream,infoHeader.planes);
+    read_from_stream(stream,infoHeader.bit_count);
+    read_from_stream(stream,infoHeader.compression);
+    read_from_stream(stream,infoHeader.size_image);
+    read_from_stream(stream,infoHeader.x_pels_per_meter);
+    read_from_stream(stream,infoHeader.y_pels_per_meter);
+    read_from_stream(stream,infoHeader.clr_used);
+    read_from_stream(stream,infoHeader.clr_important);
+
+    if(big_endian())
+    {
+        flip(infoHeader.size);
+        flip(infoHeader.width);
+        flip(infoHeader.height);
+        flip(infoHeader.planes);
+        flip(infoHeader.bit_count);
+        flip(infoHeader.compression);
+        flip(infoHeader.size_image);
+        flip(infoHeader.x_pels_per_meter);
+        flip(infoHeader.y_pels_per_meter);
+        flip(infoHeader.clr_used);
+        flip(infoHeader.clr_important);
+    }
+}
+
+/* Escreve informacoes do arquivo em memoria */
+void BitmapFile::writeInfoHeader(std::ofstream& stream, const BMPInfoHeader& infoHeader)
+{
+    if(big_endian())
+    {
+        flip(infoHeader.size);
+        flip(infoHeader.width);
+        flip(infoHeader.height);
+        flip(infoHeader.planes);
+        flip(infoHeader.bit_count);
+        flip(infoHeader.compression);
+        flip(infoHeader.size_image);
+        flip(infoHeader.x_pels_per_meter);
+        flip(infoHeader.y_pels_per_meter);
+        flip(infoHeader.clr_used);
+        flip(infoHeader.clr_important);
+    }
+
+    write_to_stream(stream,infoHeader.size);
+    write_to_stream(stream,infoHeader.width);
+    write_to_stream(stream,infoHeader.height);
+    write_to_stream(stream,infoHeader.planes);
+    write_to_stream(stream,infoHeader.bit_count);
+    write_to_stream(stream,infoHeader.compression);
+    write_to_stream(stream,infoHeader.size_image);
+    write_to_stream(stream,infoHeader.x_pels_per_meter);
+    write_to_stream(stream,infoHeader.y_pels_per_meter);
+    write_to_stream(stream,infoHeader.clr_used);
+    write_to_stream(stream,infoHeader.clr_important);
+}
 
 /*
 void Bitmap::reverse_channels()
@@ -287,3 +399,31 @@ T Bitmap::clamp(const T& v, const T& lower_range, const T& upper_range)
 }
 */
 
+bool BitmapFile::big_endian()
+{
+    unsigned int v = 0x01;
+    return (1 != reinterpret_cast<char*>(&v)[0]);
+}
+
+unsigned short BitmapFile::flip(const unsigned short& v)
+{
+    return ((v >> 8) | (v << 8));
+}
+
+unsigned int BitmapFile::flip(const unsigned int& v)
+{
+    return (((v & 0xFF000000) >> 0x18) | ((v & 0x000000FF) << 0x18) |
+        ((v & 0x00FF0000) >> 0x08) | ((v & 0x0000FF00) << 0x08));
+}
+
+template<typename T>
+void BitmapFile::read_from_stream(std::ifstream& stream,T& t)
+{
+    stream.read(reinterpret_cast<char*>(&t),sizeof(T));
+}
+
+template<typename T>
+void BitmapFile::write_to_stream(std::ofstream& stream,const T& t)
+{
+    stream.write(reinterpret_cast<const char*>(&t),sizeof(T));
+}

@@ -2,6 +2,7 @@
 #define BITMAP_H_
 
 #include <string>
+#include "utils.h"
 
 /* Classe Bitmap: objeto que representa a imagem .bmp a ser manipulada */
 class Bitmap
@@ -47,7 +48,7 @@ public:
     unsigned int getWidth() const;
     unsigned int getHeight() const;
     void saveImage(const std::string& file_name);
-    void convertToGrayscale();
+//    void convertToGrayscale();
     const unsigned char* data();
     unsigned char* row(unsigned int row_index) const;
     std::string getPath();
@@ -58,6 +59,29 @@ private:
     void reverse_channels();
     template<typename T>
     T clamp(const T& v, const T& lower_range, const T& upper_range);
+};
+
+class BitmapFile
+{
+    BitmapFile();
+    ~BitmapFile();
+public:
+    /* Funcoes utilizadas para tratamento de arquivo */
+    static void readFileHeader(std::ifstream& stream, BMPFileHeader& bfh, BMPInfoHeader &infoHeader);
+    static void writeFileHeader(std::ofstream& stream, const BMPFileHeader& bfh, const BMPInfoHeader& bih);
+
+private:
+    static void readInfoHeader(std::ifstream& stream,BMPInfoHeader& bih);
+    static void writeInfoHeader(std::ofstream& stream, const BMPInfoHeader& bih);
+
+    /* Funcoes uteis para manipulacao do stream de bytes */
+    static bool big_endian();
+    static unsigned short flip(const unsigned short& v);
+    static unsigned int flip(const unsigned int& v);
+    template<typename T>
+    static void read_from_stream(std::ifstream& stream,T& t);
+    template<typename T>
+    static void write_to_stream(std::ofstream& stream,const T& t);
 };
 
 #endif /* BITMAP_H_ */
