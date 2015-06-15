@@ -3,5 +3,6 @@
 
 void printUsage(void);
 unsigned char toUnsignedChar(double value);
+void startSerialProcess(int, char*[]);
 
 #endif

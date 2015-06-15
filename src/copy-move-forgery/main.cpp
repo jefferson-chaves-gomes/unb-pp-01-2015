@@ -1,29 +1,33 @@
-
 #include "functions.h"
 #include "ForgingDetector.h"
 #include "ImgUtils.h"
-
 #include <cstdlib>
 #include <iostream>
+#include <sys/time.h>   // for gettimeofday
 
-int main(int argc, char *argv[])
-{
-    if(argc < 2)
+int main(int argc, char *argv[]) {
+
+    if (argc < 2 
+    	|| (std::string(argv[1]) != CHARACT_VECTOR 
+    	&& std::string(argv[1]) != MULT_CHARACT_VECTOR 
+    	&& std::string(argv[1]) != EROSION 
+    	&& std::string(argv[1]) != DILATION 
+    	&& std::string(argv[1]) != OPENING
+        && std::string(argv[1]) != GRAYSCALE)) 
     {
         printUsage();
-        exit(0);
+        exit (EXIT_SUCCESS);
     }
 
-    if(std::string(argv[1]) != CHARACT_VECTOR &&
-       std::string(argv[1]) != MULT_CHARACT_VECTOR &&
-       std::string(argv[1]) != EROSION &&
-       std::string(argv[1]) != DILATION &&
-       std::string(argv[1]) != OPENING &&
-       std::string(argv[1]) != GRAYSCALE)
-    {
-        printUsage();
-        exit(0);
-    }
+    startSerialProcess(argc, argv);
+
+    return EXIT_SUCCESS;
+}
+
+void startSerialProcess(int argc, char *argv[]) {
+
+    timeval startTime;
+    gettimeofday(&startTime, NULL);
 
     /* escolha de modo de operacao */
     if(std::string(argv[1]) == CHARACT_VECTOR || std::string(argv[1]) == MULT_CHARACT_VECTOR)
@@ -76,9 +80,10 @@ int main(int argc, char *argv[])
         ImgUtils::saveImageAs(opened, path);
         std::cout << "Done." << std::endl;
     }
-    else
-        printUsage();
 
-    return 0;
+    timeval endTime;
+    gettimeofday(&endTime, NULL);
+    long time = ((endTime.tv_sec * 1000000 + endTime.tv_usec) - (startTime.tv_sec * 1000000 + startTime.tv_usec));
+    std::cout << "Time for file: " << argv[2] << std::endl;
+    std::cout << time << std::endl;
 }
-
