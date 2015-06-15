@@ -88,7 +88,9 @@ void Bitmap::getPixel(const unsigned int x, const unsigned int y,
     unsigned char& green,
     unsigned char& blue)
 {
-    if (x >= getWidth() || y >= getHeight() || x < 0 || y < 0)
+    // TODO ver com o Vitor esse IF, pois uma variável "unsigned" nunca será menor que zero.
+    // if (x >= getWidth() || y >= getHeight() || x < 0 || y < 0) {
+    if (x >= getWidth() || y >= getHeight()) 
     {
         // isto substitui o padding
         red = green = blue = 0;
