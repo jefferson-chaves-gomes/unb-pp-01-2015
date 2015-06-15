@@ -8,12 +8,14 @@
 class Bitmap
 {
 public:
-    enum channel_mode {
+    enum channel_mode
+    {
         rgb_mode = 0,
         bgr_mode = 1
     };
 
-    enum color_plane {
+    enum color_plane
+    {
         blue_plane = 0,
         green_plane = 1,
         red_plane = 2
@@ -37,14 +39,10 @@ public:
     Bitmap(const Bitmap& image);
     ~Bitmap();
     Bitmap& operator=(const Bitmap& image);
-    void getPixel(const unsigned int x, const unsigned int y,
-        unsigned char& red,
-        unsigned char& green,
-        unsigned char& blue);
-    void setPixel(const unsigned int x, const unsigned int y,
-        const unsigned char red,
-        const unsigned char green,
-        const unsigned char blue);
+    void getPixel(const unsigned int x, const unsigned int y, unsigned char& red, unsigned char& green,
+            unsigned char& blue);
+    void setPixel(const unsigned int x, const unsigned int y, const unsigned char red, const unsigned char green,
+            const unsigned char blue);
     unsigned int getWidth() const;
     unsigned int getHeight() const;
     void saveImage(const std::string& file_name);
@@ -71,7 +69,7 @@ public:
     static void writeFileHeader(std::ofstream& stream, const BMPFileHeader& bfh, const BMPInfoHeader& bih);
 
 private:
-    static void readInfoHeader(std::ifstream& stream,BMPInfoHeader& bih);
+    static void readInfoHeader(std::ifstream& stream, BMPInfoHeader& bih);
     static void writeInfoHeader(std::ofstream& stream, const BMPInfoHeader& bih);
 
     /* Funcoes uteis para manipulacao do stream de bytes */
@@ -79,9 +77,9 @@ private:
     static unsigned short flip(const unsigned short& v);
     static unsigned int flip(const unsigned int& v);
     template<typename T>
-    static void read_from_stream(std::ifstream& stream,T& t);
+    static void read_from_stream(std::ifstream& stream, T& t);
     template<typename T>
-    static void write_to_stream(std::ofstream& stream,const T& t);
+    static void write_to_stream(std::ofstream& stream, const T& t);
 };
 
 #endif /* BITMAP_H_ */
