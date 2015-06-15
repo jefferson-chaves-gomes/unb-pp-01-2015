@@ -8,6 +8,8 @@
 #include <fstream>
 #include <iostream>
 
+extern int dbgmsg;
+
 /**
  * @func forgeringByCharact
  * @brief algoritmo de deteccao por vetor de caracteristicas
