@@ -41,6 +41,15 @@ public:
     double c[CHARS_SIZE];
     CharVect() : x(0), y(0)
     {
+        initChars();
+    }
+    CharVect(int x_, int y_) : x(x_), y(y_)
+    {
+        initChars();
+    }
+private:
+    void initChars()
+    {
         for(int i=0; i<CHARS_SIZE; i++)
             c[i]=0;
     }
@@ -52,6 +61,7 @@ public:
     CharVect vect;
     CharVectList* next;
     CharVectList() : vect(), next(NULL){}
+    CharVectList(int x_, int y_) : vect(x_, y_), next(NULL){}
 };
 
 /* para os blocos similares */
