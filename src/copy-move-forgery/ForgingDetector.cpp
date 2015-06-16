@@ -399,6 +399,124 @@ CharVectList* ForgingDetector::charactVector(Bitmap image, int bSize)
     return vList;
 }
 
+CharVectList* ForgingDetector::charactVectorNew(Bitmap const& image, int bSize)
+{
+    int width = image.getWidth();
+    int height = image.getHeight();
+    Bitmap block(bSize, bSize);
+    unsigned char red, green, blue, grey;
+
+    CharVectList* vList = NULL;
+    CharVectList* vetor = NULL;
+    double part[4][2];    // soma das partes part[tipobloco][regiao]
+    int dx = 0, dy = 0;
+    int half = (int) bSize / 2;
+    ;
+    int dd = BLOCKSHIFT;
+
+    bool loop = true;
+
+    int iCount = 0;
+    while(loop)
+    {
+        // inicializar
+        for(int i = 0; i < 4; i++)
+            for(int j = 0; j < 2; j++)
+                part[i][j] = 0.0;
+
+        // criar vetor de caracteristicas
+        vetor = newCharVect();
+        if(!vetor)
+        {
+            clearCharVectors(vList);
+            return NULL;
+        }
+
+        // percorrer bloco da imagem original
+        vetor->vect.x = dx;
+        vetor->vect.y = dy;
+        for(int i = dx; i < dx + bSize && i < width; i++)
+        {
+            for(int j = dy; j < dy + bSize && j < height; j++)
+            {
+                image.getPixel(i, j, red, green, blue);
+
+                vetor->vect.c[0] += (int) red;
+                vetor->vect.c[1] += (int) green;
+                vetor->vect.c[2] += (int) blue;
+
+                // converter o pixel para escala de cinza conforme canal y
+                grey = toUnsignedChar(0.299 * (int) red + 0.587 * (int) green + 0.114 * (int) blue);
+                block.setPixel(i - dx, j - dy, grey, grey, grey);
+            }
+        }
+
+        // calcular media RGB
+        for(int i = 0; i < 3; i++)
+            vetor->vect.c[i] = (int) vetor->vect.c[i] / (bSize * bSize);
+
+        // percorrer bloco no canal Y
+        for(int i = 0; i < bSize; i++)
+        {
+            for(int j = 0; j < bSize; j++)
+            {
+                block.getPixel(i, j, grey, grey, grey);
+
+                // para cada tipo de bloco, identificar se o pixel estah em R1 ou R2
+
+                // para bloco tipo 1 | - |
+                if(j < half)
+                    part[0][0] += grey;
+                else
+                    part[0][1] += grey;
+
+                // para bloco tipo 2 | | |
+                if(i < half)
+                    part[1][0] += grey;
+                else
+                    part[1][1] += grey;
+
+                // para bloco tipo 3 | \ |
+                if(i > j)
+                    part[2][0] += grey;
+                else
+                    part[2][1] += grey;
+
+                // para bloco tipo 4 | / |
+                if(i + j < bSize)
+                    part[3][0] += grey;
+                else
+                    part[3][1] += grey;
+            }
+        }
+
+        for(int i = 0; i < 4; i++)
+            vetor->vect.c[i + 3] = part[i][0] / (part[i][0] + part[i][1]);
+
+        // adicionar o bloco lido ao conjunto de vetores de caracteristicas
+        if(vList == NULL)
+            vList = vetor;
+        else
+            vList = addVectLexOrder(vList, vetor);
+
+        dx += dd;
+        if(width < dx + bSize)
+        {
+            dx = 0;
+            dy += dd;
+            if(height < dy + bSize)
+                loop = false;
+        }
+        iCount++;
+    }
+
+#ifdef _DEBUG_
+    std::cout << "A imagem possui " << iCount << " blocos." << std::endl;
+#endif
+
+    return vList;
+}
+
 /**
  * @func getShift
  * @brief calcula o comprimento do vetor de shift

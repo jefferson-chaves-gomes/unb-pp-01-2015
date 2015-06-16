@@ -86,7 +86,7 @@ Bitmap& Bitmap::operator=(const Bitmap& image)
 void Bitmap::getPixel(const unsigned int x, const unsigned int y,
     unsigned char& red,
     unsigned char& green,
-    unsigned char& blue)
+    unsigned char& blue) const
 {
     if (x >= getWidth() || y >= getHeight()) 
     {

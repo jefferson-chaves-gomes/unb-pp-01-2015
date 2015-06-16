@@ -18,6 +18,7 @@ protected:
     ~ForgingDetector(){}
     /* metodos de deteccao */
     static CharVectList* charactVector(Bitmap image, int bSize);
+    static CharVectList* charactVectorNew(Bitmap const& image, int bSize);
 
     static int getShift(int x1, int x2, int y1, int y2);
     static SimilarBlocks* newSimilarBlock(int x1, int x2, int y1, int y2, bool equal = false);
