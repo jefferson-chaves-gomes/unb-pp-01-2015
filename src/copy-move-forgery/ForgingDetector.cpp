@@ -12,6 +12,18 @@
 int dbgmsg = 0;
 #endif
 
+/* parametros pre-definidos */
+const double t1 = 2.8, t2 = 0.02;      // t1 e t2
+const double vectorP[CHARS_SIZE] = {
+        11.8,       // P(1)
+        11.8,       // P(2)
+        11.8,       // P(3)
+        0.0125,     // P(4)
+        0.0125,     // P(5)
+        0.0125,     // P(6)
+        0.0125};    // P(7)
+const int maxShift = 2;
+
 /**
  * @func forgeringByCharact
  * @brief algoritmo de deteccao por vetor de caracteristicas
@@ -22,17 +34,6 @@ int dbgmsg = 0;
  */
 bool ForgingDetector::byCharact(Bitmap image, bool multiregion, int bSize)
 {
-    /* parametros pre-definidos */
-    const double t1 = 2.8, t2 = 0.02;      // t1 e t2
-    const double vectorP[CHARS_SIZE] = {
-            11.8,       // P(1)
-            11.8,       // P(2)
-            11.8,       // P(3)
-            0.0125,     // P(4)
-            0.0125,     // P(5)
-            0.0125,     // P(6)
-            0.0125};    // P(7)
-    const int maxShift = 2;
     int L;                           // comprimento do vetor deslocamento
 
     int width = image.getWidth();
@@ -306,7 +307,8 @@ CharVectList* ForgingDetector::charactVector(Bitmap image, int bSize)
                 part[i][j] = 0.0;
 
         // criar vetor de caracteristicas
-        vetor = newCharVect();
+        vetor = new CharVectList;
+        vetor->next = NULL;
         if(!vetor)
         {
             clearCharVectors(vList);
@@ -379,6 +381,115 @@ CharVectList* ForgingDetector::charactVector(Bitmap image, int bSize)
             vList = vetor;
         else
             vList = addVectLexOrder(vList, vetor);
+
+        dx += dd;
+        if(width < dx + bSize)
+        {
+            dx = 0;
+            dy += dd;
+            if(height < dy + bSize)
+                loop = false;
+        }
+        iCount++;
+    }
+
+#ifdef _DEBUG_
+    std::cout << "A imagem possui " << iCount << " blocos." << std::endl;
+#endif
+
+    return vList;
+}
+
+CharVectList* ForgingDetector::charactVectorNew(Bitmap const& image, int bSize)
+{
+    int width = image.getWidth();
+    int height = image.getHeight();
+    Bitmap block(bSize, bSize);
+    unsigned char red, green, blue, grey;
+
+    CharVectList* vList = NULL;
+    CharVectList* charVecList = NULL;
+    int dx = 0, dy = 0;
+    int half = (int) bSize / 2;
+    int dd = BLOCKSHIFT;
+
+    bool loop = true;
+
+    int iCount = 0;
+    while(loop)
+    {
+        // inicializar
+        double part[4][2] = {
+                0,0,0,0,
+                0,0,0,0};    // soma das partes part[tipobloco][regiao]
+
+        // criar vetor de caracteristicas
+        charVecList = new CharVectList(dx, dy);
+
+        // percorrer bloco da imagem original
+        for(int i = dx; i < dx + bSize && i < width; i++)
+        {
+            for(int j = dy; j < dy + bSize && j < height; j++)
+            {
+                image.getPixel(i, j, red, green, blue);
+
+                charVecList->vect.c[0] += (int) red;
+                charVecList->vect.c[1] += (int) green;
+                charVecList->vect.c[2] += (int) blue;
+
+                // converter o pixel para escala de cinza conforme canal y
+                grey = toUnsignedChar(0.299 * (int) red + 0.587 * (int) green + 0.114 * (int) blue);
+                block.setPixel(i - dx, j - dy, grey, grey, grey);
+            }
+        }
+
+        // calcular media RGB
+        for(int i = 0; i < 3; i++)
+            charVecList->vect.c[i] = (int) charVecList->vect.c[i] / (bSize * bSize);
+
+        // percorrer bloco no canal Y
+        for(int i = 0; i < bSize; i++)
+        {
+            for(int j = 0; j < bSize; j++)
+            {
+                block.getPixel(i, j, grey, grey, grey);
+
+                // para cada tipo de bloco, identificar se o pixel estah em R1 ou R2
+
+                // para bloco tipo 1 | - |
+                if(j < half)
+                    part[0][0] += grey;
+                else
+                    part[0][1] += grey;
+
+                // para bloco tipo 2 | | |
+                if(i < half)
+                    part[1][0] += grey;
+                else
+                    part[1][1] += grey;
+
+                // para bloco tipo 3 | \ |
+                if(i > j)
+                    part[2][0] += grey;
+                else
+                    part[2][1] += grey;
+
+                // para bloco tipo 4 | / |
+                if(i + j < bSize)
+                    part[3][0] += grey;
+                else
+                    part[3][1] += grey;
+            }
+        }
+
+        for(int i = 0; i < 4; i++)
+            charVecList->vect.c[i + 3] = part[i][0] / (part[i][0] + part[i][1]);
+
+        // adicionar o bloco lido ao conjunto de vetores de caracteristicas
+        if(vList == NULL)
+            vList = charVecList;
+        else
+            vList = addVectLexOrder(vList, charVecList);
 
         dx += dd;
         if(width < dx + bSize)
@@ -629,23 +740,6 @@ void ForgingDetector::clearSimilarBlocks(SimilarBlocks* start)
         delete start;
         start = aux;
     }
-}
-
-/**
- * @func newCharVect
- * @brief aloca memoria para novo vetor de caracteristicas
- * @return vetor criado
- */
-CharVectList* ForgingDetector::newCharVect()
-{
-    CharVectList* vetor = new CharVectList;
-
-    for(int i = 0; i < CHARS_SIZE; i++)
-        vetor->vect.c[i] = 0.0;
-
-    vetor->next = NULL;
-
-    return vetor;
 }
 
 /**
