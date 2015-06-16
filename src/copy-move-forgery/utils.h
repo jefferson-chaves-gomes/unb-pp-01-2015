@@ -24,8 +24,9 @@ typedef struct _maxshifts
 
 const int CHARS_SIZE = 7;
 /* para o algoritmo de vetor de caracteristicas */
-typedef struct _charvect
+class CharVect
 {
+public:
     int x;       // coordenada inicial x do bloco
     int y;       // coordenada inicial y do bloco
 //     c1:   // media R
@@ -36,7 +37,8 @@ typedef struct _charvect
 //     c6:   // soma(part(1))/soma(part(1)+part(2)) regiao tipo 3
 //     c7:   // soma(part(1))/soma(part(1)+part(2)) regiao tipo 4
     double c[CHARS_SIZE];
-} CharVect;
+    CharVect() : x(0), y(0), c({0,0,0,0,0,0,0}){}
+};
 
 typedef struct _vectlist
 {

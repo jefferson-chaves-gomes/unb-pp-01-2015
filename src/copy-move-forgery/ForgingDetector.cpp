@@ -407,7 +407,7 @@ CharVectList* ForgingDetector::charactVectorNew(Bitmap const& image, int bSize)
     unsigned char red, green, blue, grey;
 
     CharVectList* vList = NULL;
-    CharVectList* vetor = NULL;
+    CharVectList* charVec = NULL;
     int dx = 0, dy = 0;
     int half = (int) bSize / 2;
     int dd = BLOCKSHIFT;
@@ -423,25 +423,25 @@ CharVectList* ForgingDetector::charactVectorNew(Bitmap const& image, int bSize)
                 0,0,0,0};    // soma das partes part[tipobloco][regiao]
 
         // criar vetor de caracteristicas
-        vetor = newCharVect();
-        if(!vetor)
+        charVec = newCharVect();
+        if(!charVec)
         {
             clearCharVectors(vList);
             return NULL;
         }
 
         // percorrer bloco da imagem original
-        vetor->vect.x = dx;
-        vetor->vect.y = dy;
+        charVec->vect.x = dx;
+        charVec->vect.y = dy;
         for(int i = dx; i < dx + bSize && i < width; i++)
         {
             for(int j = dy; j < dy + bSize && j < height; j++)
             {
                 image.getPixel(i, j, red, green, blue);
 
-                vetor->vect.c[0] += (int) red;
-                vetor->vect.c[1] += (int) green;
-                vetor->vect.c[2] += (int) blue;
+                charVec->vect.c[0] += (int) red;
+                charVec->vect.c[1] += (int) green;
+                charVec->vect.c[2] += (int) blue;
 
                 // converter o pixel para escala de cinza conforme canal y
                 grey = toUnsignedChar(0.299 * (int) red + 0.587 * (int) green + 0.114 * (int) blue);
@@ -451,7 +451,7 @@ CharVectList* ForgingDetector::charactVectorNew(Bitmap const& image, int bSize)
 
         // calcular media RGB
         for(int i = 0; i < 3; i++)
-            vetor->vect.c[i] = (int) vetor->vect.c[i] / (bSize * bSize);
+            charVec->vect.c[i] = (int) charVec->vect.c[i] / (bSize * bSize);
 
         // percorrer bloco no canal Y
         for(int i = 0; i < bSize; i++)
@@ -489,13 +489,13 @@ CharVectList* ForgingDetector::charactVectorNew(Bitmap const& image, int bSize)
         }
 
         for(int i = 0; i < 4; i++)
-            vetor->vect.c[i + 3] = part[i][0] / (part[i][0] + part[i][1]);
+            charVec->vect.c[i + 3] = part[i][0] / (part[i][0] + part[i][1]);
 
         // adicionar o bloco lido ao conjunto de vetores de caracteristicas
         if(vList == NULL)
-            vList = vetor;
+            vList = charVec;
         else
-            vList = addVectLexOrder(vList, vetor);
+            vList = addVectLexOrder(vList, charVec);
 
         dx += dd;
         if(width < dx + bSize)
