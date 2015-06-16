@@ -307,7 +307,8 @@ CharVectList* ForgingDetector::charactVector(Bitmap image, int bSize)
                 part[i][j] = 0.0;
 
         // criar vetor de caracteristicas
-        vetor = newCharVect();
+        vetor = new CharVectList;
+        vetor->next = NULL;
         if(!vetor)
         {
             clearCharVectors(vList);
@@ -423,12 +424,7 @@ CharVectList* ForgingDetector::charactVectorNew(Bitmap const& image, int bSize)
                 0,0,0,0};    // soma das partes part[tipobloco][regiao]
 
         // criar vetor de caracteristicas
-        charVec = newCharVect();
-        if(!charVec)
-        {
-            clearCharVectors(vList);
-            return NULL;
-        }
+        charVec = new CharVectList;
 
         // percorrer bloco da imagem original
         charVec->vect.x = dx;
@@ -746,23 +742,6 @@ void ForgingDetector::clearSimilarBlocks(SimilarBlocks* start)
         delete start;
         start = aux;
     }
-}
-
-/**
- * @func newCharVect
- * @brief aloca memoria para novo vetor de caracteristicas
- * @return vetor criado
- */
-CharVectList* ForgingDetector::newCharVect()
-{
-    CharVectList* vetor = new CharVectList;
-
-    for(int i = 0; i < CHARS_SIZE; i++)
-        vetor->vect.c[i] = 0.0;
-
-    vetor->next = NULL;
-
-    return vetor;
 }
 
 /**

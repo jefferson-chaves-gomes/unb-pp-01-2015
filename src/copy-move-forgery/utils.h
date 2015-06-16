@@ -1,6 +1,8 @@
 #ifndef _UTILS_H_
 #define _UTILS_H_
 
+#include <stddef.h>
+
 #define CHARACT_VECTOR      "-v"
 #define MULT_CHARACT_VECTOR "-m"
 #define GRAYSCALE           "-c"
@@ -37,14 +39,20 @@ public:
 //     c6:   // soma(part(1))/soma(part(1)+part(2)) regiao tipo 3
 //     c7:   // soma(part(1))/soma(part(1)+part(2)) regiao tipo 4
     double c[CHARS_SIZE];
-    CharVect() : x(0), y(0), c({0,0,0,0,0,0,0}){}
+    CharVect() : x(0), y(0)
+    {
+        for(int i=0; i<CHARS_SIZE; i++)
+            c[i]=0;
+    }
 };
 
-typedef struct _vectlist
+class CharVectList
 {
+public:
     CharVect vect;
-    struct _vectlist* next;
-} CharVectList;
+    CharVectList* next;
+    CharVectList() : vect(), next(NULL){}
+};
 
 /* para os blocos similares */
 typedef struct _similar

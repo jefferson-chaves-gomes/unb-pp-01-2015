@@ -27,7 +27,6 @@ protected:
     static bool isGreaterShift(SimilarBlocks* simBlock, MaxShifts maxSh, int maxShift);
     static void clearCharVectors(CharVectList* start);
     static void clearSimilarBlocks(SimilarBlocks* start);
-    static CharVectList* newCharVect();
     static CharVectList* addVectLexOrder(CharVectList* start, CharVectList* vetor);
     static Histogram* newHistogram(int dx, int dy, SimilarBlocks* rep);
     static void clearHistogram(Histogram* start);
