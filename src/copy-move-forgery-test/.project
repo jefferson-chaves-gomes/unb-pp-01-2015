@@ -3,6 +3,7 @@
 	<name>copy-move-forgery-test</name>
 	<comment></comment>
 	<projects>
+		<project>copy-move-forgery</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>
@@ -24,4 +25,11 @@
 		<nature>org.eclipse.cdt.managedbuilder.core.managedBuildNature</nature>
 		<nature>org.eclipse.cdt.managedbuilder.core.ScannerConfigNature</nature>
 	</natures>
+	<linkedResources>
+		<link>
+			<name>copy-move-forgery</name>
+			<type>2</type>
+			<locationURI>PARENT-1-PROJECT_LOC/copy-move-forgery</locationURI>
+		</link>
+	</linkedResources>
 </projectDescription>

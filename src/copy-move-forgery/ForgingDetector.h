@@ -6,8 +6,6 @@
 
 class ForgingDetector
 {
-    ForgingDetector();
-    ~ForgingDetector();
 
 public:
     static bool byCharact(Bitmap image, bool multiregion = false, int bSize = 16);
@@ -15,7 +13,9 @@ public:
     static Bitmap dilation(Bitmap image, int bSize);
     static Bitmap erosion(Bitmap image, int bSize);
 
-private:
+protected:
+    ForgingDetector(){}
+    ~ForgingDetector(){}
     /* metodos de deteccao */
     static CharVectList* charactVector(Bitmap image, int bSize);
 
