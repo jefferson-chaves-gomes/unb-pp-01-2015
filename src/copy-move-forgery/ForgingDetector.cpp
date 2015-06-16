@@ -24,7 +24,7 @@ bool ForgingDetector::byCharact(Bitmap image, bool multiregion, int bSize)
 {
     /* parametros pre-definidos */
     const double t1 = 2.8, t2 = 0.02;      // t1 e t2
-    const double vectorP[7] = {
+    const double vectorP[CHARS_SIZE] = {
             11.8,       // P(1)
             11.8,       // P(2)
             11.8,       // P(3)
