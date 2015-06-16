@@ -40,7 +40,7 @@ public:
     ~Bitmap();
     Bitmap& operator=(const Bitmap& image);
     void getPixel(const unsigned int x, const unsigned int y, unsigned char& red, unsigned char& green,
-            unsigned char& blue);
+            unsigned char& blue) const;
     void setPixel(const unsigned int x, const unsigned int y, const unsigned char red, const unsigned char green,
             const unsigned char blue);
     unsigned int getWidth() const;

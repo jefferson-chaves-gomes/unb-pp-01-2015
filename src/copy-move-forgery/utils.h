@@ -1,6 +1,8 @@
 #ifndef _UTILS_H_
 #define _UTILS_H_
 
+#include <stddef.h>
+
 #define CHARACT_VECTOR      "-v"
 #define MULT_CHARACT_VECTOR "-m"
 #define GRAYSCALE           "-c"
@@ -24,8 +26,9 @@ typedef struct _maxshifts
 
 const int CHARS_SIZE = 7;
 /* para o algoritmo de vetor de caracteristicas */
-typedef struct _charvect
+class CharVect
 {
+public:
     int x;       // coordenada inicial x do bloco
     int y;       // coordenada inicial y do bloco
 //     c1:   // media R
@@ -36,13 +39,30 @@ typedef struct _charvect
 //     c6:   // soma(part(1))/soma(part(1)+part(2)) regiao tipo 3
 //     c7:   // soma(part(1))/soma(part(1)+part(2)) regiao tipo 4
     double c[CHARS_SIZE];
-} CharVect;
+    CharVect() : x(0), y(0)
+    {
+        initChars();
+    }
+    CharVect(int x_, int y_) : x(x_), y(y_)
+    {
+        initChars();
+    }
+private:
+    void initChars()
+    {
+        for(int i=0; i<CHARS_SIZE; i++)
+            c[i]=0;
+    }
+};
 
-typedef struct _vectlist
+class CharVectList
 {
+public:
     CharVect vect;
-    struct _vectlist* next;
-} CharVectList;
+    CharVectList* next;
+    CharVectList() : vect(), next(NULL){}
+    CharVectList(int x_, int y_) : vect(x_, y_), next(NULL){}
+};
 
 /* para os blocos similares */
 typedef struct _similar
