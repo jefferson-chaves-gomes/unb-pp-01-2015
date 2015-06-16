@@ -8,6 +8,10 @@
 #include <fstream>
 #include <iostream>
 
+#ifdef _DEBUG_
+int dbgmsg = 0;
+#endif
+
 /**
  * @func forgeringByCharact
  * @brief algoritmo de deteccao por vetor de caracteristicas
@@ -20,7 +24,8 @@ bool ForgingDetector::byCharact(Bitmap image, bool multiregion, int bSize)
 {
     /* parametros pre-definidos */
     const double t1 = 2.8, t2 = 0.02;      // t1 e t2
-    const double vectorP[7] = {11.8,       // P(1)
+    const double vectorP[7] = {
+            11.8,       // P(1)
             11.8,       // P(2)
             11.8,       // P(3)
             0.0125,     // P(4)
@@ -63,7 +68,14 @@ bool ForgingDetector::byCharact(Bitmap image, bool multiregion, int bSize)
 
     CharVectList* b1Vector = vList;
     CharVectList* b2Vector = NULL;
-    double diff[CHARS_SIZE] = {0, 0, 0, 0, 0, 0, 0};
+    double diff[CHARS_SIZE] = {
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0};
 
     // percorrer toda a lista de blocos; execucao em O(n)
     // somente sao comparados dois blocos consecutivos, pois ja estao ordenados
