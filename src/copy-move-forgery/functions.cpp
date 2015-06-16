@@ -4,10 +4,6 @@
 #include <iostream>
 #include "utils.h"
 
-#ifdef _DEBUG_
-int dbgmsg = 0;
-#endif
-
 /**
  * @func printUsage
  * @brief Imprime as instrucoes de utilizacao do programa
