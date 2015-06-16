@@ -408,7 +408,7 @@ CharVectList* ForgingDetector::charactVectorNew(Bitmap const& image, int bSize)
     unsigned char red, green, blue, grey;
 
     CharVectList* vList = NULL;
-    CharVectList* charVec = NULL;
+    CharVectList* charVecList = NULL;
     int dx = 0, dy = 0;
     int half = (int) bSize / 2;
     int dd = BLOCKSHIFT;
@@ -424,7 +424,7 @@ CharVectList* ForgingDetector::charactVectorNew(Bitmap const& image, int bSize)
                 0,0,0,0};    // soma das partes part[tipobloco][regiao]
 
         // criar vetor de caracteristicas
-        charVec = new CharVectList(dx, dy);
+        charVecList = new CharVectList(dx, dy);
 
         // percorrer bloco da imagem original
         for(int i = dx; i < dx + bSize && i < width; i++)
@@ -433,9 +433,9 @@ CharVectList* ForgingDetector::charactVectorNew(Bitmap const& image, int bSize)
             {
                 image.getPixel(i, j, red, green, blue);
 
-                charVec->vect.c[0] += (int) red;
-                charVec->vect.c[1] += (int) green;
-                charVec->vect.c[2] += (int) blue;
+                charVecList->vect.c[0] += (int) red;
+                charVecList->vect.c[1] += (int) green;
+                charVecList->vect.c[2] += (int) blue;
 
                 // converter o pixel para escala de cinza conforme canal y
                 grey = toUnsignedChar(0.299 * (int) red + 0.587 * (int) green + 0.114 * (int) blue);
@@ -445,7 +445,7 @@ CharVectList* ForgingDetector::charactVectorNew(Bitmap const& image, int bSize)
 
         // calcular media RGB
         for(int i = 0; i < 3; i++)
-            charVec->vect.c[i] = (int) charVec->vect.c[i] / (bSize * bSize);
+            charVecList->vect.c[i] = (int) charVecList->vect.c[i] / (bSize * bSize);
 
         // percorrer bloco no canal Y
         for(int i = 0; i < bSize; i++)
@@ -483,13 +483,13 @@ CharVectList* ForgingDetector::charactVectorNew(Bitmap const& image, int bSize)
         }
 
         for(int i = 0; i < 4; i++)
-            charVec->vect.c[i + 3] = part[i][0] / (part[i][0] + part[i][1]);
+            charVecList->vect.c[i + 3] = part[i][0] / (part[i][0] + part[i][1]);
 
         // adicionar o bloco lido ao conjunto de vetores de caracteristicas
         if(vList == NULL)
-            vList = charVec;
+            vList = charVecList;
         else
-            vList = addVectLexOrder(vList, charVec);
+            vList = addVectLexOrder(vList, charVecList);
 
         dx += dd;
         if(width < dx + bSize)
