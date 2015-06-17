@@ -411,9 +411,9 @@ CharVectList* ForgingDetector::charactVectorNew(Bitmap const& image, int bSize)
 #endif
 
     // itera em todos os blocos
-    for(int bx=0;  bx < bTotalX ; bx++)
+    for(int bx=0;  bx < bTotalX; bx++)
     {
-        for(int by=0;  by < bTotalY ; by++)
+        for(int by=0;  by < bTotalY; by++)
         {
             // criar vetor de caracteristicas
             charVecList = getCharVectListForBlock(image, bx, by, bSize);
@@ -440,9 +440,9 @@ CharVectList* ForgingDetector::getCharVectListForBlock(Bitmap const& image, int 
     double part[4][2] = { { 0, 0 }, { 0, 0 }, { 0, 0 }, { 0, 0 } };
 
     // percorrer pixels do bloco na imagem original
-    for(int x = 0; x < blkSize; x++)
+    for(int x=0; x < blkSize; x++)
     {
-        for(int y = 0; y < blkSize; y++)
+        for(int y=0; y < blkSize; y++)
         {
             image.getPixel(x + blkPosX, y + blkPosY, red, green, blue);
 
