@@ -737,33 +737,33 @@ CharVectList* ForgingDetector::addVectLexOrder(CharVectList* start, CharVectList
 
     CharVectList* aux = start;
     CharVectList* trace = start;
-    bool greater = false;
-    bool smaller = false;
+    bool isGreater = false;
+    bool isSmaller = false;
 
     while(aux != NULL)
     {
-        greater = false;
-        smaller = false;
+        isGreater = false;
+        isSmaller = false;
 
         for(int i = 0; i < CHARS_SIZE; i++)
         {
             if(vetor->vect.c[i] == aux->vect.c[i])
                 continue;
-            else if(vetor->vect.c[i] > aux->vect.c[i])
-                greater = true;
+            if(vetor->vect.c[i] > aux->vect.c[i])
+                isGreater = true;
             else
-                smaller = true;
+                isSmaller = true;
 
             break;
         }
 
-        if(greater == true)
+        if(isGreater)
         {
             trace = aux;
             aux = aux->next;
             continue;
         }
-        else if(smaller == true)
+        if(isSmaller)
         {
             vetor->next = aux;
             if(aux == start)
@@ -779,7 +779,7 @@ CharVectList* ForgingDetector::addVectLexOrder(CharVectList* start, CharVectList
         break;
     }
 
-    if(greater == true)
+    if(isGreater)
         trace->next = vetor;
 
     return start;
