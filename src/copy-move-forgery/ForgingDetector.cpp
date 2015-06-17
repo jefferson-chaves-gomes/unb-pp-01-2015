@@ -419,11 +419,11 @@ CharVectList* ForgingDetector::charactVectorNew(Bitmap const& image, int bSize)
         charVecList = new CharVectList(dx, dy);
 
 // percorrer bloco da imagem original
-        for(int i = dx; i < dx + bSize && i < width; i++)
+        for(int x = dx; x < dx + bSize && x < width; x++)
         {
-            for(int j = dy; j < dy + bSize && j < height; j++)
+            for(int y = dy; y < dy + bSize && y < height; y++)
             {
-                image.getPixel(i, j, red, green, blue);
+                image.getPixel(x, y, red, green, blue);
 
                 charVecList->vect.c[0] += (int) red;
                 charVecList->vect.c[1] += (int) green;
@@ -431,7 +431,7 @@ CharVectList* ForgingDetector::charactVectorNew(Bitmap const& image, int bSize)
 
                 // converter o pixel para escala de cinza conforme canal y
                 grey = toUnsignedChar(0.299 * (int) red + 0.587 * (int) green + 0.114 * (int) blue);
-                block.setPixel(i - dx, j - dy, grey, grey, grey);
+                block.setPixel(x - dx, y - dy, grey, grey, grey);
             }
         }
 
@@ -440,34 +440,34 @@ CharVectList* ForgingDetector::charactVectorNew(Bitmap const& image, int bSize)
             charVecList->vect.c[i] = (int) charVecList->vect.c[i] / (bSize * bSize);
 
 // percorrer bloco no canal Y
-        for(int i = 0; i < bSize; i++)
+        for(int x = 0; x < bSize; x++)
         {
-            for(int j = 0; j < bSize; j++)
+            for(int y = 0; y < bSize; y++)
             {
-                block.getPixel(i, j, grey, grey, grey);
+                block.getPixel(x, y, grey, grey, grey);
 
                 // para cada tipo de bloco, identificar se o pixel estah em R1 ou R2
 
                 // para bloco tipo 1 | - |
-                if(j < half)
+                if(y < half)
                     part[0][0] += grey;
                 else
                     part[0][1] += grey;
 
                 // para bloco tipo 2 | | |
-                if(i < half)
+                if(x < half)
                     part[1][0] += grey;
                 else
                     part[1][1] += grey;
 
                 // para bloco tipo 3 | \ |
-                if(i > j)
+                if(x > y)
                     part[2][0] += grey;
                 else
                     part[2][1] += grey;
 
                 // para bloco tipo 4 | / |
-                if(i + j < bSize)
+                if(x + y < bSize)
                     part[3][0] += grey;
                 else
                     part[3][1] += grey;

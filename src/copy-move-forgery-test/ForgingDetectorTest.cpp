@@ -11,9 +11,9 @@ class ForgingDetectorTest : public ::testing::Test, public ForgingDetector
 
 TEST_F(ForgingDetectorTest, charac_vec)
 {
-    Bitmap bmp(std::string("../copy-move-forgery/resource/publico.bmp"));
+    Bitmap bmp(std::string("../copy-move-forgery/resource/icone.bmp"));
 
-    const int BLOCK_SIZE = 16;
+    const int BLOCK_SIZE = 50;
 
     Timer timeOld;
     CharVectList* vListOld = ForgingDetectorTest::charactVector(bmp, BLOCK_SIZE);
@@ -32,6 +32,9 @@ TEST_F(ForgingDetectorTest, charac_vec)
 
     while(vListOld != NULL || vListNew != NULL)
     {
+        ASSERT_TRUE(vListOld != NULL);
+        ASSERT_TRUE(vListNew != NULL);
+
         ASSERT_EQ(vListOld->vect.x, vListNew->vect.x);
         ASSERT_EQ(vListOld->vect.y, vListNew->vect.y);
 
