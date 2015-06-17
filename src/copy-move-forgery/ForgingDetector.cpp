@@ -397,7 +397,6 @@ CharVectList* ForgingDetector::charactVectorNew(Bitmap const& image, int bSize)
 {
     int width = image.getWidth();
     int height = image.getHeight();
-    Bitmap block(bSize, bSize);
     unsigned char red, green, blue, grey;
 
     CharVectList* vList = NULL;
@@ -414,6 +413,9 @@ CharVectList* ForgingDetector::charactVectorNew(Bitmap const& image, int bSize)
 // criar vetor de caracteristicas
         charVecList = new CharVectList(dx, dy);
 
+        // inicializar
+        double part[4][2] = { { 0, 0 }, { 0, 0 }, { 0, 0 }, { 0, 0 } };
+
 // percorrer bloco da imagem original
         for(int x = dx; x < dx + bSize && x < width; x++)
         {
@@ -427,7 +429,33 @@ CharVectList* ForgingDetector::charactVectorNew(Bitmap const& image, int bSize)
 
                 // converter o pixel para escala de cinza conforme canal y
                 grey = toUnsignedChar(0.299 * (int) red + 0.587 * (int) green + 0.114 * (int) blue);
-                block.setPixel(x - dx, y - dy, grey, grey, grey);
+
+                int tempX = x - dx;
+                int tempY = y - dy;
+
+                // para bloco tipo 1 | - |
+                if(tempY < half)
+                    part[0][0] += grey;
+                else
+                    part[0][1] += grey;
+
+                // para bloco tipo 2 | | |
+                if(tempX < half)
+                    part[1][0] += grey;
+                else
+                    part[1][1] += grey;
+
+                // para bloco tipo 3 | \ |
+                if(tempX > tempY)
+                    part[2][0] += grey;
+                else
+                    part[2][1] += grey;
+
+                // para bloco tipo 4 | / |
+                if(tempX + tempY < bSize)
+                    part[3][0] += grey;
+                else
+                    part[3][1] += grey;
             }
         }
 
@@ -435,53 +463,12 @@ CharVectList* ForgingDetector::charactVectorNew(Bitmap const& image, int bSize)
         for(int i = 0; i < 3; i++)
             charVecList->vect.c[i] = (int) charVecList->vect.c[i] / (bSize * bSize);
 
-
-        // inicializar
-        double part[4][2] = { { 0, 0 }, { 0, 0 }, { 0, 0 }, { 0, 0 } };
         // soma das partes part[tipobloco][regiao]
-// percorrer bloco no canal Y
-        for(int x = 0; x < bSize; x++)
-        {
-            for(int y = 0; y < bSize; y++)
-            {
-                block.getPixel(x, y, grey, grey, grey);
-
-                // para cada tipo de bloco, identificar se o pixel estah em R1 ou R2
-
-                // para bloco tipo 1 | - |
-                if(y < half)
-                    part[0][0] += grey;
-                else
-                    part[0][1] += grey;
-
-                // para bloco tipo 2 | | |
-                if(x < half)
-                    part[1][0] += grey;
-                else
-                    part[1][1] += grey;
-
-                // para bloco tipo 3 | \ |
-                if(x > y)
-                    part[2][0] += grey;
-                else
-                    part[2][1] += grey;
-
-                // para bloco tipo 4 | / |
-                if(x + y < bSize)
-                    part[3][0] += grey;
-                else
-                    part[3][1] += grey;
-            }
-        }
-
         for(int i = 0; i < 4; i++)
             charVecList->vect.c[i + 3] = part[i][0] / (part[i][0] + part[i][1]);
 
         // adicionar o bloco lido ao conjunto de vetores de caracteristicas
-        if(vList == NULL)
-            vList = charVecList;
-        else
-            vList = addVectLexOrder(vList, charVecList);
+        vList = addVectLexOrder(vList, charVecList);
 
         dx += dd;
         if(width < dx + bSize)

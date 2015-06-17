@@ -13,7 +13,7 @@ TEST_F(ForgingDetectorTest, charac_vec)
 {
     Bitmap bmp(std::string("../copy-move-forgery/resource/icone.bmp"));
 
-    const int BLOCK_SIZE = 50;
+    const int BLOCK_SIZE = 20;
 
     Timer timeOld;
     CharVectList* vListOld = ForgingDetectorTest::charactVector(bmp, BLOCK_SIZE);
