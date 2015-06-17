@@ -393,21 +393,58 @@ CharVectList* ForgingDetector::charactVector(Bitmap image, int bSize)
     return vList;
 }
 
-CharVectList* getCharVectListForBlock(Bitmap const& image, int blkPosX, int blkPosY, int blkSize)
+CharVectList* ForgingDetector::charactVectorNew(Bitmap const& image, int bSize)
 {
-    unsigned char red, green, blue, grey;
-    int half = (int) blkSize / 2;
     int width = image.getWidth();
     int height = image.getHeight();
+    if(width < bSize || height < bSize)
+        return NULL;
+
+    CharVectList* vList = NULL;
+    CharVectList* charVecList = NULL;
+
+    int bTotalX = width - bSize + 1;
+    int bTotalY = height - bSize + 1;
+
+#ifdef _DEBUG_
+    std::cout << "A imagem possui " << bTotalX * bTotalY << " blocos." << std::endl;
+#endif
+
+    // itera em todos os blocos
+    for(int bx=0;  bx < bTotalX ; bx++)
+    {
+        for(int by=0;  by < bTotalY ; by++)
+        {
+            // criar vetor de caracteristicas
+            charVecList = getCharVectListForBlock(image, bx, by, bSize);
+
+            // adicionar o bloco lido ao conjunto de vetores de caracteristicas
+            vList = addVectLexOrder(vList, charVecList);
+        }
+    }
+
+    return vList;
+}
+
+CharVectList* ForgingDetector::getCharVectListForBlock(Bitmap const& image, int blkPosX, int blkPosY, int blkSize)
+{
+    int width = image.getWidth();
+    int height = image.getHeight();
+
+    if(width < blkPosX + blkSize || height < blkPosY + blkSize)
+        return NULL;
+
+    unsigned char red, green, blue, grey;
+    int half = (int) blkSize / 2;
     CharVectList* charVecList = new CharVectList(blkPosX, blkPosY);
     double part[4][2] = { { 0, 0 }, { 0, 0 }, { 0, 0 }, { 0, 0 } };
 
-    // percorrer bloco na imagem original
-    for(int x = blkPosX; x < blkPosX + blkSize && x < width; x++)
+    // percorrer pixels do bloco na imagem original
+    for(int x = 0; x < blkSize; x++)
     {
-        for(int y = blkPosY; y < blkPosY + blkSize && y < height; y++)
+        for(int y = 0; y < blkSize; y++)
         {
-            image.getPixel(x, y, red, green, blue);
+            image.getPixel(x + blkPosX, y + blkPosY, red, green, blue);
 
             charVecList->vect.c[0] += (int) red;
             charVecList->vect.c[1] += (int) green;
@@ -416,29 +453,26 @@ CharVectList* getCharVectListForBlock(Bitmap const& image, int blkPosX, int blkP
             // converter o pixel para escala de cinza conforme canal y
             grey = toUnsignedChar(0.299 * (int) red + 0.587 * (int) green + 0.114 * (int) blue);
 
-            int tempX = x - blkPosX;
-            int tempY = y - blkPosY;
-
             // para bloco tipo 1 | - |
-            if(tempY < half)
+            if(y < half)
                 part[0][0] += grey;
             else
                 part[0][1] += grey;
 
             // para bloco tipo 2 | | |
-            if(tempX < half)
+            if(x < half)
                 part[1][0] += grey;
             else
                 part[1][1] += grey;
 
             // para bloco tipo 3 | \ |
-            if(tempX > tempY)
+            if(x > y)
                 part[2][0] += grey;
             else
                 part[2][1] += grey;
 
             // para bloco tipo 4 | / |
-            if(tempX + tempY < blkSize)
+            if(x + y < blkSize)
                 part[3][0] += grey;
             else
                 part[3][1] += grey;
@@ -454,45 +488,6 @@ CharVectList* getCharVectListForBlock(Bitmap const& image, int blkPosX, int blkP
         charVecList->vect.c[i + 3] = part[i][0] / (part[i][0] + part[i][1]);
 
     return charVecList;
-}
-
-CharVectList* ForgingDetector::charactVectorNew(Bitmap const& image, int bSize)
-{
-    int width = image.getWidth();
-    int height = image.getHeight();
-
-    CharVectList* vList = NULL;
-    CharVectList* charVecList = NULL;
-    int dx = 0, dy = 0;
-    int dd = BLOCKSHIFT;
-
-    bool loop = true;
-
-    int iCount = 0;
-    while(loop)
-    {
-        // criar vetor de caracteristicas
-        charVecList = getCharVectListForBlock(image, dx, dy, bSize);
-
-        // adicionar o bloco lido ao conjunto de vetores de caracteristicas
-        vList = addVectLexOrder(vList, charVecList);
-
-        dx += dd;
-        if(width < dx + bSize)
-        {
-            dx = 0;
-            dy += dd;
-            if(height < dy + bSize)
-                loop = false;
-        }
-        iCount++;
-    }
-
-#ifdef _DEBUG_
-    std::cout << "A imagem possui " << iCount << " blocos." << std::endl;
-#endif
-
-    return vList;
 }
 
 /**

@@ -22,6 +22,7 @@ protected:
     }
     /* metodos de deteccao */
     static CharVectList* charactVector(Bitmap image, int bSize);
+    static CharVectList* getCharVectListForBlock(Bitmap const& image, int blkPosX, int blkPosY, int blkSize);
     static CharVectList* charactVectorNew(Bitmap const& image, int bSize);
 
     static int getShift(int x1, int x2, int y1, int y2);
