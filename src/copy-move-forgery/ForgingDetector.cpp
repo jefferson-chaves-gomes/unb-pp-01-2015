@@ -411,10 +411,6 @@ CharVectList* ForgingDetector::charactVectorNew(Bitmap const& image, int bSize)
     int iCount = 0;
     while(loop)
     {
-        // inicializar
-        double part[4][2] = { { 0, 0 }, { 0, 0 }, { 0, 0 }, { 0, 0 } };
-        // soma das partes part[tipobloco][regiao]
-
 // criar vetor de caracteristicas
         charVecList = new CharVectList(dx, dy);
 
@@ -439,6 +435,10 @@ CharVectList* ForgingDetector::charactVectorNew(Bitmap const& image, int bSize)
         for(int i = 0; i < 3; i++)
             charVecList->vect.c[i] = (int) charVecList->vect.c[i] / (bSize * bSize);
 
+
+        // inicializar
+        double part[4][2] = { { 0, 0 }, { 0, 0 }, { 0, 0 }, { 0, 0 } };
+        // soma das partes part[tipobloco][regiao]
 // percorrer bloco no canal Y
         for(int x = 0; x < bSize; x++)
         {
