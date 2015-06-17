@@ -6,11 +6,11 @@
 #include <iostream>
 
 /**
-* @func saveImageAs
-* @brief salva imagem como novo arquivo
-* @param image imagem bitmap
-* @param imgPath novo path da imagem
-*/
+ * @func saveImageAs
+ * @brief salva imagem como novo arquivo
+ * @param image imagem bitmap
+ * @param imgPath novo path da imagem
+ */
 void ImgUtils::saveImageAs(Bitmap image, std::string imgPath)
 {
     Bitmap newImage(image);
@@ -22,11 +22,11 @@ void ImgUtils::saveImageAs(Bitmap image, std::string imgPath)
 }
 
 /**
-* @func imgTrueName
-* @brief recupera o path da imagem sem a extensao de arquivo
-* @param file path completo
-* @return nome do arquivo, sem extensao
-*/
+ * @func imgTrueName
+ * @brief recupera o path da imagem sem a extensao de arquivo
+ * @param file path completo
+ * @return nome do arquivo, sem extensao
+ */
 std::string ImgUtils::imgTrueName(std::string file)
 {
     int aux_pos = file.find_last_of(".");
@@ -35,12 +35,12 @@ std::string ImgUtils::imgTrueName(std::string file)
 }
 
 /**
-* @func imgGrayScale
-* @brief converte uma imagem para escala de cinza
-* @param image imagem original
-* @param fromfile informa se a imagem foi lida de um arquivo
-* @return imagem em 256 niveis de cinza
-*/
+ * @func imgGrayScale
+ * @brief converte uma imagem para escala de cinza
+ * @param image imagem original
+ * @param fromfile informa se a imagem foi lida de um arquivo
+ * @return imagem em 256 niveis de cinza
+ */
 Bitmap ImgUtils::imgGrayScale(Bitmap image, bool fromfile)
 {
     int width = image.getWidth();
@@ -53,7 +53,7 @@ Bitmap ImgUtils::imgGrayScale(Bitmap image, bool fromfile)
         for(int j = 0; j < height; j++)
         {
             image.getPixel(i, j, red, green, blue);
-            grey = toUnsignedChar(0.299*(int)red + 0.587*(int)green + 0.114*(int)blue);
+            grey = toUnsignedChar(0.299 * (int) red + 0.587 * (int) green + 0.114 * (int) blue);
             newImage.setPixel(i, j, grey, grey, grey);
         }
     }

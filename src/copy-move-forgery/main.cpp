@@ -3,6 +3,7 @@
 #include "ImgUtils.h"
 #include <cstdlib>
 #include <iostream>
+#include <stdlib.h>
 #include <sys/time.h>   // for gettimeofday
 
 int main(int argc, char *argv[])
@@ -14,7 +15,7 @@ int main(int argc, char *argv[])
                     && std::string(argv[1]) != OPENING && std::string(argv[1]) != GRAYSCALE))
     {
         printUsage();
-        exit (EXIT_SUCCESS);
+        exit(EXIT_SUCCESS);
     }
 
     startSerialProcess(argc, argv);

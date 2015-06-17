@@ -1,4 +1,3 @@
-
 #include <gtest/gtest.h>
 #include <ForgingDetector.h>
 
@@ -6,9 +5,7 @@
 #include <string>
 #include "Timer.h"
 
-class ForgingDetectorTest :
-        public ::testing::Test,
-        public ForgingDetector
+class ForgingDetectorTest : public ::testing::Test, public ForgingDetector
 {
 };
 
@@ -16,7 +13,7 @@ TEST_F(ForgingDetectorTest, charac_vec)
 {
     Bitmap bmp(std::string("../copy-move-forgery/resource/publico.bmp"));
 
-    const int BLOCK_SIZE = 300;
+    const int BLOCK_SIZE = 16;
 
     Timer timeOld;
     CharVectList* vListOld = ForgingDetectorTest::charactVector(bmp, BLOCK_SIZE);
@@ -30,19 +27,15 @@ TEST_F(ForgingDetectorTest, charac_vec)
     std::cout << "New: " << elapsedNew << std::endl;
     std::cout << "Speedup: " << (elapsedOld / elapsedNew) << std::endl;
 
-
     ASSERT_TRUE(vListOld != NULL);
     ASSERT_TRUE(vListNew != NULL);
 
     while(vListOld != NULL || vListNew != NULL)
     {
-        ASSERT_TRUE(vListOld != NULL);
-        ASSERT_TRUE(vListNew != NULL);
-
         ASSERT_EQ(vListOld->vect.x, vListNew->vect.x);
         ASSERT_EQ(vListOld->vect.y, vListNew->vect.y);
 
-        for(int i=0; i<CHARS_SIZE; i++)
+        for(int i = 0; i < CHARS_SIZE; i++)
             ASSERT_EQ(vListOld->vect.c[i], vListNew->vect.c[i]);
 
         vListOld = vListOld->next;

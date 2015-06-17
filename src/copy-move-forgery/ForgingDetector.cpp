@@ -69,8 +69,7 @@ bool ForgingDetector::byCharact(Bitmap image, bool multiregion, int bSize)
 
     CharVectList* b1Vector = vList;
     CharVectList* b2Vector = NULL;
-    double diff[CHARS_SIZE] = {
-            0, 0, 0, 0, 0, 0, 0};
+    double diff[CHARS_SIZE] = { 0, 0, 0, 0, 0, 0, 0 };
 
     // percorrer toda a lista de blocos; execucao em O(n)
     // somente sao comparados dois blocos consecutivos, pois ja estao ordenados
@@ -413,12 +412,7 @@ CharVectList* ForgingDetector::charactVectorNew(Bitmap const& image, int bSize)
     while(loop)
     {
         // inicializar
-        double part[4][2] = {
-                {
-                        0, 0}, {
-                        0, 0}, {
-                        0, 0}, {
-                        0, 0}};
+        double part[4][2] = { { 0, 0 }, { 0, 0 }, { 0, 0 }, { 0, 0 } };
         // soma das partes part[tipobloco][regiao]
 
 // criar vetor de caracteristicas
@@ -861,9 +855,9 @@ Bitmap ForgingDetector::dilation(Bitmap image, int bSize)
     {
         for(j = 0; j < height; j++)
         {
-//dilated.setPixel(i, j, 0, 0, 0);
+            //dilated.setPixel(i, j, 0, 0, 0);
             image.getPixel(i, j, value, value, value);
-// pixel branco; aplicar elemento estruturante
+            // pixel branco; aplicar elemento estruturante
             if(value != 0)
             {
                 // verificar se a origem se encontra na regiao
@@ -902,7 +896,7 @@ Bitmap ForgingDetector::erosion(Bitmap image, int bSize)
         for(j = 0; j < height; j++)
         {
             image.getPixel(i, j, value, value, value);
-// pixel branco; aplicar elemento estruturante
+            // pixel branco; aplicar elemento estruturante
             if(value != 0)
             {
                 // verificar se a origem se encontra na regiao

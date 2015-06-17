@@ -8,5 +8,7 @@ class HelloWorld : public ::testing::Test
 
 TEST_F(HelloWorld, hello_world)
 {
-    std::cout << "Hello world!!!" << std::endl;
+    for (int i = 0; i < 50; ++i) {
+        std::cout << "Hello world!!! - " << i << std::endl;
+    }
 }
