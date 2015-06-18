@@ -39,22 +39,14 @@ class CharVect
         //     c5:   // soma(part(1))/soma(part(1)+part(2)) regiao tipo 2
         //     c6:   // soma(part(1))/soma(part(1)+part(2)) regiao tipo 3
         //     c7:   // soma(part(1))/soma(part(1)+part(2)) regiao tipo 4
-        CharVect() :
-                x(0), y(0)
-        {
-            initChars();
-        }
-        CharVect(int x_, int y_) :
-                x(x_), y(y_)
-        {
-            initChars();
-        }
+        CharVect();
+        CharVect(int x_, int y_);
+
+        void setChars(int c1, int c2, int c3, int c4, int c5, int c6, int c7);
+        bool operator <= (CharVect const& other);
+
     private:
-        void initChars()
-        {
-            for(int i = 0; i < CHARS_SIZE; i++)
-                c[i] = 0;
-        }
+        void initChars();
 };
 
 class CharVectList

@@ -419,7 +419,7 @@ CharVectList* ForgingDetector::charactVectorNew(Bitmap const& image, int bSize)
             charVecList = getCharVectListForBlock(image, bx, by, bSize);
 
             // adicionar o bloco lido ao conjunto de vetores de caracteristicas
-            vList = addVectLexOrder(vList, charVecList);
+            vList = addVectLexOrderNew(vList, charVecList);
         }
     }
 
@@ -730,6 +730,8 @@ void ForgingDetector::clearSimilarBlocks(SimilarBlocks* start)
  * @param vetor vetor a ser adicionado
  * @return ponteiro inicial da lista
  */
+
+
 CharVectList* ForgingDetector::addVectLexOrder(CharVectList* start, CharVectList* vetor)
 {
     if(start == NULL)
@@ -784,6 +786,43 @@ CharVectList* ForgingDetector::addVectLexOrder(CharVectList* start, CharVectList
 
     return start;
 }
+
+CharVectList* ForgingDetector::addVectLexOrderNew(CharVectList* vecOrdered, CharVectList* valToAdd)
+{
+    if(vecOrdered == NULL)
+        return valToAdd;
+
+    // Insere antes da cabeca
+    if(valToAdd->vect <= vecOrdered->vect)
+    {
+        valToAdd->next = vecOrdered;
+        return valToAdd;
+    }
+
+    CharVectList* current = vecOrdered;
+    while(current != NULL)
+    {
+        // Insere apos o current
+        if(current->next == NULL)
+        {
+            valToAdd->next = NULL;
+            current->next = valToAdd;
+            break;
+        }
+        // Insere entre o current e seu next
+        if(valToAdd->vect <= current->next->vect)
+        {
+            valToAdd->next = current->next;
+            current->next = valToAdd;
+            break;
+        }
+
+        current = current->next;
+    }
+
+    return vecOrdered;
+}
+
 
 /**
  * @func newHistogram
