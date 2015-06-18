@@ -97,31 +97,31 @@ TEST_F(ForgingDetectorTest, addVectLexOrder)
     CharVectList * orderedNew = NULL;
     CharVectList * orderedOld = NULL;
 
-    orderedOld = addVectLexOrder(orderedOld, secndOld);
+    orderedOld = OLD_addVectLexOrder(orderedOld, secndOld);
     ASSERT_EQ(orderedOld, secndOld);
-    orderedOld = addVectLexOrder(orderedOld, firstOld);
-    orderedOld = addVectLexOrder(orderedOld, thirdOld);
-    orderedOld = addVectLexOrder(orderedOld, thirdRepOld);
+    orderedOld = OLD_addVectLexOrder(orderedOld, firstOld);
+    orderedOld = OLD_addVectLexOrder(orderedOld, thirdOld);
+    orderedOld = OLD_addVectLexOrder(orderedOld, thirdRepOld);
 
-    orderedNew = addVectLexOrderNew(orderedNew, secndNew);
+    orderedNew = addVectLexOrder(orderedNew, secndNew);
     ASSERT_EQ(orderedNew, secndNew);
-    orderedNew = addVectLexOrderNew(orderedNew, firstNew);
-    orderedNew = addVectLexOrderNew(orderedNew, thirdNew);
-    orderedNew = addVectLexOrderNew(orderedNew, thirdRepNew);
+    orderedNew = addVectLexOrder(orderedNew, firstNew);
+    orderedNew = addVectLexOrder(orderedNew, thirdNew);
+    orderedNew = addVectLexOrder(orderedNew, thirdRepNew);
     assertEqualsCharVectList(orderedOld, orderedNew);
 
-    orderedNew = addVectLexOrderNew(orderedNew, secndOld);
-    orderedNew = addVectLexOrderNew(orderedNew, thirdRepOld);
-    orderedNew = addVectLexOrderNew(orderedNew, firstOld);
-    orderedNew = addVectLexOrderNew(orderedNew, thirdOld);
+    orderedNew = addVectLexOrder(orderedNew, secndOld);
+    orderedNew = addVectLexOrder(orderedNew, thirdRepOld);
+    orderedNew = addVectLexOrder(orderedNew, firstOld);
+    orderedNew = addVectLexOrder(orderedNew, thirdOld);
     assertLexicalOrderCharVectList(orderedNew);
 
     thirdRepOld->next = NULL;
     orderedNew = NULL;
-    orderedNew = addVectLexOrderNew(orderedNew, thirdRepOld);
-    orderedNew = addVectLexOrderNew(orderedNew, thirdNew);
-    orderedNew = addVectLexOrderNew(orderedNew, secndOld);
-    orderedNew = addVectLexOrderNew(orderedNew, firstNew);
+    orderedNew = addVectLexOrder(orderedNew, thirdRepOld);
+    orderedNew = addVectLexOrder(orderedNew, thirdNew);
+    orderedNew = addVectLexOrder(orderedNew, secndOld);
+    orderedNew = addVectLexOrder(orderedNew, firstNew);
     assertLexicalOrderCharVectList(orderedNew);
 }
 
@@ -172,7 +172,7 @@ TEST_F(ForgingDetectorTest, charac_vec)
     long double elapsedOld = timeOld.elapsedMicroseconds();
 
     Timer timeNew;
-    CharVectList* vListNew = ForgingDetectorTest::charactVectorNew(bmp, BLOCK_SIZE);
+    CharVectList* vListNew = ForgingDetectorTest::charactVector(bmp, BLOCK_SIZE);
     long double elapsedNew = timeNew.elapsedMicroseconds();
 
     std::cout << "Old: " << elapsedOld << std::endl;

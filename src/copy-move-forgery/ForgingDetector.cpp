@@ -274,7 +274,7 @@ bool ForgingDetector::byCharact(Bitmap image, bool multiregion, int bSize)
  | R2 \  |      |  / R2 |
  |______\|      |/______|
  */
-CharVectList* ForgingDetector::charactVector(Bitmap image, int bSize)
+CharVectList* ForgingDetector::OLD_charactVector(Bitmap image, int bSize)
 {
     int width = image.getWidth();
     int height = image.getHeight();
@@ -393,7 +393,7 @@ CharVectList* ForgingDetector::charactVector(Bitmap image, int bSize)
     return vList;
 }
 
-CharVectList* ForgingDetector::charactVectorNew(Bitmap const& image, int bSize)
+CharVectList* ForgingDetector::charactVector(Bitmap const& image, int bSize)
 {
     int width = image.getWidth();
     int height = image.getHeight();
@@ -419,7 +419,7 @@ CharVectList* ForgingDetector::charactVectorNew(Bitmap const& image, int bSize)
             charVecList = getCharVectListForBlock(image, bx, by, bSize);
 
             // adicionar o bloco lido ao conjunto de vetores de caracteristicas
-            vList = addVectLexOrderNew(vList, charVecList);
+            vList = addVectLexOrder(vList, charVecList);
         }
     }
 
@@ -574,30 +574,25 @@ MaxShifts ForgingDetector::getMainShifts(SimilarBlocks* blocks)
             hLast->next = hTrace;
             hLast = hTrace;
         }
+
+        /* buscar maior frequencia */
         hTrace->freq++;
+        if(hTrace->freq > count)
+		{
+			count = hTrace->freq;
+			main = hTrace->rep;
+
+			/* atualizar frequencias */
+			maxSh.dx3 = maxSh.dx2;
+			maxSh.dx2 = maxSh.dx1;
+			maxSh.dx1 = main->dx;
+
+			maxSh.dy3 = maxSh.dy2;
+			maxSh.dy2 = maxSh.dy1;
+			maxSh.dy1 = main->dy;
+		}
 
         auxBlock = auxBlock->next;
-    }
-
-    /* buscar maior frequencia */
-    hTrace = hist;
-    while(hTrace != NULL)
-    {
-        if(hTrace->freq > count)
-        {
-            count = hTrace->freq;
-            main = hTrace->rep;
-
-            /* atualizar frequencias */
-            maxSh.dx3 = maxSh.dx2;
-            maxSh.dx2 = maxSh.dx1;
-            maxSh.dx1 = main->dx;
-
-            maxSh.dy3 = maxSh.dy2;
-            maxSh.dy2 = maxSh.dy1;
-            maxSh.dy1 = main->dy;
-        }
-        hTrace = hTrace->next;
     }
 
     clearHistogram(hist);
@@ -646,21 +641,16 @@ SimilarBlocks* ForgingDetector::getMainShiftVector(SimilarBlocks* blocks)
             hLast->next = hTrace;
             hLast = hTrace;
         }
+
+        /* buscar maior frequencia */
         hTrace->freq++;
+        if(hTrace->freq > count)
+		{
+			count = hTrace->freq;
+			main = hTrace->rep;
+		}
 
         auxBlock = auxBlock->next;
-    }
-
-    /* buscar maior frequencia */
-    hTrace = hist;
-    while(hTrace != NULL)
-    {
-        if(hTrace->freq > count)
-        {
-            count = hTrace->freq;
-            main = hTrace->rep;
-        }
-        hTrace = hTrace->next;
     }
 
     clearHistogram(hist);
@@ -731,7 +721,7 @@ void ForgingDetector::clearSimilarBlocks(SimilarBlocks* start)
  * @return ponteiro inicial da lista
  */
 
-CharVectList* ForgingDetector::addVectLexOrder(CharVectList* start, CharVectList* vetor)
+CharVectList* ForgingDetector::OLD_addVectLexOrder(CharVectList* start, CharVectList* vetor)
 {
     if(start == NULL)
         return vetor;
@@ -786,7 +776,7 @@ CharVectList* ForgingDetector::addVectLexOrder(CharVectList* start, CharVectList
     return start;
 }
 
-CharVectList* ForgingDetector::addVectLexOrderNew(CharVectList* vecOrdered, CharVectList* valToAdd)
+CharVectList* ForgingDetector::addVectLexOrder(CharVectList* vecOrdered, CharVectList* valToAdd)
 {
     CharVectList ** head_ref = &vecOrdered;
     /* Adiciona antes da cabeca */

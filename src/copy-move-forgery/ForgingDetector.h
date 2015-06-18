@@ -21,12 +21,12 @@ protected:
     {
     }
     /* metodos de deteccao */
-    static CharVectList* charactVector(Bitmap image, int bSize);
-    static CharVectList* addVectLexOrder(CharVectList* start, CharVectList* vetor);
+    static CharVectList* OLD_charactVector(Bitmap image, int bSize);
+    static CharVectList* OLD_addVectLexOrder(CharVectList* start, CharVectList* vetor);
 
-    static CharVectList* charactVectorNew(Bitmap const& image, int bSize);
+    static CharVectList* charactVector(Bitmap const& image, int bSize);
     static CharVectList* getCharVectListForBlock(Bitmap const& image, int blkPosX, int blkPosY, int blkSize);
-    static CharVectList* addVectLexOrderNew(CharVectList* start, CharVectList* vetor);
+    static CharVectList* addVectLexOrder(CharVectList* start, CharVectList* vetor);
 
     static int getShift(int x1, int x2, int y1, int y2);
     static SimilarBlocks* newSimilarBlock(int x1, int x2, int y1, int y2, bool equal = false);
