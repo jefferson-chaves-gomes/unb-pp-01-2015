@@ -10,6 +10,23 @@ class ForgingDetectorTest : public ::testing::Test, public ForgingDetector
 {
 protected:
 
+    void assertEqualsSimilarBlocks(SimilarBlocks* left, SimilarBlocks* right)
+    {
+        ASSERT_TRUE(left != NULL);
+        ASSERT_TRUE(right != NULL);
+
+        while(left != NULL || right != NULL)
+        {
+            ASSERT_TRUE(left != NULL);
+            ASSERT_TRUE(right != NULL);
+
+            ASSERT_TRUE(*left == *right);
+
+            left = left->next;
+            right = right->next;
+        }
+    }
+
     void printCharVectList(CharVectList* charVectList)
     {
         CharVectList* aux = charVectList;
@@ -33,7 +50,7 @@ protected:
         }
 
         std::cout << "|";
-        for(int i = 0; i < CHARS_SIZE; i++)
+        for(int i = 0; i < CharVect::CHARS_SIZE; i++)
         {
             std::cout << (int)charVec->c[i] << "|";
         }
@@ -65,7 +82,7 @@ protected:
             ASSERT_EQ(left->vect.x, right->vect.x);
             ASSERT_EQ(left->vect.y, right->vect.y);
 
-            for(int i = 0; i < CHARS_SIZE; i++)
+            for(int i = 0; i < CharVect::CHARS_SIZE; i++)
                 ASSERT_EQ(left->vect.c[i], right->vect.c[i]);
 
             left = left->next;
@@ -161,6 +178,25 @@ TEST_F(ForgingDetectorTest, operator_less_or_equals_to)
     ASSERT_TRUE( first <= secnd);
 }
 
+TEST_F(ForgingDetectorTest, operatorEqualSimilarBlock)
+{
+    Timer timeOld;
+    SimilarBlocks* simBlkOld = new SimilarBlocks;
+    SimilarBlocks* simBlkNew = new SimilarBlocks;
+
+    simBlkOld->setValues(0,0,0,0,0,0,false);
+    simBlkNew->setValues(1,1,1,1,1,1,true);
+
+    ASSERT_TRUE(*simBlkOld != *simBlkNew);
+
+    simBlkOld->setValues(1,1,1,1,1,1,true);
+
+    ASSERT_TRUE(*simBlkOld == *simBlkNew);
+
+    assertEqualsSimilarBlocks(simBlkOld, simBlkNew);
+}
+
+
 TEST_F(ForgingDetectorTest, charac_vec)
 {
     Bitmap bmp(std::string("../copy-move-forgery/resource/icone.bmp"));
@@ -168,7 +204,7 @@ TEST_F(ForgingDetectorTest, charac_vec)
     const int BLOCK_SIZE = 20;
 
     Timer timeOld;
-    CharVectList* vListOld = ForgingDetectorTest::charactVector(bmp, BLOCK_SIZE);
+    CharVectList* vListOld = ForgingDetectorTest::OLD_charactVector(bmp, BLOCK_SIZE);
     long double elapsedOld = timeOld.elapsedMicroseconds();
 
     Timer timeNew;
@@ -181,3 +217,35 @@ TEST_F(ForgingDetectorTest, charac_vec)
 
     assertEqualsCharVectList(vListOld, vListNew);
 }
+
+TEST_F(ForgingDetectorTest, createSimilarBlockListAndFilterSpurious)
+{
+    Bitmap bmp(std::string("../copy-move-forgery/resource/publico.bmp"));
+    const int BLOCK_SIZE = 20;
+    CharVectList* vList = ForgingDetectorTest::charactVector(bmp, BLOCK_SIZE);
+
+    Timer timeOld;
+    SimilarBlocks* simBlkOld = OLD_createSimilarBlockList(bmp, BLOCK_SIZE, vList);
+    long double elapsedOld = timeOld.elapsedMicroseconds();
+
+    Timer timeNew;
+    SimilarBlocks* simBlkNew = createSimilarBlockList(bmp, BLOCK_SIZE, vList);
+    long double elapsedNew = timeNew.elapsedMicroseconds();
+
+    std::cout << "Old: " << elapsedOld << std::endl;
+    std::cout << "New: " << elapsedNew << std::endl;
+    std::cout << "Speedup: " << (elapsedOld / elapsedNew) << std::endl;
+
+    assertEqualsSimilarBlocks(simBlkOld, simBlkNew);
+
+    OLD_filterSpuriousRegions(simBlkOld, true);
+    filterSpuriousRegions(simBlkNew, true);
+    assertEqualsSimilarBlocks(simBlkOld, simBlkNew);
+
+    simBlkOld = OLD_createSimilarBlockList(bmp, BLOCK_SIZE, vList);
+    simBlkNew = createSimilarBlockList(bmp, BLOCK_SIZE, vList);
+    OLD_filterSpuriousRegions(simBlkOld, false);
+    filterSpuriousRegions(simBlkNew, false);
+    assertEqualsSimilarBlocks(simBlkOld, simBlkNew);
+}
+

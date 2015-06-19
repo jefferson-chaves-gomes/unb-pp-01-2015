@@ -26,7 +26,7 @@ int dbgmsg = 0;
 
 /* parametros pre-definidos */
 const double t1 = 2.8, t2 = 0.02;      // t1 e t2
-const double vectorP[CHARS_SIZE] = {
+const double vectorP[CharVect::CHARS_SIZE] = {
         11.8,       // P(1)
         11.8,       // P(2)
         11.8,       // P(3)
@@ -36,8 +36,7 @@ const double vectorP[CHARS_SIZE] = {
         0.0125};    // P(7)
 const int maxShift = 2;
 
-
-SimilarBlocks* ForgingDetector::createSimilarBlockList(Bitmap const& image, int bSize, CharVectList* vList)
+SimilarBlocks* ForgingDetector::OLD_createSimilarBlockList(Bitmap const& image, int bSize, CharVectList* vList)
 {
     SimilarBlocks* simList = NULL;
     SimilarBlocks* simBlock = NULL;
@@ -47,7 +46,7 @@ SimilarBlocks* ForgingDetector::createSimilarBlockList(Bitmap const& image, int 
     SimilarBlocks* simEnd = NULL;
     CharVectList* b1Vector = vList;
     CharVectList* b2Vector = NULL;
-    double diff[CHARS_SIZE] = { 0, 0, 0, 0, 0, 0, 0 };
+    double diff[CharVect::CHARS_SIZE] = { 0, 0, 0, 0, 0, 0, 0 };
     int L;                           // comprimento do vetor deslocamento
 
     // percorrer toda a lista de blocos; execucao em O(n)
@@ -65,7 +64,7 @@ SimilarBlocks* ForgingDetector::createSimilarBlockList(Bitmap const& image, int 
 
             bool diffVector = true;
 
-            for(int i = 0; i < CHARS_SIZE && diffVector; i++)
+            for(int i = 0; i < CharVect::CHARS_SIZE && diffVector; i++)
             {
                 diff[i] = ABS((b1Vector->vect.c[i] - b2Vector->vect.c[i]));
                 diffVector = diffVector && (diff[i] < vectorP[i]);
@@ -105,7 +104,122 @@ SimilarBlocks* ForgingDetector::createSimilarBlockList(Bitmap const& image, int 
     return simList;
 }
 
+SimilarBlocks* ForgingDetector::createSimilarBlockList(Bitmap const& image, int bSize, CharVectList* vList)
+{
+    SimilarBlocks* simList = NULL;
+    SimilarBlocks* simBlock = NULL;
+    int width = image.getWidth();
+    int height = image.getHeight();
+
+    SimilarBlocks* simEnd = NULL;
+    CharVectList* b1Vector = vList;
+    CharVectList* b2Vector = NULL;
+    double diff[CharVect::CHARS_SIZE] = { 0, 0, 0, 0, 0, 0, 0 };
+    int L;                           // comprimento do vetor deslocamento
+
+    // percorrer toda a lista de blocos; execucao em O(n)
+    // somente sao comparados dois blocos consecutivos, pois ja estao ordenados
+    if(bSize + BASE_L >= width || bSize + BASE_L >= height)
+        L = bSize;
+    else
+        L = BASE_L;
+
+    while(b1Vector != NULL)
+    {
+        b2Vector = b1Vector->next;
+        if(b2Vector == NULL)
+            break;
+
+        // calcular diferencas
+
+        bool diffVector = true;
+
+        for(int i = 0; i < CharVect::CHARS_SIZE && diffVector; i++)
+        {
+            diff[i] = ABS((b1Vector->vect.c[i] - b2Vector->vect.c[i]));
+            diffVector = diffVector && (diff[i] < vectorP[i]);
+        }
+
+        if((diffVector)
+                && (diff[0] + diff[1] + diff[2] < t1)
+                && (diff[3] + diff[4] + diff[5] + diff[6] < t2)
+                && ABS(getShift(b1Vector->vect.x, b2Vector->vect.x, b1Vector->vect.y, b2Vector->vect.y)) > L)
+        {
+            // nao e necessario
+//                    bool equal = (diff1 == diff2 == diff3 == diff4
+//                                   == diff5 == diff6 == diff7 == 0);
+            bool equal = false;
+
+            // blocos b1 e b2 sao similares
+            simBlock = newSimilarBlock(
+                    b1Vector->vect.x,
+                    b2Vector->vect.x,
+                    b1Vector->vect.y,
+                    b2Vector->vect.y,
+                    equal);
+
+            if(simList == NULL)
+            {
+                simList = simBlock;
+                simEnd = simList;
+            }
+            else
+            {
+                simEnd->next = simBlock;
+                simEnd = simBlock;
+            }
+        }
+
+        b1Vector = b1Vector->next;
+    }
+
+    return simList;
+}
+
 void ForgingDetector::filterSpuriousRegions(SimilarBlocks* simList, bool multiregion)
+{
+    MaxShifts maxSh;
+    SimilarBlocks* mainShift;
+
+    if(multiregion)
+        maxSh = getMainShifts(simList);
+    else
+        mainShift = getMainShiftVector(simList);
+
+    SimilarBlocks* simTrace = simList;
+    SimilarBlocks* simBlock = simList;
+    bool bRegions = false;
+
+    while(simBlock != NULL)
+    {
+        if(multiregion)
+            bRegions = isGreaterShift(simBlock, maxSh, maxShift);
+        else
+        {
+            bRegions = (
+                (ABS((simBlock->dx - mainShift->dx)) > maxShift || ABS((simBlock->dy - mainShift->dy)) > maxShift)
+                && simBlock->equal == false);
+        }
+
+        if(!bRegions)
+            simTrace = simBlock;
+        else
+        {
+            if(simBlock == simList)
+            {
+                simList = simList->next;
+                simTrace = simList;
+            }
+            else
+                simTrace->next = simBlock->next;
+            delete simBlock;
+        }
+
+        simBlock = simTrace->next;
+    }
+}
+
+void ForgingDetector::OLD_filterSpuriousRegions(SimilarBlocks* simList, bool multiregion)
 {
     MaxShifts maxSh;
     SimilarBlocks* mainShift;
@@ -733,7 +847,7 @@ CharVectList* ForgingDetector::OLD_addVectLexOrder(CharVectList* start, CharVect
         isGreater = false;
         isSmaller = false;
 
-        for(int i = 0; i < CHARS_SIZE; i++)
+        for(int i = 0; i < CharVect::CHARS_SIZE; i++)
         {
             if(vetor->vect.c[i] == aux->vect.c[i])
                 continue;

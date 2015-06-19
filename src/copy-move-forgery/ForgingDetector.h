@@ -38,7 +38,9 @@ protected:
     static Histogram* newHistogram(int dx, int dy, SimilarBlocks* rep);
     static void clearHistogram(Histogram* start);
 
+    static SimilarBlocks* OLD_createSimilarBlockList(Bitmap const& image, int bSize, CharVectList* vList);
     static SimilarBlocks* createSimilarBlockList(Bitmap const& image, int bSize, CharVectList* vList);
+    static void OLD_filterSpuriousRegions(SimilarBlocks* simList, bool multiregion);
     static void filterSpuriousRegions(SimilarBlocks* simList, bool multiregion);
 };
 
