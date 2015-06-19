@@ -8,6 +8,7 @@
 #include <fstream>
 #include <iostream>
 
+#define _DEBUG_
 #ifdef _DEBUG_
 int dbgmsg = 0;
 #endif
@@ -24,52 +25,19 @@ const double vectorP[CHARS_SIZE] = {
         0.0125};    // P(7)
 const int maxShift = 2;
 
-/**
- * @func forgeringByCharact
- * @brief algoritmo de deteccao por vetor de caracteristicas
- * @param image imagem verificada
- * @param multiregion informa se multiplas regioes devem ser pesquisadas
- * @param bSize dimensao do bloco
- * @return true, foi detectada adulteracao; false, se imagem eh original
- */
-bool ForgingDetector::byCharact(Bitmap image, bool multiregion, int bSize)
-{
-    int L;                           // comprimento do vetor deslocamento
 
+SimilarBlocks* ForgingDetector::createSimilarBlockList(Bitmap const& image, int bSize, CharVectList* vList)
+{
+    SimilarBlocks* simList = NULL;
+    SimilarBlocks* simBlock = NULL;
     int width = image.getWidth();
     int height = image.getHeight();
-    unsigned char red, green, blue, grey;
-    Bitmap forgedImage(width, height);
-    Bitmap detectImage(width, height);
-    bool bForged = false;
 
-    CharVectList* vList = NULL;
-    SimilarBlocks* simList = NULL;
     SimilarBlocks* simEnd = NULL;
-    SimilarBlocks* simBlock = NULL;
-    int iCount = 0;
-
-    /* passo 1: extrair as caracteristicas dos blocos da imagem */
-
-#ifdef _DEBUG_
-    std::cout << "[MSG " << ++dbgmsg << "] Criando vetores de caracteristicas..." << std::endl;
-#endif
-    vList = charactVector(image, bSize);
-    if(vList == NULL)
-    {
-        std::cout << "Nao foi possivel criar o vetor de caracteristicas." << std::endl;
-        return false;
-    }
-
-    /* passo 2: buscar blocos similares */
-
-#ifdef _DEBUG_
-    std::cout << "[MSG " << ++dbgmsg << "] Buscando blocos similares..." << std::endl;
-#endif
-
     CharVectList* b1Vector = vList;
     CharVectList* b2Vector = NULL;
     double diff[CHARS_SIZE] = { 0, 0, 0, 0, 0, 0, 0 };
+    int L;                           // comprimento do vetor deslocamento
 
     // percorrer toda a lista de blocos; execucao em O(n)
     // somente sao comparados dois blocos consecutivos, pois ja estao ordenados
@@ -79,7 +47,6 @@ bool ForgingDetector::byCharact(Bitmap image, bool multiregion, int bSize)
         L = BASE_L;
     while(b1Vector != NULL)
     {
-        iCount++;
         b2Vector = b1Vector->next;
         if(b2Vector != NULL)
         {
@@ -124,33 +91,22 @@ bool ForgingDetector::byCharact(Bitmap image, bool multiregion, int bSize)
         b1Vector = b1Vector->next;
     }
 
-    /***********/
+    return simList;
+}
 
-#ifdef _DEBUG_
-    std::cout << "[MSG " << ++dbgmsg << "] Lista de " << iCount << " blocos foi percorrida." << std::endl;
-#endif
-
-    /* passo 3: */
-    // Se nao ha blocos similares, a imagem nao foi adulterada por copy-move
-    if(simList == NULL)
-        return false;
-
-#ifdef _DEBUG_
-    std::cout << "[MSG " << ++dbgmsg << "] Analisando shifts de deslocamento..." << std::endl;
-#endif
-
-    // buscar principal vetor deslocamento e eliminar regioes espurias
-    //*
+void ForgingDetector::filterSpuriousRegions(SimilarBlocks* simList, bool multiregion)
+{
     MaxShifts maxSh;
     SimilarBlocks* mainShift;
-    SimilarBlocks* simTrace = simList;
-    simBlock = simList;
-    bool bRegions = false;
 
     if(multiregion)
         maxSh = getMainShifts(simList);
     else
         mainShift = getMainShiftVector(simList);
+
+    SimilarBlocks* simTrace = simList;
+    SimilarBlocks* simBlock = simList;
+    bool bRegions = false;
 
     while(simBlock != NULL)
     {
@@ -177,13 +133,73 @@ bool ForgingDetector::byCharact(Bitmap image, bool multiregion, int bSize)
             simBlock = simBlock->next;
         }
     }
-    // */
+}
+
+
+/**
+ * @func forgeringByCharact
+ * @brief algoritmo de deteccao por vetor de caracteristicas
+ * @param image imagem verificada
+ * @param multiregion informa se multiplas regioes devem ser pesquisadas
+ * @param bSize dimensao do bloco
+ * @return true, foi detectada adulteracao; false, se imagem eh original
+ */
+bool ForgingDetector::byCharact(Bitmap image, bool multiregion, int bSize)
+{
+    /* passo 1: extrair as caracteristicas dos blocos da imagem */
+
+#ifdef _DEBUG_
+    std::cout << "[MSG " << ++dbgmsg << "] Criando vetores de caracteristicas..." << std::endl;
+#endif
+
+    CharVectList* vList = charactVector(image, bSize);
+    if(vList == NULL)
+    {
+        std::cout << "Nao foi possivel criar o vetor de caracteristicas." << std::endl;
+        return false;
+    }
+
+    /* passo 2: buscar blocos similares */
+
+#ifdef _DEBUG_
+    std::cout << "[MSG " << ++dbgmsg << "] Buscando blocos similares..." << std::endl;
+#endif
+
+    SimilarBlocks* simList = createSimilarBlockList(image, bSize, vList);
+
+
+    /***********/
+
+#ifdef _DEBUG_
+    std::cout << "[MSG " << ++dbgmsg << "] Lista de blocos foi percorrida." << std::endl;
+#endif
+
+    /* passo 3: */
+    // Se nao ha blocos similares, a imagem nao foi adulterada por copy-move
+    if(simList == NULL)
+        return false;
+
+#ifdef _DEBUG_
+    std::cout << "[MSG " << ++dbgmsg << "] Analisando shifts de deslocamento..." << std::endl;
+#endif
+
+    // buscar principal vetor deslocamento e eliminar regioes espurias
+    //*
+
+
+    filterSpuriousRegions(simList, multiregion);
+
 
     /* passo 4: detectar adulteracao */
 #ifdef _DEBUG_
     std::cout << "[MSG " << ++dbgmsg << "] Pesquisando adulteracao..." << std::endl;
 #endif
 
+    int width = image.getWidth();
+    int height = image.getHeight();
+    unsigned char red, green, blue, grey;
+    Bitmap forgedImage(width, height);
+    Bitmap detectImage(width, height);
     // criar imagem binaria com as areas similares encontradas
     for(int i = 0; i < width; i++)
     {
@@ -194,7 +210,8 @@ bool ForgingDetector::byCharact(Bitmap image, bool multiregion, int bSize)
             detectImage.setPixel(i, j, 0, 0, 0);
         }
     }
-    simBlock = simList;
+
+    SimilarBlocks*simBlock = simList;
     while(simBlock != NULL)
     {
         int b1x = simBlock->b1x;
@@ -217,6 +234,7 @@ bool ForgingDetector::byCharact(Bitmap image, bool multiregion, int bSize)
     // operacao de abertura na imagem
     detectImage = opening(detectImage, bSize);
 
+    bool bForged = false;
     // mergear com imagem original
     for(int i = 0; i < width; i++)
     {
