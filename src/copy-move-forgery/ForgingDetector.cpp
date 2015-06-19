@@ -8,7 +8,18 @@
 #include <fstream>
 #include <iostream>
 
-#define _DEBUG_
+//#define _DEBUG_
+#ifdef _DEBUG_
+#define logger(token) \
+    { \
+        std::stringstream o; \
+        o << token; \
+        std::cout << o.str() << std::endl; \
+    }
+#else
+#define logger(token)
+#endif
+
 #ifdef _DEBUG_
 int dbgmsg = 0;
 #endif
@@ -135,7 +146,6 @@ void ForgingDetector::filterSpuriousRegions(SimilarBlocks* simList, bool multire
     }
 }
 
-
 /**
  * @func forgeringByCharact
  * @brief algoritmo de deteccao por vetor de caracteristicas
@@ -147,11 +157,7 @@ void ForgingDetector::filterSpuriousRegions(SimilarBlocks* simList, bool multire
 bool ForgingDetector::byCharact(Bitmap image, bool multiregion, int bSize)
 {
     /* passo 1: extrair as caracteristicas dos blocos da imagem */
-
-#ifdef _DEBUG_
-    std::cout << "[MSG " << ++dbgmsg << "] Criando vetores de caracteristicas..." << std::endl;
-#endif
-
+    logger("[MSG " << ++dbgmsg << "] Criando vetores de caracteristicas...");
     CharVectList* vList = charactVector(image, bSize);
     if(vList == NULL)
     {
@@ -160,40 +166,19 @@ bool ForgingDetector::byCharact(Bitmap image, bool multiregion, int bSize)
     }
 
     /* passo 2: buscar blocos similares */
-
-#ifdef _DEBUG_
-    std::cout << "[MSG " << ++dbgmsg << "] Buscando blocos similares..." << std::endl;
-#endif
-
+    logger("[MSG " << ++dbgmsg << "] Buscando blocos similares...");
     SimilarBlocks* simList = createSimilarBlockList(image, bSize, vList);
-
-
-    /***********/
-
-#ifdef _DEBUG_
-    std::cout << "[MSG " << ++dbgmsg << "] Lista de blocos foi percorrida." << std::endl;
-#endif
 
     /* passo 3: */
     // Se nao ha blocos similares, a imagem nao foi adulterada por copy-move
     if(simList == NULL)
         return false;
 
-#ifdef _DEBUG_
-    std::cout << "[MSG " << ++dbgmsg << "] Analisando shifts de deslocamento..." << std::endl;
-#endif
-
-    // buscar principal vetor deslocamento e eliminar regioes espurias
-    //*
-
-
+    logger("[MSG " << ++dbgmsg << "] Analisando shifts de deslocamento...");
     filterSpuriousRegions(simList, multiregion);
 
-
     /* passo 4: detectar adulteracao */
-#ifdef _DEBUG_
-    std::cout << "[MSG " << ++dbgmsg << "] Pesquisando adulteracao..." << std::endl;
-#endif
+    logger("[MSG " << ++dbgmsg << "] Pesquisando adulteracao...");
 
     int width = image.getWidth();
     int height = image.getHeight();
@@ -257,9 +242,7 @@ bool ForgingDetector::byCharact(Bitmap image, bool multiregion, int bSize)
         path.append(std::string("_detect.bmp"));
         ImgUtils::saveImageAs(forgedImage, path);
 
-#ifdef _DEBUG_
-        std::cout << "[MSG " << ++dbgmsg << "] Imagem forjada gravada." << std::endl;
-#endif
+        logger("[MSG " << ++dbgmsg << "] Imagem forjada gravada.");
     }
     /***/
 
@@ -404,9 +387,7 @@ CharVectList* ForgingDetector::OLD_charactVector(Bitmap image, int bSize)
         iCount++;
     }
 
-#ifdef _DEBUG_
-    std::cout << "A imagem possui " << iCount << " blocos." << std::endl;
-#endif
+    logger("A imagem possui " << iCount << " blocos.");
 
     return vList;
 }
@@ -424,9 +405,7 @@ CharVectList* ForgingDetector::charactVector(Bitmap const& image, int bSize)
     int bTotalX = width - bSize + 1;
     int bTotalY = height - bSize + 1;
 
-#ifdef _DEBUG_
-    std::cout << "A imagem possui " << bTotalX * bTotalY << " blocos." << std::endl;
-#endif
+    logger("A imagem possui " << bTotalX * bTotalY << " blocos.");
 
     // itera em todos os blocos
     for(int bx = 0; bx < bTotalX; bx++)
