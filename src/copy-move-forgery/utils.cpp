@@ -12,6 +12,35 @@ CharVect::CharVect(int x_, int y_) :
     initChars();
 }
 
+CharVect& CharVect::operator =(CharVect const& other)
+{
+    x = other.x;
+    y = other.y;
+    setChars(
+        other.c[0],
+        other.c[1],
+        other.c[2],
+        other.c[3],
+        other.c[4],
+        other.c[5],
+        other.c[6]);
+    return *this;
+}
+
+CharVect::CharVect(CharVect const& other)
+{
+    x = other.x;
+    y = other.y;
+    setChars(
+        other.c[0],
+        other.c[1],
+        other.c[2],
+        other.c[3],
+        other.c[4],
+        other.c[5],
+        other.c[6]);
+}
+
 void CharVect::setChars(int c1, int c2, int c3, int c4, int c5, int c6, int c7)
 {
     c[0] = c1;
@@ -54,6 +83,18 @@ CharVectList::CharVectList() :
 CharVectList::CharVectList(int x_, int y_) :
         vect(x_, y_), next(NULL)
 {
+}
+
+CharVectList::CharVectList(CharVectList const& other)
+{
+    this->vect = other.vect;
+    this->next = NULL;
+}
+
+CharVectList& CharVectList::operator =(CharVectList const& other)
+{
+    this->vect = other.vect;
+    return *this;
 }
 
 /********************************************************************************/

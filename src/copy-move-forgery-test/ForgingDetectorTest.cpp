@@ -6,6 +6,11 @@
 #include <string>
 #include "Timer.h"
 
+
+const int BLOCK_SIZE = 20;
+const std::string IMG_PATH ("../copy-move-forgery/resource/publico.bmp");
+const Bitmap BITMAP(IMG_PATH);
+
 class ForgingDetectorTest : public ::testing::Test, public ForgingDetector
 {
 protected:
@@ -89,7 +94,53 @@ protected:
             right = right->next;
         }
     }
+
+    static CharVectList* getCopyOfCharacVec()
+    {
+        if(vList == NULL)
+            return NULL;
+
+        CharVectList* aux = vList;
+        CharVectList *auxCopy = new CharVectList(*vList);
+
+        CharVectList *res = auxCopy;
+
+        while(aux != NULL)
+        {
+            if(aux->next != NULL)
+                auxCopy->next = new CharVectList(*aux->next);
+
+            aux = aux->next;
+            auxCopy = auxCopy->next;
+        }
+
+        return res;
+    }
+
+    static void freeCharVectList(CharVectList* charVectList)
+    {
+        CharVectList* aux = charVectList;
+        CharVectList* temp;
+
+        while(aux != NULL)
+        {
+            temp = aux->next;
+            delete aux;
+            aux = temp;
+        }
+    }
+
+    static CharVectList* vList;
+    // Primeiro lugar que ele entra no teste dessa classe
+    static void SetUpTestCase()
+    {
+        std::cout << "Generating vector of chars..." << std::endl;
+        vList = ForgingDetectorTest::charactVector(BITMAP, BLOCK_SIZE);
+        std::cout << "Vector of chars generated!!!" << std::endl;
+    }
 };
+
+CharVectList* ForgingDetectorTest::vList;
 
 TEST_F(ForgingDetectorTest, addVectLexOrder)
 {
@@ -220,16 +271,14 @@ TEST_F(ForgingDetectorTest, charac_vec)
 
 TEST_F(ForgingDetectorTest, createSimilarBlockListAndFilterSpurious)
 {
-    Bitmap bmp(std::string("../copy-move-forgery/resource/publico.bmp"));
-    const int BLOCK_SIZE = 20;
-    CharVectList* vList = ForgingDetectorTest::charactVector(bmp, BLOCK_SIZE);
+    CharVectList* vList = getCopyOfCharacVec();
 
     Timer timeOld;
-    SimilarBlocks* simBlkOld = OLD_createSimilarBlockList(bmp, BLOCK_SIZE, vList);
+    SimilarBlocks* simBlkOld = OLD_createSimilarBlockList(BITMAP, BLOCK_SIZE, vList);
     long double elapsedOld = timeOld.elapsedMicroseconds();
 
     Timer timeNew;
-    SimilarBlocks* simBlkNew = createSimilarBlockList(bmp, BLOCK_SIZE, vList);
+    SimilarBlocks* simBlkNew = createSimilarBlockList(BITMAP, BLOCK_SIZE, vList);
     long double elapsedNew = timeNew.elapsedMicroseconds();
 
     std::cout << "Old: " << elapsedOld << std::endl;
@@ -242,10 +291,46 @@ TEST_F(ForgingDetectorTest, createSimilarBlockListAndFilterSpurious)
     filterSpuriousRegions(simBlkNew, true);
     assertEqualsSimilarBlocks(simBlkOld, simBlkNew);
 
-    simBlkOld = OLD_createSimilarBlockList(bmp, BLOCK_SIZE, vList);
-    simBlkNew = createSimilarBlockList(bmp, BLOCK_SIZE, vList);
-    OLD_filterSpuriousRegions(simBlkOld, false);
-    filterSpuriousRegions(simBlkNew, false);
-    assertEqualsSimilarBlocks(simBlkOld, simBlkNew);
+    freeCharVectList(vList);
+}
+
+TEST_F(ForgingDetectorTest, filterSpuriousRegions)
+{
+    CharVectList* vList = getCopyOfCharacVec();
+    SimilarBlocks* simBlk = NULL;
+
+    {
+    simBlk = createSimilarBlockList(BITMAP, BLOCK_SIZE, vList);
+    Timer timeOld;
+    OLD_filterSpuriousRegions(simBlk, true);
+    long double elapsedOld = timeOld.elapsedMicroseconds();
+
+    simBlk = createSimilarBlockList(BITMAP, BLOCK_SIZE, vList);
+    Timer timeNew;
+    filterSpuriousRegions(simBlk, true);
+    long double elapsedNew = timeNew.elapsedMicroseconds();
+
+    std::cout << "Old: " << elapsedOld << std::endl;
+    std::cout << "New: " << elapsedNew << std::endl;
+    std::cout << "Speedup: " << (elapsedOld / elapsedNew) << std::endl;
+    }
+
+    {
+    simBlk = createSimilarBlockList(BITMAP, BLOCK_SIZE, vList);
+    Timer timeOld;
+    OLD_filterSpuriousRegions(simBlk, false);
+    long double elapsedOld = timeOld.elapsedMicroseconds();
+
+    simBlk = createSimilarBlockList(BITMAP, BLOCK_SIZE, vList);
+    Timer timeNew;
+    filterSpuriousRegions(simBlk, false);
+    long double elapsedNew = timeNew.elapsedMicroseconds();
+
+    std::cout << "Old: " << elapsedOld << std::endl;
+    std::cout << "New: " << elapsedNew << std::endl;
+    std::cout << "Speedup: " << (elapsedOld / elapsedNew) << std::endl;
+    }
+
+    freeCharVectList(vList);
 }
 

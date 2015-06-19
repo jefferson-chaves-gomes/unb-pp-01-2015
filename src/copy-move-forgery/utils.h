@@ -41,10 +41,13 @@ public:
     //     c6:   // soma(part(1))/soma(part(1)+part(2)) regiao tipo 3
     //     c7:   // soma(part(1))/soma(part(1)+part(2)) regiao tipo 4
     CharVect();
+    CharVect(CharVect const&);
     CharVect(int x_, int y_);
 
-    void setChars(int c1, int c2, int c3, int c4, int c5, int c6, int c7);
+    CharVect& operator =(CharVect const& other);
     bool operator <=(CharVect const& other);
+
+    void setChars(int c1, int c2, int c3, int c4, int c5, int c6, int c7);
 
 private:
     void initChars();
@@ -57,6 +60,8 @@ public:
     CharVectList* next;
     CharVectList();
     CharVectList(int x_, int y_);
+    CharVectList(CharVectList const&);
+    CharVectList& operator =(CharVectList const& other);
 };
 
 /* para os blocos similares */
