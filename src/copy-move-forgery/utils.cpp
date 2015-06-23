@@ -106,7 +106,6 @@ SimilarBlocks::SimilarBlocks() :
         b2y(0),
         dx(0),
         dy(0),
-        equal(false),
         next(NULL)
 {
 }
@@ -117,8 +116,7 @@ SimilarBlocks::SimilarBlocks(
             int b2x_,
             int b2y_,
             int dx_,
-            int dy_,
-            bool equal_) :
+            int dy_) :
         next(NULL)
 {
     setValues(b1x_,
@@ -126,8 +124,7 @@ SimilarBlocks::SimilarBlocks(
             b2x_,
             b2y_,
             dx_,
-            dy_,
-            equal_);
+            dy_);
 }
 
 void SimilarBlocks::setValues(int b1x_,
@@ -135,8 +132,7 @@ void SimilarBlocks::setValues(int b1x_,
             int b2x_,
             int b2y_,
             int dx_,
-            int dy_,
-            bool equal_)
+            int dy_)
 {
     b1x = b1x_;
     b1y = b1y_;
@@ -144,7 +140,6 @@ void SimilarBlocks::setValues(int b1x_,
     b2y = b2y_;
     dx = dx_;
     dy = dy_;
-    equal = equal_;
 }
 
 bool SimilarBlocks::operator==(SimilarBlocks const& other)
@@ -155,7 +150,6 @@ bool SimilarBlocks::operator==(SimilarBlocks const& other)
     if(b2y != other.b2y) return false;
     if(dx != other.dx) return false;
     if(dy != other.dy) return false;
-    if(equal != other.equal) return false;
 
     return true;
 }

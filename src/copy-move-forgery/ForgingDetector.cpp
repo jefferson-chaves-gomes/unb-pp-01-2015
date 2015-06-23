@@ -333,11 +333,6 @@ SimilarBlocks* ForgingDetector::createSimilarBlockList(Bitmap const& image, int 
                 && (diff[3] + diff[4] + diff[5] + diff[6] < t2)
                 && ABS(getShift(b1Vector->vect.x, b2Vector->vect.x, b1Vector->vect.y, b2Vector->vect.y)) > L)
         {
-            // nao e necessario
-//                    bool equal = (diff1 == diff2 == diff3 == diff4
-//                                   == diff5 == diff6 == diff7 == 0);
-            bool equal = false;
-
             // blocos b1 e b2 sao similares
             simBlock = new SimilarBlocks(
                     b1Vector->vect.x,
@@ -345,8 +340,7 @@ SimilarBlocks* ForgingDetector::createSimilarBlockList(Bitmap const& image, int 
                     b1Vector->vect.y,
                     b2Vector->vect.y,
                     b1Vector->vect.x - b2Vector->vect.x,
-                    b1Vector->vect.y - b2Vector->vect.y,
-                    equal);
+                    b1Vector->vect.y - b2Vector->vect.y);
 
             if(simList == NULL)
             {
@@ -385,11 +379,7 @@ void ForgingDetector::filterSpuriousRegions(SimilarBlocks* simList, bool multire
         if(multiregion)
             bRegions = isGreaterShift(simBlock, maxSh, maxShift);
         else
-        {
-            bRegions = (
-                (ABS((simBlock->dx - mainShift->dx)) > maxShift || ABS((simBlock->dy - mainShift->dy)) > maxShift)
-                && simBlock->equal == false);
-        }
+            bRegions = (ABS((simBlock->dx - mainShift->dx)) > maxShift || ABS((simBlock->dy - mainShift->dy)) > maxShift);
 
         if(!bRegions)
             simTrace = simBlock;

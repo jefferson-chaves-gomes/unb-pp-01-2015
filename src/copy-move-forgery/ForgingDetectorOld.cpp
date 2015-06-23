@@ -321,14 +321,8 @@ SimilarBlocks* ForgingDetectorOld::createSimilarBlockList(Bitmap const& image, i
             {
                 if(ABS(getShift(b1Vector->vect.x, b2Vector->vect.x, b1Vector->vect.y, b2Vector->vect.y)) > L)
                 {
-                    // nao e necessario
-//                    bool equal = (diff1 == diff2 == diff3 == diff4
-//                                   == diff5 == diff6 == diff7 == 0);
-                    bool equal = false;
-
                     // blocos b1 e b2 sao similares
-                    simBlock = newSimilarBlock(b1Vector->vect.x, b2Vector->vect.x, b1Vector->vect.y, b2Vector->vect.y,
-                            equal);
+                    simBlock = newSimilarBlock(b1Vector->vect.x, b2Vector->vect.x, b1Vector->vect.y, b2Vector->vect.y);
                     if(simList == NULL)
                     {
                         simList = simBlock;
@@ -370,8 +364,8 @@ void ForgingDetectorOld::filterSpuriousRegions(SimilarBlocks* simList, bool mult
         if(multiregion)
             bRegions = isGreaterShift(simBlock, maxSh, maxShift);
         else
-            bRegions = ((ABS((simBlock->dx - mainShift->dx)) > maxShift
-                    || ABS((simBlock->dy - mainShift->dy)) > maxShift) && simBlock->equal == false);
+            bRegions = (ABS((simBlock->dx - mainShift->dx)) > maxShift || ABS((simBlock->dy - mainShift->dy)) > maxShift);
+
         if(bRegions == true)
         {
             if(simBlock == simList)
@@ -418,7 +412,7 @@ int ForgingDetectorOld::getShift(int x1, int x2, int y1, int y2)
  * @param y2 coordenada y do bloco 2
  * @return bloco criado
  */
-SimilarBlocks* ForgingDetectorOld::newSimilarBlock(int x1, int x2, int y1, int y2, bool equal)
+SimilarBlocks* ForgingDetectorOld::newSimilarBlock(int x1, int x2, int y1, int y2)
 {
     SimilarBlocks* block = new SimilarBlocks;
 
@@ -428,7 +422,6 @@ SimilarBlocks* ForgingDetectorOld::newSimilarBlock(int x1, int x2, int y1, int y
     block->b2y = y2;
     block->dx = x1 - x2;
     block->dy = y1 - y2;
-    block->equal = equal;
     block->next = NULL;
 
     return block;

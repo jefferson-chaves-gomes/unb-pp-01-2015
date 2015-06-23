@@ -91,14 +91,13 @@ public:
     int b2y;    // coordenada y de inicio do bloco 2
     int dx;     // dx = |x1 - x2|
     int dy;     // dy = |y1 - y2|
-    bool equal; // marcado se alem de similares, dois blocos sao iguais
     SimilarBlocks* next;
 
     SimilarBlocks();
-    SimilarBlocks(int b1x_, int b1y_, int b2x_, int b2y_, int dx_, int dy_, bool equal_);
+    SimilarBlocks(int b1x_, int b1y_, int b2x_, int b2y_, int dx_, int dy_);
     bool operator==(SimilarBlocks const& other);
     bool operator!=(SimilarBlocks const& other);
-    void setValues(int b1x_, int b1y_, int b2x_, int b2y_, int dx_, int dy_, bool equal_);
+    void setValues(int b1x_, int b1y_, int b2x_, int b2y_, int dx_, int dy_);
 };
 
 class Histogram
