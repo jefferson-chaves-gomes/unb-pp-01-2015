@@ -1,10 +1,10 @@
-#ifndef FORGINGDETECTOR_H_
-#define FORGINGDETECTOR_H_
+#ifndef FORGINGDETECTOROLD_H_
+#define FORGINGDETECTOROLD_H_
 
 #include "utils.h"
 #include "Bitmap.h"
 
-class ForgingDetector
+class ForgingDetectorOld
 {
 
 #ifdef _DEBUG_
@@ -17,16 +17,15 @@ public:
     static Bitmap dilation(Bitmap image, int bSize);
     static Bitmap erosion(Bitmap image, int bSize);
 
-protected:
-    ForgingDetector()
+//protected:
+    ForgingDetectorOld()
     {
     }
-    ~ForgingDetector()
+    ~ForgingDetectorOld()
     {
     }
     /* metodos de deteccao */
-    static CharVectList* charactVector(Bitmap const& image, int bSize);
-    static CharVectList* getCharVectListForBlock(Bitmap const& image, int blkPosX, int blkPosY, int blkSize);
+    static CharVectList* charactVector(Bitmap image, int bSize);
     static CharVectList* addVectLexOrder(CharVectList* start, CharVectList* vetor);
     static SimilarBlocks* createSimilarBlockList(Bitmap const& image, int bSize, CharVectList* vList);
     static void filterSpuriousRegions(SimilarBlocks* simList, bool multiregion);
