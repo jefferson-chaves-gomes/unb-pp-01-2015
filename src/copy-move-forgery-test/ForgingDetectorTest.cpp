@@ -9,7 +9,7 @@
 
 
 const int BLOCK_SIZE = 20;
-const std::string IMG_PATH ("../copy-move-forgery/resource/publico.bmp");
+const std::string IMG_PATH("../copy-move-forgery/resource/publico.bmp");
 const Bitmap BITMAP(IMG_PATH);
 
 class ForgingDetectorTest :
@@ -60,7 +60,7 @@ protected:
         std::cout << "|";
         for(int i = 0; i < CharVect::CHARS_SIZE; i++)
         {
-            std::cout << (int)charVec->c[i] << "|";
+            std::cout << (int) charVec->c[i] << "|";
         }
         std::cout << std::endl;
     }
@@ -71,13 +71,13 @@ protected:
 
         while(aux != NULL)
         {
-            if(aux->next !=NULL)
+            if(aux->next != NULL)
                 ASSERT_TRUE(aux->vect <= aux->next->vect);
             aux = aux->next;
         }
     }
 
-    void assertEqualsCharVectList(CharVectList* left, CharVectList*  right)
+    void assertEqualsCharVectList(CharVectList* left, CharVectList* right)
     {
         ASSERT_TRUE(left != NULL);
         ASSERT_TRUE(right != NULL);
@@ -237,7 +237,6 @@ TEST_F(ForgingDetectorTest, operatorEqualSimilarBlock)
     assertEqualsSimilarBlocks(simBlkOld, simBlkNew);
 }
 
-
 TEST_F(ForgingDetectorTest, charac_vec)
 {
     Bitmap bmp(std::string("../copy-move-forgery/resource/icone.bmp"));
@@ -283,38 +282,43 @@ TEST_F(ForgingDetectorTest, createSimilarBlockListAndFilterSpurious)
 TEST_F(ForgingDetectorTest, filterSpuriousRegions)
 {
     CharVectList* vList = getCopyOfCharacVec();
-    SimilarBlocks* simBlk = NULL;
+    SimilarBlocks* simBlkOld = NULL;
+    SimilarBlocks* simBlkNew = NULL;
 
     {
-    simBlk = createSimilarBlockList(BITMAP, BLOCK_SIZE, vList);
-    Timer timeOld;
-    ForgingDetectorOld::filterSpuriousRegions(simBlk, true);
-    long double elapsedOld = timeOld.elapsedMicroseconds();
+        simBlkOld = createSimilarBlockList(BITMAP, BLOCK_SIZE, vList);
+        Timer timeOld;
+        ForgingDetectorOld::filterSpuriousRegions(simBlkOld, true);
+        long double elapsedOld = timeOld.elapsedMicroseconds();
 
-    simBlk = createSimilarBlockList(BITMAP, BLOCK_SIZE, vList);
-    Timer timeNew;
-    filterSpuriousRegions(simBlk, true);
-    long double elapsedNew = timeNew.elapsedMicroseconds();
+        simBlkNew = createSimilarBlockList(BITMAP, BLOCK_SIZE, vList);
+        Timer timeNew;
+        filterSpuriousRegions(simBlkNew, true);
+        long double elapsedNew = timeNew.elapsedMicroseconds();
 
-    std::cout << "Old: " << elapsedOld << std::endl;
-    std::cout << "New: " << elapsedNew << std::endl;
-    std::cout << "Speedup: " << (elapsedOld / elapsedNew) << std::endl;
+        assertEqualsSimilarBlocks(simBlkOld, simBlkNew);
+
+        std::cout << "Old: " << elapsedOld << std::endl;
+        std::cout << "New: " << elapsedNew << std::endl;
+        std::cout << "Speedup: " << (elapsedOld / elapsedNew) << std::endl;
     }
 
     {
-    simBlk = createSimilarBlockList(BITMAP, BLOCK_SIZE, vList);
-    Timer timeOld;
-    ForgingDetectorOld::filterSpuriousRegions(simBlk, false);
-    long double elapsedOld = timeOld.elapsedMicroseconds();
+        simBlkOld = createSimilarBlockList(BITMAP, BLOCK_SIZE, vList);
+        Timer timeOld;
+        ForgingDetectorOld::filterSpuriousRegions(simBlkOld, false);
+        long double elapsedOld = timeOld.elapsedMicroseconds();
 
-    simBlk = createSimilarBlockList(BITMAP, BLOCK_SIZE, vList);
-    Timer timeNew;
-    filterSpuriousRegions(simBlk, false);
-    long double elapsedNew = timeNew.elapsedMicroseconds();
+        simBlkNew = createSimilarBlockList(BITMAP, BLOCK_SIZE, vList);
+        Timer timeNew;
+        filterSpuriousRegions(simBlkNew, false);
+        long double elapsedNew = timeNew.elapsedMicroseconds();
 
-    std::cout << "Old: " << elapsedOld << std::endl;
-    std::cout << "New: " << elapsedNew << std::endl;
-    std::cout << "Speedup: " << (elapsedOld / elapsedNew) << std::endl;
+        assertEqualsSimilarBlocks(simBlkOld, simBlkNew);
+
+        std::cout << "Old: " << elapsedOld << std::endl;
+        std::cout << "New: " << elapsedNew << std::endl;
+        std::cout << "Speedup: " << (elapsedOld / elapsedNew) << std::endl;
     }
 
     LinkedListCleaner::clear(vList);

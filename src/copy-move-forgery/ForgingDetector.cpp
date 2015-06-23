@@ -456,7 +456,7 @@ MaxShifts ForgingDetector::getMainShifts(SimilarBlocks* blocks)
         if(hTrace == NULL)
         {
             hTrace = new Histogram(dx, dy);
-            hist->setRep(auxBlock);
+            hTrace->setRep(auxBlock);
             hLast->next = hTrace;
             hLast = hTrace;
         }
@@ -526,7 +526,7 @@ SimilarBlocks* ForgingDetector::getMainShiftVector(SimilarBlocks* blocks)
         if(hTrace == NULL)
         {
             hTrace = new Histogram(dx, dy);
-            hist->setRep(auxBlock);
+            hTrace->setRep(auxBlock);
             hLast->next = hTrace;
             hLast = hTrace;
         }

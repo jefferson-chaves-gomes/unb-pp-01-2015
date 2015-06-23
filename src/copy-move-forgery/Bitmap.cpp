@@ -13,7 +13,7 @@ Bitmap::Bitmap()
     width_(0),
     height_(0),
     row_increment_(0),
-    channel_mode_(bgr_mode)
+                channel_mode_(bgr_mode)
 {
     /* vazio */
 }
@@ -63,12 +63,24 @@ Bitmap::Bitmap(const Bitmap& image)
 /* destrutor */
 Bitmap::~Bitmap()
 {
-    delete [] data_;
+    delete[] data_;
+}
+
+/* aloca area de memoria para comportar a imagem criada */
+void Bitmap::create_bitmap()
+{
+    length_ = width_ * height_ * bytes_per_pixel_;
+    row_increment_ = width_ * bytes_per_pixel_;
+    if(0 != data_)
+        delete[] data_;
+
+    data_ = new unsigned char[length_];
+    valid_ = true;
 }
 
 Bitmap& Bitmap::operator=(const Bitmap& image)
 {
-    if (this != &image)
+    if(this != &image)
     {
         file_name_ = image.file_name_;
         bytes_per_pixel_ = image.bytes_per_pixel_;
@@ -86,9 +98,9 @@ Bitmap& Bitmap::operator=(const Bitmap& image)
 void Bitmap::getPixel(const unsigned int x, const unsigned int y,
     unsigned char& red,
     unsigned char& green,
-    unsigned char& blue) const
+        unsigned char& blue) const
 {
-    if (x >= getWidth() || y >= getHeight()) 
+    if(x >= getWidth() || y >= getHeight())
     {
         // isto substitui o padding
         red = green = blue = 0;
@@ -105,7 +117,7 @@ void Bitmap::getPixel(const unsigned int x, const unsigned int y,
 void Bitmap::setPixel(const unsigned int x, const unsigned int y,
     const unsigned char red,
     const unsigned char green,
-    const unsigned char blue)
+        const unsigned char blue)
 {
     data_[(y * row_increment_) + (x * bytes_per_pixel_ + 0)] = blue;
     data_[(y * row_increment_) + (x * bytes_per_pixel_ + 1)] = green;
@@ -126,7 +138,7 @@ unsigned int Bitmap::getHeight() const
 /* grava a imagem em arquivo */
 void Bitmap::saveImage(const std::string& file_name)
 {
-    std::ofstream stream(file_name.c_str(),std::ios::binary);
+    std::ofstream stream(file_name.c_str(), std::ios::binary);
     if(!stream)
     {
         std::cout << "Bitmap::save_image(): Error - Could not open file " << file_name << " for writing!" << std::endl;
@@ -155,15 +167,15 @@ void Bitmap::saveImage(const std::string& file_name)
     fileHeader.reserved2 = 0;
     fileHeader.off_bits = infoHeader.struct_size() + fileHeader.struct_size();
 
-    BitmapFile::writeFileHeader(stream,fileHeader,infoHeader);
+    BitmapFile::writeFileHeader(stream, fileHeader, infoHeader);
 
     unsigned int padding = (4 - ((3 * width_) % 4)) % 4;
     char padding_data[4] = {0x0,0x0,0x0,0x0};
-    for (unsigned int i = 0; i < height_; ++i)
+    for(unsigned int i = 0; i < height_; ++i)
     {
         unsigned char* data_ptr = data_ + (row_increment_ * (height_ - i - 1));
-        stream.write(reinterpret_cast<char*>(data_ptr),sizeof(unsigned char) * bytes_per_pixel_ * width_);
-        stream.write(padding_data,padding);
+        stream.write(reinterpret_cast<char*>(data_ptr), sizeof(unsigned char) * bytes_per_pixel_ * width_);
+        stream.write(padding_data, padding);
     }
     stream.close();
 }
@@ -195,7 +207,10 @@ void Bitmap::saveImage(const std::string& file_name)
 //}
 
 /* retorna conteudo da area de memoria da imagem */
-const unsigned char* Bitmap::data() { return data_; }
+const unsigned char* Bitmap::data()
+{
+    return data_;
+}
 
 /* retorna os dados da imagem contidos em uma linha da matriz de pixels */
 unsigned char* Bitmap::row(unsigned int row_index) const
@@ -203,24 +218,11 @@ unsigned char* Bitmap::row(unsigned int row_index) const
     return data_ + (row_index * row_increment_);
 }
 
-/* aloca area de memoria para comportar a imagem criada */
-void Bitmap::create_bitmap()
-{
-    length_ = width_ * height_ * bytes_per_pixel_;
-    row_increment_ = width_ * bytes_per_pixel_;
-    if (0 != data_)
-    {
-        delete[] data_;
-    }
-    data_ = new unsigned char[length_];
-    valid_ = true;
-}
-
 /* carrega imagem existente em arquivo */
 void Bitmap::load_bitmap()
 {
-    std::ifstream stream(file_name_.c_str(),std::ios::binary);
-    if (!stream)
+    std::ifstream stream(file_name_.c_str(), std::ios::binary);
+    if(!stream)
     {
         std::cerr << "Bitmap::load_bitmap() ERROR: Couldn't open file " << file_name_ << std::endl;
         return;
@@ -229,7 +231,7 @@ void Bitmap::load_bitmap()
     BMPFileHeader fileHeader;
     BMPInfoHeader infoHeader;
 
-    BitmapFile::readFileHeader(stream,fileHeader,infoHeader);
+    BitmapFile::readFileHeader(stream, fileHeader, infoHeader);
 
     if(fileHeader.type != 19778)
     {
@@ -255,12 +257,12 @@ void Bitmap::load_bitmap()
 
     create_bitmap();
 
-    for (unsigned int i = 0; i < height_; ++i)
+    for(unsigned int i = 0; i < height_; ++i)
     {
         /* ler linhas em ordem inversa */
         unsigned char* data_ptr = row(height_ - i - 1);
-        stream.read(reinterpret_cast<char*>(data_ptr),sizeof(char) * bytes_per_pixel_ * width_);
-        stream.read(padding_data,padding);
+        stream.read(reinterpret_cast<char*>(data_ptr), sizeof(char) * bytes_per_pixel_ * width_);
+        stream.read(padding_data, padding);
     }
 
     valid_ = true;
@@ -270,7 +272,6 @@ std::string Bitmap::getPath() const
 {
     return file_name_;
 }
-
 
 /* Escreve cabecalho do arquivo em memoria */
 void BitmapFile::writeFileHeader(std::ofstream& stream, const BMPFileHeader& fileHeader, BMPInfoHeader const& infoHeader)
@@ -283,23 +284,23 @@ void BitmapFile::writeFileHeader(std::ofstream& stream, const BMPFileHeader& fil
         flip(fileHeader.reserved2);
         flip(fileHeader.off_bits);
     }
-    write_to_stream(stream,fileHeader.type);
-    write_to_stream(stream,fileHeader.size);
-    write_to_stream(stream,fileHeader.reserved1);
-    write_to_stream(stream,fileHeader.reserved2);
-    write_to_stream(stream,fileHeader.off_bits);
+    write_to_stream(stream, fileHeader.type);
+    write_to_stream(stream, fileHeader.size);
+    write_to_stream(stream, fileHeader.reserved1);
+    write_to_stream(stream, fileHeader.reserved2);
+    write_to_stream(stream, fileHeader.off_bits);
 
-    writeInfoHeader(stream,infoHeader);
+    writeInfoHeader(stream, infoHeader);
 }
 
 /* Le cabecalho do arquivo em memoria */
 void BitmapFile::readFileHeader(std::ifstream& stream, BMPFileHeader& fileHeader, BMPInfoHeader &infoHeader)
 {
-    read_from_stream(stream,fileHeader.type);
-    read_from_stream(stream,fileHeader.size);
-    read_from_stream(stream,fileHeader.reserved1);
-    read_from_stream(stream,fileHeader.reserved2);
-    read_from_stream(stream,fileHeader.off_bits);
+    read_from_stream(stream, fileHeader.type);
+    read_from_stream(stream, fileHeader.size);
+    read_from_stream(stream, fileHeader.reserved1);
+    read_from_stream(stream, fileHeader.reserved2);
+    read_from_stream(stream, fileHeader.off_bits);
 
     if(big_endian())
     {
@@ -310,23 +311,23 @@ void BitmapFile::readFileHeader(std::ifstream& stream, BMPFileHeader& fileHeader
         flip(fileHeader.off_bits);
     }
 
-    readInfoHeader(stream,infoHeader);
+    readInfoHeader(stream, infoHeader);
 }
 
 /* Le informacoes do arquivo em memoria */
 void BitmapFile::readInfoHeader(std::ifstream& stream, BMPInfoHeader& infoHeader)
 {
-    read_from_stream(stream,infoHeader.size);
-    read_from_stream(stream,infoHeader.width);
-    read_from_stream(stream,infoHeader.height);
-    read_from_stream(stream,infoHeader.planes);
-    read_from_stream(stream,infoHeader.bit_count);
-    read_from_stream(stream,infoHeader.compression);
-    read_from_stream(stream,infoHeader.size_image);
-    read_from_stream(stream,infoHeader.x_pels_per_meter);
-    read_from_stream(stream,infoHeader.y_pels_per_meter);
-    read_from_stream(stream,infoHeader.clr_used);
-    read_from_stream(stream,infoHeader.clr_important);
+    read_from_stream(stream, infoHeader.size);
+    read_from_stream(stream, infoHeader.width);
+    read_from_stream(stream, infoHeader.height);
+    read_from_stream(stream, infoHeader.planes);
+    read_from_stream(stream, infoHeader.bit_count);
+    read_from_stream(stream, infoHeader.compression);
+    read_from_stream(stream, infoHeader.size_image);
+    read_from_stream(stream, infoHeader.x_pels_per_meter);
+    read_from_stream(stream, infoHeader.y_pels_per_meter);
+    read_from_stream(stream, infoHeader.clr_used);
+    read_from_stream(stream, infoHeader.clr_important);
 
     if(big_endian())
     {
@@ -362,42 +363,42 @@ void BitmapFile::writeInfoHeader(std::ofstream& stream, const BMPInfoHeader& inf
         flip(infoHeader.clr_important);
     }
 
-    write_to_stream(stream,infoHeader.size);
-    write_to_stream(stream,infoHeader.width);
-    write_to_stream(stream,infoHeader.height);
-    write_to_stream(stream,infoHeader.planes);
-    write_to_stream(stream,infoHeader.bit_count);
-    write_to_stream(stream,infoHeader.compression);
-    write_to_stream(stream,infoHeader.size_image);
-    write_to_stream(stream,infoHeader.x_pels_per_meter);
-    write_to_stream(stream,infoHeader.y_pels_per_meter);
-    write_to_stream(stream,infoHeader.clr_used);
-    write_to_stream(stream,infoHeader.clr_important);
+    write_to_stream(stream, infoHeader.size);
+    write_to_stream(stream, infoHeader.width);
+    write_to_stream(stream, infoHeader.height);
+    write_to_stream(stream, infoHeader.planes);
+    write_to_stream(stream, infoHeader.bit_count);
+    write_to_stream(stream, infoHeader.compression);
+    write_to_stream(stream, infoHeader.size_image);
+    write_to_stream(stream, infoHeader.x_pels_per_meter);
+    write_to_stream(stream, infoHeader.y_pels_per_meter);
+    write_to_stream(stream, infoHeader.clr_used);
+    write_to_stream(stream, infoHeader.clr_important);
 }
 
 /*
-void Bitmap::reverse_channels()
-{
-    if(3 != bytes_per_pixel_) return;
-    for(unsigned char* it = data_; it < (data_ + length_); it += bytes_per_pixel_)
-    {
-        unsigned char tmp = *(it + 0);
-        *(it + 0) = *(it + 2);
-        *(it + 2) = tmp;
-    }
-}
+ void Bitmap::reverse_channels()
+ {
+ if(3 != bytes_per_pixel_) return;
+ for(unsigned char* it = data_; it < (data_ + length_); it += bytes_per_pixel_)
+ {
+ unsigned char tmp = *(it + 0);
+ *(it + 0) = *(it + 2);
+ *(it + 2) = tmp;
+ }
+ }
 
-template<typename T>
-T Bitmap::clamp(const T& v, const T& lower_range, const T& upper_range)
-{
-    if (v < lower_range)
-        return lower_range;
-    else if (v > upper_range)
-        return upper_range;
-    else
-        return v;
-}
-*/
+ template<typename T>
+ T Bitmap::clamp(const T& v, const T& lower_range, const T& upper_range)
+ {
+ if (v < lower_range)
+ return lower_range;
+ else if (v > upper_range)
+ return upper_range;
+ else
+ return v;
+ }
+ */
 
 bool BitmapFile::big_endian()
 {
@@ -417,13 +418,13 @@ unsigned int BitmapFile::flip(const unsigned int& v)
 }
 
 template<typename T>
-void BitmapFile::read_from_stream(std::ifstream& stream,T& t)
+void BitmapFile::read_from_stream(std::ifstream& stream, T& t)
 {
-    stream.read(reinterpret_cast<char*>(&t),sizeof(T));
+    stream.read(reinterpret_cast<char*>(&t), sizeof(T));
 }
 
 template<typename T>
-void BitmapFile::write_to_stream(std::ofstream& stream,const T& t)
+void BitmapFile::write_to_stream(std::ofstream& stream, const T& t)
 {
-    stream.write(reinterpret_cast<const char*>(&t),sizeof(T));
+    stream.write(reinterpret_cast<const char*>(&t), sizeof(T));
 }
