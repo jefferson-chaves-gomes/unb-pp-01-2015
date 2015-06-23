@@ -32,14 +32,9 @@ protected:
     static void filterSpuriousRegions(SimilarBlocks* simList, bool multiregion);
 
     static int getShift(int x1, int x2, int y1, int y2);
-    static SimilarBlocks* newSimilarBlock(int x1, int x2, int y1, int y2, bool equal = false);
     static MaxShifts getMainShifts(SimilarBlocks* blocks);
     static SimilarBlocks* getMainShiftVector(SimilarBlocks* blocks);
     static bool isGreaterShift(SimilarBlocks* simBlock, MaxShifts maxSh, int maxShift);
-    static void clearCharVectors(CharVectList* start);
-    static void clearSimilarBlocks(SimilarBlocks* start);
-    static Histogram* newHistogram(int dx, int dy, SimilarBlocks* rep);
-    static void clearHistogram(Histogram* start);
 };
 
 #endif

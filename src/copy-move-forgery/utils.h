@@ -25,6 +25,22 @@ public:
     int dx3, dy3;
 };
 
+class LinkedListCleaner
+{
+public:
+    template<class T>
+    static void clear(T* start)
+    {
+        T* aux = start;
+        while(start != NULL)
+        {
+            aux = start->next;
+            delete start;
+            start = aux;
+        }
+    }
+};
+
 /* para o algoritmo de vetor de caracteristicas */
 class CharVect
 {
@@ -79,6 +95,7 @@ public:
     SimilarBlocks* next;
 
     SimilarBlocks();
+    SimilarBlocks(int b1x_, int b1y_, int b2x_, int b2y_, int dx_, int dy_, bool equal_);
     bool operator==(SimilarBlocks const& other);
     bool operator!=(SimilarBlocks const& other);
     void setValues(int b1x_, int b1y_, int b2x_, int b2y_, int dx_, int dy_, bool equal_);
@@ -99,6 +116,20 @@ public:
         dy(0),
         rep(NULL),
         next(NULL){}
+
+    Histogram(
+            int dx_,
+            int dy_) :
+        freq(0),
+        dx(dx_),
+        dy(dy_),
+        rep(NULL),
+        next(NULL){}
+
+    void setRep(SimilarBlocks* rep)
+    {
+        this->rep = rep;
+    }
 };
 
 typedef struct bitmap_file_header

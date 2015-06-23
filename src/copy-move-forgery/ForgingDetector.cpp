@@ -137,8 +137,8 @@ bool ForgingDetector::byCharact(Bitmap image, bool multiregion, int bSize)
     }
     /***/
 
-    clearCharVectors(vList);
-    clearSimilarBlocks(simList);
+    LinkedListCleaner::clear(vList);
+    LinkedListCleaner::clear(simList);
 
     return bForged;
 }
@@ -310,11 +310,13 @@ SimilarBlocks* ForgingDetector::createSimilarBlockList(Bitmap const& image, int 
             bool equal = false;
 
             // blocos b1 e b2 sao similares
-            simBlock = newSimilarBlock(
+            simBlock = new SimilarBlocks(
                     b1Vector->vect.x,
                     b2Vector->vect.x,
                     b1Vector->vect.y,
                     b2Vector->vect.y,
+                    b1Vector->vect.x - b2Vector->vect.x,
+                    b1Vector->vect.y - b2Vector->vect.y,
                     equal);
 
             if(simList == NULL)
@@ -378,9 +380,6 @@ void ForgingDetector::filterSpuriousRegions(SimilarBlocks* simList, bool multire
     }
 }
 
-
-
-
 /**
  * @func getShift
  * @brief calcula o comprimento do vetor de shift
@@ -396,31 +395,6 @@ int ForgingDetector::getShift(int x1, int x2, int y1, int y2)
     int v = y1 - y2;
 
     return (int) sqrt((h * h) + (v * v));
-}
-
-/**
- * @func newSimilarBlock
- * @brief aloca memoria para novo bloco similar
- * @param x1 coordenada x do bloco 1
- * @param x2 coordenada x do bloco 2
- * @param y1 coordenada y do bloco 1
- * @param y2 coordenada y do bloco 2
- * @return bloco criado
- */
-SimilarBlocks* ForgingDetector::newSimilarBlock(int x1, int x2, int y1, int y2, bool equal)
-{
-    SimilarBlocks* block = new SimilarBlocks;
-
-    block->b1x = x1;
-    block->b1y = x2;
-    block->b2x = y1;
-    block->b2y = y2;
-    block->dx = x1 - x2;
-    block->dy = y1 - y2;
-    block->equal = equal;
-    block->next = NULL;
-
-    return block;
 }
 
 /**
@@ -447,7 +421,8 @@ MaxShifts ForgingDetector::getMainShifts(SimilarBlocks* blocks)
         dy = auxBlock->dy;
         if(hist == NULL)
         {
-            hist = newHistogram(dx, dy, auxBlock);
+            hist = new Histogram(dx, dy);
+            hist->setRep(auxBlock);
             hLast = hist;
         }
 
@@ -461,7 +436,8 @@ MaxShifts ForgingDetector::getMainShifts(SimilarBlocks* blocks)
         }
         if(hTrace == NULL)
         {
-            hTrace = newHistogram(dx, dy, auxBlock);
+            hTrace = new Histogram(dx, dy);
+            hist->setRep(auxBlock);
             hLast->next = hTrace;
             hLast = hTrace;
         }
@@ -486,7 +462,7 @@ MaxShifts ForgingDetector::getMainShifts(SimilarBlocks* blocks)
         auxBlock = auxBlock->next;
     }
 
-    clearHistogram(hist);
+    LinkedListCleaner::clear(hist);
 
     return maxSh;
 }
@@ -514,7 +490,8 @@ SimilarBlocks* ForgingDetector::getMainShiftVector(SimilarBlocks* blocks)
         dy = auxBlock->dy;
         if(hist == NULL)
         {
-            hist = newHistogram(dx, dy, auxBlock);
+            hist = new Histogram(dx, dy);
+            hist->setRep(auxBlock);
             hLast = hist;
         }
 
@@ -526,9 +503,11 @@ SimilarBlocks* ForgingDetector::getMainShiftVector(SimilarBlocks* blocks)
                 break;
             hTrace = hTrace->next;
         }
+
         if(hTrace == NULL)
         {
-            hTrace = newHistogram(dx, dy, auxBlock);
+            hTrace = new Histogram(dx, dy);
+            hist->setRep(auxBlock);
             hLast->next = hTrace;
             hLast = hTrace;
         }
@@ -544,7 +523,7 @@ SimilarBlocks* ForgingDetector::getMainShiftVector(SimilarBlocks* blocks)
         auxBlock = auxBlock->next;
     }
 
-    clearHistogram(hist);
+    LinkedListCleaner::clear(hist);
 
     return main;
 }
@@ -552,56 +531,10 @@ SimilarBlocks* ForgingDetector::getMainShiftVector(SimilarBlocks* blocks)
 bool ForgingDetector::isGreaterShift(SimilarBlocks* simBlock, MaxShifts maxSh, int maxShift)
 {
     if((ABS((simBlock->dx - maxSh.dx1)) > maxShift || ABS((simBlock->dy - maxSh.dy1)) > maxShift)
-            && (ABS((simBlock->dx - maxSh.dx2)) > maxShift || ABS((simBlock->dy - maxSh.dy2)) > maxShift)
-            && (ABS((simBlock->dx - maxSh.dx3)) > maxShift || ABS((simBlock->dy - maxSh.dy3)) > maxShift))
+    && (ABS((simBlock->dx - maxSh.dx2)) > maxShift || ABS((simBlock->dy - maxSh.dy2)) > maxShift)
+    && (ABS((simBlock->dx - maxSh.dx3)) > maxShift || ABS((simBlock->dy - maxSh.dy3)) > maxShift))
         return true;
     return false;
-}
-
-/**
- * @func opening
- * @brief efetua operacao de abertura na imagem
- * @param image imagem binaria
- * @param bSize dimensao do elemento estruturante, que eh um quadrado
- * @return imagem tratada
- */
-Bitmap ForgingDetector::opening(Bitmap image, int bSize)
-{
-    /* operacao de erosao + dilatacao */
-    return dilation(erosion(image, bSize), bSize);
-}
-
-/**
- * @func clearVectors
- * @brief limpa a lista de vetores de caracteristicas
- * @param start ponteiro para o inicio da lista
- */
-void ForgingDetector::clearCharVectors(CharVectList* start)
-{
-    CharVectList* aux = start;
-
-    while(start != NULL)
-    {
-        aux = start->next;
-        delete start;
-        start = aux;
-    }
-}
-
-/**
- * @func clearSimilarVectors
- * @brief limpa a lista de vetores de caracteristicas
- * @param start ponteiro para o inicio da lista
- */
-void ForgingDetector::clearSimilarBlocks(SimilarBlocks* start)
-{
-    SimilarBlocks* aux = start;
-    while(start != NULL)
-    {
-        aux = start->next;
-        delete start;
-        start = aux;
-    }
 }
 
 /**
@@ -634,40 +567,61 @@ CharVectList* ForgingDetector::addVectLexOrder(CharVectList* vecOrdered, CharVec
 }
 
 /**
- * @func newHistogram
- * @brief cria uma nova entrada para o histograma
- * @param dx deslocamento horizontal
- * @param dy deslocamento vertical
- * @param rep representante do vetor
- * @return elemento do histograma
+ * @func opening
+ * @brief efetua operacao de abertura na imagem
+ * @param image imagem binaria
+ * @param bSize dimensao do elemento estruturante, que eh um quadrado
+ * @return imagem tratada
  */
-Histogram* ForgingDetector::newHistogram(int dx, int dy, SimilarBlocks* rep)
+Bitmap ForgingDetector::opening(Bitmap image, int bSize)
 {
-    Histogram* hist = new Histogram;
-
-    hist->dx = dx;
-    hist->dy = dy;
-    hist->rep = rep;
-    hist->freq = 0;
-    hist->next = NULL;
-
-    return hist;
+    /* operacao de erosao + dilatacao */
+    return dilation(erosion(image, bSize), bSize);
 }
 
 /**
- * @func clearHistogram
- * @brief limpa o histograma
- * @param start ponteiro para o inicio da lista
+ * @func erosion
+ * @brief efetua operacao de erosao na imagem
+ * @param image imagem binaria
+ * @param bSize dimensao do elemento estruturante, que eh um quadrado
+ * @return imagem erodida
  */
-void ForgingDetector::clearHistogram(Histogram* start)
+Bitmap ForgingDetector::erosion(Bitmap image, int bSize)
 {
-    Histogram* aux = start;
-    while(start != NULL)
+    Bitmap eroded(image);
+    int width = image.getWidth();
+    int height = image.getHeight();
+    unsigned char value, stValue;
+    int origin = (int) bSize / 2 + 1;
+    bool bPaint = true;
+    int i, j, k, l;
+
+    /* percorrer imagem com o elemento estruturante */
+    for(i = 0; i < width; i++)
     {
-        aux = start->next;
-        delete start;
-        start = aux;
+        for(j = 0; j < height; j++)
+        {
+            image.getPixel(i, j, value, value, value);
+            // pixel branco; aplicar elemento estruturante
+            if(value == 0)
+            {
+                // verificar se a origem se encontra na regiao
+                bPaint = true;
+                for(k = i - origin; k < i + origin && k < width && bPaint; k++)
+                {
+                    for(l = j - origin; l < j + origin && l < height && bPaint; l++)
+                    {
+                        image.getPixel(k, l, value, value, value);
+                        bPaint = bPaint & (value != 0);
+                    }
+                }
+                stValue = (bPaint ? 255 : 0);
+                eroded.setPixel(i, j, stValue, stValue, stValue);
+            }
+        }
     }
+
+    return eroded;
 }
 
 /**
@@ -710,47 +664,3 @@ Bitmap ForgingDetector::dilation(Bitmap image, int bSize)
     return dilated;
 }
 
-/**
- * @func erosion
- * @brief efetua operacao de erosao na imagem
- * @param image imagem binaria
- * @param bSize dimensao do elemento estruturante, que eh um quadrado
- * @return imagem erodida
- */
-Bitmap ForgingDetector::erosion(Bitmap image, int bSize)
-{
-    Bitmap eroded(image);
-    int width = image.getWidth();
-    int height = image.getHeight();
-    unsigned char value, stValue;
-    int origin = (int) bSize / 2 + 1;
-    bool bPaint = true;
-    int i, j, k, l;
-
-    /* percorrer imagem com o elemento estruturante */
-    for(i = 0; i < width; i++)
-    {
-        for(j = 0; j < height; j++)
-        {
-            image.getPixel(i, j, value, value, value);
-            // pixel branco; aplicar elemento estruturante
-            if(value != 0)
-            {
-                // verificar se a origem se encontra na regiao
-                bPaint = true;
-                for(k = i - origin; k < i + origin && k < width && bPaint; k++)
-                {
-                    for(l = j - origin; l < j + origin && l < height && bPaint; l++)
-                    {
-                        image.getPixel(k, l, value, value, value);
-                        bPaint = bPaint & (value != 0);
-                    }
-                }
-                stValue = (bPaint ? 255 : 0);
-                eroded.setPixel(i, j, stValue, stValue, stValue);
-            }
-        }
-    }
-
-    return eroded;
-}

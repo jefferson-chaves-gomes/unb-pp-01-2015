@@ -111,6 +111,25 @@ SimilarBlocks::SimilarBlocks() :
 {
 }
 
+SimilarBlocks::SimilarBlocks(
+            int b1x_,
+            int b1y_,
+            int b2x_,
+            int b2y_,
+            int dx_,
+            int dy_,
+            bool equal_) :
+        next(NULL)
+{
+    setValues(b1x_,
+            b1y_,
+            b2x_,
+            b2y_,
+            dx_,
+            dy_,
+            equal_);
+}
+
 void SimilarBlocks::setValues(int b1x_,
             int b1y_,
             int b2x_,
