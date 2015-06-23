@@ -49,7 +49,7 @@ public:
 //    void convertToGrayscale();
     const unsigned char* data();
     unsigned char* row(unsigned int row_index) const;
-    std::string getPath();
+    std::string getPath() const;
 
 private:
     void create_bitmap();

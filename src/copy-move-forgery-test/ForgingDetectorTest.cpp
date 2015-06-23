@@ -120,19 +120,6 @@ protected:
         return res;
     }
 
-    static void freeCharVectList(CharVectList* charVectList)
-    {
-        CharVectList* aux = charVectList;
-        CharVectList* temp;
-
-        while(aux != NULL)
-        {
-            temp = aux->next;
-            delete aux;
-            aux = temp;
-        }
-    }
-
     static CharVectList* vList;
     // Primeiro lugar que ele entra no teste dessa classe
     static void SetUpTestCase()
@@ -290,11 +277,7 @@ TEST_F(ForgingDetectorTest, createSimilarBlockListAndFilterSpurious)
 
     assertEqualsSimilarBlocks(simBlkOld, simBlkNew);
 
-    ForgingDetectorOld::filterSpuriousRegions(simBlkOld, true);
-    filterSpuriousRegions(simBlkNew, true);
-    assertEqualsSimilarBlocks(simBlkOld, simBlkNew);
-
-    freeCharVectList(vList);
+    LinkedListCleaner::clear(vList);
 }
 
 TEST_F(ForgingDetectorTest, filterSpuriousRegions)
@@ -334,6 +317,6 @@ TEST_F(ForgingDetectorTest, filterSpuriousRegions)
     std::cout << "Speedup: " << (elapsedOld / elapsedNew) << std::endl;
     }
 
-    freeCharVectList(vList);
+    LinkedListCleaner::clear(vList);
 }
 

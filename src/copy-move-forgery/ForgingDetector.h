@@ -12,10 +12,10 @@ class ForgingDetector
 #endif
 
 public:
-    static bool byCharact(Bitmap image, bool multiregion = false, int bSize = 16);
-    static Bitmap opening(Bitmap image, int bSize);
-    static Bitmap dilation(Bitmap image, int bSize);
-    static Bitmap erosion(Bitmap image, int bSize);
+    static bool byCharact(Bitmap const& image, bool multiregion = false, int bSize = 16);
+    static Bitmap opening(Bitmap const& image, int bSize);
+    static Bitmap dilation(Bitmap const& image, int bSize);
+    static Bitmap erosion(Bitmap const& image, int bSize);
 
 protected:
     ForgingDetector()

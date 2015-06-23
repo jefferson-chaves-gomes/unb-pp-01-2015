@@ -45,7 +45,7 @@ const int maxShift = 2;
  * @param bSize dimensao do bloco
  * @return true, foi detectada adulteracao; false, se imagem eh original
  */
-bool ForgingDetector::byCharact(Bitmap image, bool multiregion, int bSize)
+bool ForgingDetector::byCharact(Bitmap const& image, bool multiregion, int bSize)
 {
     /* passo 1: extrair as caracteristicas dos blocos da imagem */
     logger("[MSG " << ++dbgmsg << "] Criando vetores de caracteristicas...");
@@ -574,7 +574,7 @@ bool ForgingDetector::isGreaterShift(SimilarBlocks* simBlock, MaxShifts maxSh, i
  * @param bSize dimensao do elemento estruturante, que eh um quadrado
  * @return imagem tratada
  */
-Bitmap ForgingDetector::opening(Bitmap image, int bSize)
+Bitmap ForgingDetector::opening(Bitmap const& image, int bSize)
 {
     /* operacao de erosao + dilatacao */
     return dilation(erosion(image, bSize), bSize);
@@ -587,7 +587,7 @@ Bitmap ForgingDetector::opening(Bitmap image, int bSize)
  * @param bSize dimensao do elemento estruturante, que eh um quadrado
  * @return imagem erodida
  */
-Bitmap ForgingDetector::erosion(Bitmap image, int bSize)
+Bitmap ForgingDetector::erosion(Bitmap const& image, int bSize)
 {
     Bitmap eroded(image);
     int width = image.getWidth();
@@ -632,7 +632,7 @@ Bitmap ForgingDetector::erosion(Bitmap image, int bSize)
  * @param bSize dimensao do elemento estruturante, que eh um quadrado
  * @return imagem dilatada
  */
-Bitmap ForgingDetector::dilation(Bitmap image, int bSize)
+Bitmap ForgingDetector::dilation(Bitmap const& image, int bSize)
 {
     Bitmap dilated(image);
 

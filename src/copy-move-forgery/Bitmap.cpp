@@ -266,7 +266,7 @@ void Bitmap::load_bitmap()
     valid_ = true;
 }
 
-std::string Bitmap::getPath()
+std::string Bitmap::getPath() const
 {
     return file_name_;
 }
