@@ -34,7 +34,7 @@ const double vectorP[CharVect::CHARS_SIZE] = {
         0.0125,     // P(5)
         0.0125,     // P(6)
         0.0125};    // P(7)
-const int maxShift = 2;
+const int MAX_SHIFT = 2;
 
 
 /**
@@ -294,14 +294,15 @@ CharVectList* ForgingDetector::addVectLexOrder(CharVectList* vecOrdered, CharVec
 
 SimilarBlocks* ForgingDetector::createSimilarBlockList(Bitmap const& image, int bSize, CharVectList* vList)
 {
+	if(vList == NULL)
+		return NULL;
+
     SimilarBlocks* simList = NULL;
     SimilarBlocks* simBlock = NULL;
     int width = image.getWidth();
     int height = image.getHeight();
 
     SimilarBlocks* simEnd = NULL;
-    CharVectList* b1Vector = vList;
-    CharVectList* b2Vector = NULL;
     double diff[CharVect::CHARS_SIZE] = { 0, 0, 0, 0, 0, 0, 0 };
     int L;                           // comprimento do vetor deslocamento
 
@@ -312,16 +313,12 @@ SimilarBlocks* ForgingDetector::createSimilarBlockList(Bitmap const& image, int 
     else
         L = BASE_L;
 
-    while(b1Vector != NULL)
+    CharVectList* b1Vector = vList;
+    CharVectList* b2Vector = vList->next;
+    while(b1Vector != NULL && b2Vector != NULL)
     {
-        b2Vector = b1Vector->next;
-        if(b2Vector == NULL)
-            break;
-
         // calcular diferencas
-
         bool diffVector = true;
-
         for(int i = 0; i < CharVect::CHARS_SIZE && diffVector; i++)
         {
             diff[i] = ABS((b1Vector->vect.c[i] - b2Vector->vect.c[i]));
@@ -355,6 +352,7 @@ SimilarBlocks* ForgingDetector::createSimilarBlockList(Bitmap const& image, int 
         }
 
         b1Vector = b1Vector->next;
+        b2Vector = b1Vector->next;
     }
 
     return simList;
@@ -377,21 +375,21 @@ void ForgingDetector::filterSpuriousRegions(SimilarBlocks* simList, bool multire
     while(simBlock != NULL)
     {
         if(multiregion)
-            bRegions = isGreaterShift(simBlock, maxSh, maxShift);
+            bRegions = isGreaterShift(simBlock, maxSh, MAX_SHIFT);
         else
-            bRegions = (ABS((simBlock->dx - mainShift->dx)) > maxShift || ABS((simBlock->dy - mainShift->dy)) > maxShift);
+            bRegions = (ABS((simBlock->dx - mainShift->dx)) > MAX_SHIFT || ABS((simBlock->dy - mainShift->dy)) > MAX_SHIFT);
 
         if(!bRegions)
             simTrace = simBlock;
         else
         {
-            if(simBlock == simList)
+            if(simBlock != simList)
+                simTrace->next = simBlock->next;
+            else
             {
                 simList = simList->next;
                 simTrace = simList;
             }
-            else
-                simTrace->next = simBlock->next;
             delete simBlock;
         }
 

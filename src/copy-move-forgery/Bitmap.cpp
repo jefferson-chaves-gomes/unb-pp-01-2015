@@ -13,7 +13,7 @@ Bitmap::Bitmap()
     width_(0),
     height_(0),
     row_increment_(0),
-                channel_mode_(bgr_mode)
+    channel_mode_(bgr_mode)
 {
     /* vazio */
 }

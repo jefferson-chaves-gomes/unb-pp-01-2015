@@ -34,7 +34,7 @@ const double vectorP[CharVect::CHARS_SIZE] = {
         0.0125,     // P(5)
         0.0125,     // P(6)
         0.0125};    // P(7)
-const int maxShift = 2;
+const int MAX_SHIFT = 2;
 
 
 /**
@@ -362,9 +362,9 @@ void ForgingDetectorOld::filterSpuriousRegions(SimilarBlocks* simList, bool mult
     while(simBlock != NULL)
     {
         if(multiregion)
-            bRegions = isGreaterShift(simBlock, maxSh, maxShift);
+            bRegions = isGreaterShift(simBlock, maxSh, MAX_SHIFT);
         else
-            bRegions = (ABS((simBlock->dx - mainShift->dx)) > maxShift || ABS((simBlock->dy - mainShift->dy)) > maxShift);
+            bRegions = (ABS((simBlock->dx - mainShift->dx)) > MAX_SHIFT || ABS((simBlock->dy - mainShift->dy)) > MAX_SHIFT);
 
         if(bRegions == true)
         {
