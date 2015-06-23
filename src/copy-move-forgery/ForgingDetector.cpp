@@ -263,6 +263,35 @@ CharVectList* ForgingDetector::getCharVectListForBlock(Bitmap const& image, int 
     return charVecList;
 }
 
+/**
+ * @func addVectLexOrder
+ * @brief adiciona aa lista um vetor de caracteristicas em ordem lexicografica
+ * @param start ponteiro para o inicio da lista
+ * @param vetor vetor a ser adicionado
+ * @return ponteiro inicial da lista
+ */
+
+CharVectList* ForgingDetector::addVectLexOrder(CharVectList* vecOrdered, CharVectList* valToAdd)
+{
+    CharVectList ** head_ref = &vecOrdered;
+    /* Adiciona antes da cabeca */
+    if(*head_ref == NULL || valToAdd->vect <= (*head_ref)->vect)
+    {
+        valToAdd->next = *head_ref;
+        *head_ref = valToAdd;
+    }
+    else
+    {
+        /* Adiciona entre o atual e o proximo */
+        CharVectList * current = *head_ref;
+        while(current->next != NULL && current->next->vect <= valToAdd->vect)
+            current = current->next;
+        valToAdd->next = current->next;
+        current->next = valToAdd;
+    }
+    return *head_ref;
+}
+
 SimilarBlocks* ForgingDetector::createSimilarBlockList(Bitmap const& image, int bSize, CharVectList* vList)
 {
     SimilarBlocks* simList = NULL;
@@ -537,34 +566,6 @@ bool ForgingDetector::isGreaterShift(SimilarBlocks* simBlock, MaxShifts maxSh, i
     return false;
 }
 
-/**
- * @func addVectLexOrder
- * @brief adiciona aa lista um vetor de caracteristicas em ordem lexicografica
- * @param start ponteiro para o inicio da lista
- * @param vetor vetor a ser adicionado
- * @return ponteiro inicial da lista
- */
-
-CharVectList* ForgingDetector::addVectLexOrder(CharVectList* vecOrdered, CharVectList* valToAdd)
-{
-    CharVectList ** head_ref = &vecOrdered;
-    /* Adiciona antes da cabeca */
-    if(*head_ref == NULL || valToAdd->vect <= (*head_ref)->vect)
-    {
-        valToAdd->next = *head_ref;
-        *head_ref = valToAdd;
-    }
-    else
-    {
-        /* Adiciona entre o atual e o proximo */
-        CharVectList * current = *head_ref;
-        while(current->next != NULL && current->next->vect <= valToAdd->vect)
-            current = current->next;
-        valToAdd->next = current->next;
-        current->next = valToAdd;
-    }
-    return *head_ref;
-}
 
 /**
  * @func opening
