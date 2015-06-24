@@ -258,7 +258,7 @@ TEST_F(ForgingDetectorTest, charac_vec)
     assertEqualsCharVectList(vListOld, vListNew);
 }
 
-TEST_F(ForgingDetectorTest, createSimilarBlockListAndFilterSpurious)
+TEST_F(ForgingDetectorTest, createSimilarBlockList)
 {
     CharVectList* vList = getCopyOfCharacVec();
 

@@ -294,50 +294,43 @@ CharVectList* ForgingDetector::addVectLexOrder(CharVectList* vecOrdered, CharVec
 
 SimilarBlocks* ForgingDetector::createSimilarBlockList(Bitmap const& image, int bSize, CharVectList* vList)
 {
-	if(vList == NULL)
-		return NULL;
-
-    SimilarBlocks* simList = NULL;
-    SimilarBlocks* simBlock = NULL;
     int width = image.getWidth();
     int height = image.getHeight();
-
+    SimilarBlocks* simList = NULL;
+    SimilarBlocks* simBlock = NULL;
     SimilarBlocks* simEnd = NULL;
     double diff[CharVect::CHARS_SIZE] = { 0, 0, 0, 0, 0, 0, 0 };
-    int L;                           // comprimento do vetor deslocamento
+
+    int vectOffsetSize(BASE_L);
+    if(bSize + BASE_L >= width || bSize + BASE_L >= height)
+        vectOffsetSize = bSize;
 
     // percorrer toda a lista de blocos; execucao em O(n)
     // somente sao comparados dois blocos consecutivos, pois ja estao ordenados
-    if(bSize + BASE_L >= width || bSize + BASE_L >= height)
-        L = bSize;
-    else
-        L = BASE_L;
-
-    CharVectList* b1Vector = vList;
-    CharVectList* b2Vector = vList->next;
-    while(b1Vector != NULL && b2Vector != NULL)
+    CharVectList* iterator = vList;
+    while(iterator != NULL && iterator->next != NULL)
     {
         // calcular diferencas
         bool diffVector = true;
         for(int i = 0; i < CharVect::CHARS_SIZE && diffVector; i++)
         {
-            diff[i] = ABS((b1Vector->vect.c[i] - b2Vector->vect.c[i]));
+            diff[i] = ABS((iterator->vect.c[i] - iterator->next->vect.c[i]));
             diffVector = diffVector && (diff[i] < vectorP[i]);
         }
 
         if((diffVector)
                 && (diff[0] + diff[1] + diff[2] < t1)
                 && (diff[3] + diff[4] + diff[5] + diff[6] < t2)
-                && ABS(getShift(b1Vector->vect.x, b2Vector->vect.x, b1Vector->vect.y, b2Vector->vect.y)) > L)
+                && ABS(getShift(iterator->vect.x, iterator->next->vect.x, iterator->vect.y, iterator->next->vect.y)) > vectOffsetSize)
         {
             // blocos b1 e b2 sao similares
             simBlock = new SimilarBlocks(
-                    b1Vector->vect.x,
-                    b2Vector->vect.x,
-                    b1Vector->vect.y,
-                    b2Vector->vect.y,
-                    b1Vector->vect.x - b2Vector->vect.x,
-                    b1Vector->vect.y - b2Vector->vect.y);
+                    iterator->vect.x,
+                    iterator->next->vect.x,
+                    iterator->vect.y,
+                    iterator->next->vect.y,
+                    iterator->vect.x - iterator->next->vect.x,
+                    iterator->vect.y - iterator->next->vect.y);
 
             if(simList == NULL)
             {
@@ -351,8 +344,7 @@ SimilarBlocks* ForgingDetector::createSimilarBlockList(Bitmap const& image, int 
             }
         }
 
-        b1Vector = b1Vector->next;
-        b2Vector = b1Vector->next;
+        iterator = iterator->next;
     }
 
     return simList;
