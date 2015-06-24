@@ -17,7 +17,7 @@
 #define ABS(X) ((X < 0) ? -X : X)
 
 /* para a comparacao de shifts */
-class MaxShifts
+class MaxShiftsOld
 {
 public:
     int dx1, dy1;
@@ -69,6 +69,57 @@ public:
     }
 };
 
+class DeltaPos
+{
+public:
+    int dx;
+    int dy;
+
+    DeltaPos() :
+        dx(0),
+        dy(0)
+    {
+    }
+
+    DeltaPos(Pos const& pos1, Pos const& pos2) :
+        dx(pos1.x-pos2.x),
+        dy(pos1.y-pos2.y)
+    {
+    }
+
+    DeltaPos(int dx_, int dy_) :
+        dx(dx_),
+        dy(dy_)
+    {
+    }
+
+    DeltaPos& operator=(DeltaPos const& other)
+    {
+        dx = other.dx;
+        dy = other.dy;
+        return *(this);
+    }
+
+    bool operator==(DeltaPos const& other)
+    {
+        if(dx != other.dx) return false;
+        if(dy != other.dy) return false;
+        return true;
+    }
+
+    bool operator!=(DeltaPos const& other)
+    {
+        return !((*this) == other);
+    }
+};
+
+class MaxShifts
+{
+public:
+    DeltaPos delta1;
+    DeltaPos delta2;
+    DeltaPos delta3;
+};
 
 /* para o algoritmo de vetor de caracteristicas */
 class CharVect
@@ -109,14 +160,31 @@ public:
 };
 
 /* para os blocos similares */
+class SimilarBlocksOld
+{
+public:
+    // para blocos de tamanho fixo
+    Pos b1;
+    Pos b2;
+    int dx;
+    int dy;
+    SimilarBlocksOld* next;
+
+    SimilarBlocksOld();
+    SimilarBlocksOld(Pos const& b1, Pos const& b2);
+    bool operator==(SimilarBlocksOld const& other);
+    bool operator!=(SimilarBlocksOld const& other);
+    void setValues(Pos const& b1, Pos const& b2);
+};
+
+/* para os blocos similares */
 class SimilarBlocks
 {
 public:
     // para blocos de tamanho fixo
     Pos b1;
     Pos b2;
-    int dx;     // dx = |x1 - x2|
-    int dy;     // dy = |y1 - y2|
+    DeltaPos delta;
     SimilarBlocks* next;
 
     SimilarBlocks();
@@ -130,19 +198,39 @@ class Histogram
 {
 public:
     int freq;            // contador de frequencia
-    int dx;              // diferenca (com sinal) da componente horizontal
-    int dy;              // diferenca (com sinal) da componente vertical
-    SimilarBlocks* rep;  // par de blocos que representa o vetor
+    DeltaPos delta;
     Histogram* next;
 
     Histogram() :
+        freq(0),
+        delta(0,0),
+        next(NULL){}
+
+    Histogram(
+            int dx_,
+            int dy_) :
+        freq(0),
+        delta(dx_, dy_),
+        next(NULL){}
+};
+
+class HistogramOld
+{
+public:
+    int freq;            // contador de frequencia
+    int dx;              // diferenca (com sinal) da componente horizontal
+    int dy;              // diferenca (com sinal) da componente vertical
+    SimilarBlocksOld* rep;  // par de blocos que representa o vetor
+    HistogramOld* next;
+
+    HistogramOld() :
         freq(0),
         dx(0),
         dy(0),
         rep(NULL),
         next(NULL){}
 
-    Histogram(
+    HistogramOld(
             int dx_,
             int dy_) :
         freq(0),
@@ -151,7 +239,7 @@ public:
         rep(NULL),
         next(NULL){}
 
-    void setRep(SimilarBlocks* rep)
+    void setRep(SimilarBlocksOld* rep)
     {
         this->rep = rep;
     }

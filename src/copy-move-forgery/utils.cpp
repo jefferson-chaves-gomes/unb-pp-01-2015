@@ -100,19 +100,56 @@ CharVectList& CharVectList::operator =(CharVectList const& other)
 SimilarBlocks::SimilarBlocks() :
         b1(),
         b2(),
+        delta(0, 0),
+        next(NULL)
+{
+}
+
+SimilarBlocks::SimilarBlocks(Pos const& b1_, Pos const& b2_) :
+        b1(b1_),
+        b2(b2_),
+        delta(b1_, b2_),
+        next(NULL)
+{
+}
+
+void SimilarBlocks::setValues(Pos const& b1_, Pos const& b2_)
+{
+    b1 = b1_;
+    b2 = b2_;
+    delta = DeltaPos(b1_, b2_);
+}
+
+bool SimilarBlocks::operator==(SimilarBlocks const& other)
+{
+    if(b1 != other.b1) return false;
+    if(b2 != other.b2) return false;
+    if(delta != other.delta) return false;
+    return true;
+}
+
+bool SimilarBlocks::operator!=(SimilarBlocks const& other)
+{
+    return !((*this) == other);
+}
+
+
+SimilarBlocksOld::SimilarBlocksOld() :
+        b1(),
+        b2(),
         dx(0),
         dy(0),
         next(NULL)
 {
 }
 
-SimilarBlocks::SimilarBlocks(Pos const& b1, Pos const& b2) :
+SimilarBlocksOld::SimilarBlocksOld(Pos const& b1, Pos const& b2) :
         next(NULL)
 {
     setValues(b1, b2);
 }
 
-void SimilarBlocks::setValues(Pos const& b1_, Pos const& b2_)
+void SimilarBlocksOld::setValues(Pos const& b1_, Pos const& b2_)
 {
     b1 = b1_;
     b2 = b2_;
@@ -120,7 +157,7 @@ void SimilarBlocks::setValues(Pos const& b1_, Pos const& b2_)
     dy = b1.y - b2.y;
 }
 
-bool SimilarBlocks::operator==(SimilarBlocks const& other)
+bool SimilarBlocksOld::operator==(SimilarBlocksOld const& other)
 {
     if(b1 != other.b1) return false;
     if(b2 != other.b2) return false;
@@ -129,7 +166,7 @@ bool SimilarBlocks::operator==(SimilarBlocks const& other)
     return true;
 }
 
-bool SimilarBlocks::operator!=(SimilarBlocks const& other)
+bool SimilarBlocksOld::operator!=(SimilarBlocksOld const& other)
 {
     return !((*this) == other);
 }

@@ -58,7 +58,7 @@ bool ForgingDetectorOld::byCharact(Bitmap image, bool multiregion, int bSize)
 
     /* passo 2: buscar blocos similares */
     logger("[MSG " << ++dbgmsg << "] Buscando blocos similares...");
-    SimilarBlocks* simList = createSimilarBlockList(image, bSize, vList);
+    SimilarBlocksOld* simList = createSimilarBlockList(image, bSize, vList);
 
     /* passo 3: */
     // Se nao ha blocos similares, a imagem nao foi adulterada por copy-move
@@ -87,7 +87,7 @@ bool ForgingDetectorOld::byCharact(Bitmap image, bool multiregion, int bSize)
         }
     }
 
-    SimilarBlocks*simBlock = simList;
+    SimilarBlocksOld*simBlock = simList;
     while(simBlock != NULL)
     {
         int b1x = simBlock->b1.x;
@@ -283,14 +283,14 @@ CharVectList* ForgingDetectorOld::charactVector(Bitmap image, int bSize)
     return vList;
 }
 
-SimilarBlocks* ForgingDetectorOld::createSimilarBlockList(Bitmap const& image, int bSize, CharVectList* vList)
+SimilarBlocksOld* ForgingDetectorOld::createSimilarBlockList(Bitmap const& image, int bSize, CharVectList* vList)
 {
-    SimilarBlocks* simList = NULL;
-    SimilarBlocks* simBlock = NULL;
+    SimilarBlocksOld* simList = NULL;
+    SimilarBlocksOld* simBlock = NULL;
     int width = image.getWidth();
     int height = image.getHeight();
 
-    SimilarBlocks* simEnd = NULL;
+    SimilarBlocksOld* simEnd = NULL;
     CharVectList* b1Vector = vList;
     CharVectList* b2Vector = NULL;
     double diff[CharVect::CHARS_SIZE] = { 0, 0, 0, 0, 0, 0, 0 };
@@ -345,18 +345,18 @@ SimilarBlocks* ForgingDetectorOld::createSimilarBlockList(Bitmap const& image, i
     return simList;
 }
 
-void ForgingDetectorOld::filterSpuriousRegions(SimilarBlocks* simList, bool multiregion)
+void ForgingDetectorOld::filterSpuriousRegions(SimilarBlocksOld* simList, bool multiregion)
 {
-    MaxShifts maxSh;
-    SimilarBlocks* mainShift;
+    MaxShiftsOld maxSh;
+    SimilarBlocksOld* mainShift;
 
     if(multiregion)
         maxSh = getMainShifts(simList);
     else
         mainShift = getMainShiftVector(simList);
 
-    SimilarBlocks* simTrace = simList;
-    SimilarBlocks* simBlock = simList;
+    SimilarBlocksOld* simTrace = simList;
+    SimilarBlocksOld* simBlock = simList;
     bool bRegions = false;
 
     while(simBlock != NULL)
@@ -412,9 +412,9 @@ int ForgingDetectorOld::getShift(int x1, int x2, int y1, int y2)
  * @param y2 coordenada y do bloco 2
  * @return bloco criado
  */
-SimilarBlocks* ForgingDetectorOld::newSimilarBlock(int x1, int x2, int y1, int y2)
+SimilarBlocksOld* ForgingDetectorOld::newSimilarBlock(int x1, int x2, int y1, int y2)
 {
-    SimilarBlocks* block = new SimilarBlocks;
+    SimilarBlocksOld* block = new SimilarBlocksOld;
 
     block->b1.x = x1;
     block->b2.x = x2;
@@ -434,28 +434,28 @@ SimilarBlocks* ForgingDetectorOld::newSimilarBlock(int x1, int x2, int y1, int y
  * @param blocks lista de blocos
  * @return shifts mais frequentes
  */
-MaxShifts ForgingDetectorOld::getMainShifts(SimilarBlocks* blocks)
+MaxShiftsOld ForgingDetectorOld::getMainShifts(SimilarBlocksOld* blocks)
 {
     int dx, dy, count = 0;
-    SimilarBlocks* main = NULL;
-    SimilarBlocks* auxBlock = blocks;
-    Histogram* hist = NULL;
-    Histogram* hTrace = NULL;
-    Histogram* hLast = NULL;
-    MaxShifts maxSh;
+    SimilarBlocksOld* main = NULL;
+    SimilarBlocksOld* auxBlock = blocks;
+    HistogramOld* hist = NULL;
+    HistogramOld* hTrace = NULL;
+    HistogramOld* hLast = NULL;
+    MaxShiftsOld maxSh;
 
-    /* criar histograma de vetores */
+    /* criar HistogramOlda de vetores */
     while(auxBlock != NULL)
     {
         dx = auxBlock->dx;
         dy = auxBlock->dy;
         if(hist == NULL)
         {
-            hist = newHistogram(dx, dy, auxBlock);
+            hist = newHistogramOld(dx, dy, auxBlock);
             hLast = hist;
         }
 
-        /* procurar por entrada no histograma */
+        /* procurar por entrada no HistogramOlda */
         hTrace = hist;
         while(hTrace != NULL)
         {
@@ -465,7 +465,7 @@ MaxShifts ForgingDetectorOld::getMainShifts(SimilarBlocks* blocks)
         }
         if(hTrace == NULL)
         {
-            hTrace = newHistogram(dx, dy, auxBlock);
+            hTrace = newHistogramOld(dx, dy, auxBlock);
             hLast->next = hTrace;
             hLast = hTrace;
         }
@@ -490,7 +490,7 @@ MaxShifts ForgingDetectorOld::getMainShifts(SimilarBlocks* blocks)
         auxBlock = auxBlock->next;
     }
 
-    clearHistogram(hist);
+    clearHistogramOld(hist);
 
     return maxSh;
 }
@@ -502,27 +502,27 @@ MaxShifts ForgingDetectorOld::getMainShifts(SimilarBlocks* blocks)
  * @param blocks lista de blocos
  * @return bloco que representa o principal shift
  */
-SimilarBlocks* ForgingDetectorOld::getMainShiftVector(SimilarBlocks* blocks)
+SimilarBlocksOld* ForgingDetectorOld::getMainShiftVector(SimilarBlocksOld* blocks)
 {
     int dx, dy, count = 0;
-    SimilarBlocks* main = NULL;
-    SimilarBlocks* auxBlock = blocks;
-    Histogram* hist = NULL;
-    Histogram* hTrace = NULL;
-    Histogram* hLast = NULL;
+    SimilarBlocksOld* main = NULL;
+    SimilarBlocksOld* auxBlock = blocks;
+    HistogramOld* hist = NULL;
+    HistogramOld* hTrace = NULL;
+    HistogramOld* hLast = NULL;
 
-    /* criar histograma de vetores */
+    /* criar HistogramOlda de vetores */
     while(auxBlock != NULL)
     {
         dx = auxBlock->dx;
         dy = auxBlock->dy;
         if(hist == NULL)
         {
-            hist = newHistogram(dx, dy, auxBlock);
+            hist = newHistogramOld(dx, dy, auxBlock);
             hLast = hist;
         }
 
-        /* procurar por entrada no histograma */
+        /* procurar por entrada no HistogramOlda */
         hTrace = hist;
         while(hTrace != NULL)
         {
@@ -532,7 +532,7 @@ SimilarBlocks* ForgingDetectorOld::getMainShiftVector(SimilarBlocks* blocks)
         }
         if(hTrace == NULL)
         {
-            hTrace = newHistogram(dx, dy, auxBlock);
+            hTrace = newHistogramOld(dx, dy, auxBlock);
             hLast->next = hTrace;
             hLast = hTrace;
         }
@@ -548,12 +548,12 @@ SimilarBlocks* ForgingDetectorOld::getMainShiftVector(SimilarBlocks* blocks)
         auxBlock = auxBlock->next;
     }
 
-    clearHistogram(hist);
+    clearHistogramOld(hist);
 
     return main;
 }
 
-bool ForgingDetectorOld::isGreaterShift(SimilarBlocks* simBlock, MaxShifts maxSh, int maxShift)
+bool ForgingDetectorOld::isGreaterShift(SimilarBlocksOld* simBlock, MaxShiftsOld maxSh, int maxShift)
 {
     if((ABS((simBlock->dx - maxSh.dx1)) > maxShift || ABS((simBlock->dy - maxSh.dy1)) > maxShift)
             && (ABS((simBlock->dx - maxSh.dx2)) > maxShift || ABS((simBlock->dy - maxSh.dy2)) > maxShift)
@@ -597,9 +597,9 @@ void ForgingDetectorOld::clearCharVectors(CharVectList* start)
  * @brief limpa a lista de vetores de caracteristicas
  * @param start ponteiro para o inicio da lista
  */
-void ForgingDetectorOld::clearSimilarBlocks(SimilarBlocks* start)
+void ForgingDetectorOld::clearSimilarBlocks(SimilarBlocksOld* start)
 {
-    SimilarBlocks* aux = start;
+    SimilarBlocksOld* aux = start;
     while(start != NULL)
     {
         aux = start->next;
@@ -673,16 +673,16 @@ CharVectList* ForgingDetectorOld::addVectLexOrder(CharVectList* start, CharVectL
 
 
 /**
- * @func newHistogram
- * @brief cria uma nova entrada para o histograma
+ * @func newHistogramOld
+ * @brief cria uma nova entrada para o HistogramOlda
  * @param dx deslocamento horizontal
  * @param dy deslocamento vertical
  * @param rep representante do vetor
- * @return elemento do histograma
+ * @return elemento do HistogramOlda
  */
-Histogram* ForgingDetectorOld::newHistogram(int dx, int dy, SimilarBlocks* rep)
+HistogramOld* ForgingDetectorOld::newHistogramOld(int dx, int dy, SimilarBlocksOld* rep)
 {
-    Histogram* hist = new Histogram;
+    HistogramOld* hist = new HistogramOld;
 
     hist->dx = dx;
     hist->dy = dy;
@@ -694,13 +694,13 @@ Histogram* ForgingDetectorOld::newHistogram(int dx, int dy, SimilarBlocks* rep)
 }
 
 /**
- * @func clearHistogram
- * @brief limpa o histograma
+ * @func clearHistogramOld
+ * @brief limpa o HistogramOlda
  * @param start ponteiro para o inicio da lista
  */
-void ForgingDetectorOld::clearHistogram(Histogram* start)
+void ForgingDetectorOld::clearHistogramOld(HistogramOld* start)
 {
-    Histogram* aux = start;
+    HistogramOld* aux = start;
     while(start != NULL)
     {
         aux = start->next;

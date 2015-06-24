@@ -27,18 +27,18 @@ public:
     /* metodos de deteccao */
     static CharVectList* charactVector(Bitmap image, int bSize);
     static CharVectList* addVectLexOrder(CharVectList* start, CharVectList* vetor);
-    static SimilarBlocks* createSimilarBlockList(Bitmap const& image, int bSize, CharVectList* vList);
-    static void filterSpuriousRegions(SimilarBlocks* simList, bool multiregion);
+    static SimilarBlocksOld* createSimilarBlockList(Bitmap const& image, int bSize, CharVectList* vList);
+    static void filterSpuriousRegions(SimilarBlocksOld* simList, bool multiregion);
 
     static int getShift(int x1, int x2, int y1, int y2);
-    static SimilarBlocks* newSimilarBlock(int x1, int x2, int y1, int y2);
-    static MaxShifts getMainShifts(SimilarBlocks* blocks);
-    static SimilarBlocks* getMainShiftVector(SimilarBlocks* blocks);
-    static bool isGreaterShift(SimilarBlocks* simBlock, MaxShifts maxSh, int maxShift);
+    static SimilarBlocksOld* newSimilarBlock(int x1, int x2, int y1, int y2);
+    static MaxShiftsOld getMainShifts(SimilarBlocksOld* blocks);
+    static SimilarBlocksOld* getMainShiftVector(SimilarBlocksOld* blocks);
+    static bool isGreaterShift(SimilarBlocksOld* simBlock, MaxShiftsOld maxSh, int maxShift);
     static void clearCharVectors(CharVectList* start);
-    static void clearSimilarBlocks(SimilarBlocks* start);
-    static Histogram* newHistogram(int dx, int dy, SimilarBlocks* rep);
-    static void clearHistogram(Histogram* start);
+    static void clearSimilarBlocks(SimilarBlocksOld* start);
+    static HistogramOld* newHistogramOld(int dx, int dy, SimilarBlocksOld* rep);
+    static void clearHistogramOld(HistogramOld* start);
 };
 
 #endif

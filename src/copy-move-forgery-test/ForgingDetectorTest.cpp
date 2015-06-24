@@ -18,7 +18,7 @@ class ForgingDetectorTest :
 {
 protected:
 
-    void assertEqualsSimilarBlocks(SimilarBlocks* left, SimilarBlocks* right)
+    void assertEqualsSimilarBlocks(SimilarBlocksOld* left, SimilarBlocks* right)
     {
         ASSERT_TRUE(left != NULL);
         ASSERT_TRUE(right != NULL);
@@ -28,7 +28,10 @@ protected:
             ASSERT_TRUE(left != NULL);
             ASSERT_TRUE(right != NULL);
 
-            ASSERT_TRUE(*left == *right);
+            ASSERT_TRUE(left->b1 == right->b1);
+            ASSERT_TRUE(left->b2 == right->b2);
+            ASSERT_TRUE(left->dx == right->delta.dx);
+            ASSERT_TRUE(left->dy == right->delta.dy);
 
             left = left->next;
             right = right->next;
@@ -235,8 +238,6 @@ TEST_F(ForgingDetectorTest, operatorEqualSimilarBlock)
 
     simBlkOld->setValues(posNew1, posNew2);
     ASSERT_TRUE(*simBlkOld == *simBlkNew);
-
-    assertEqualsSimilarBlocks(simBlkOld, simBlkNew);
 }
 
 TEST_F(ForgingDetectorTest, charac_vec)
@@ -265,7 +266,7 @@ TEST_F(ForgingDetectorTest, createSimilarBlockList)
     CharVectList* vList = getCopyOfCharacVec();
 
     Timer timeOld;
-    SimilarBlocks* simBlkOld = ForgingDetectorOld::createSimilarBlockList(BITMAP, BLOCK_SIZE, vList);
+    SimilarBlocksOld* simBlkOld = ForgingDetectorOld::createSimilarBlockList(BITMAP, BLOCK_SIZE, vList);
     long double elapsedOld = timeOld.elapsedMicroseconds();
 
     Timer timeNew;
@@ -284,11 +285,11 @@ TEST_F(ForgingDetectorTest, createSimilarBlockList)
 TEST_F(ForgingDetectorTest, filterSpuriousRegions)
 {
     CharVectList* vList = getCopyOfCharacVec();
-    SimilarBlocks* simBlkOld = NULL;
+    SimilarBlocksOld* simBlkOld = NULL;
     SimilarBlocks* simBlkNew = NULL;
 
     {
-        simBlkOld = createSimilarBlockList(BITMAP, BLOCK_SIZE, vList);
+        simBlkOld = ForgingDetectorOld::createSimilarBlockList(BITMAP, BLOCK_SIZE, vList);
         Timer timeOld;
         ForgingDetectorOld::filterSpuriousRegions(simBlkOld, true);
         long double elapsedOld = timeOld.elapsedMicroseconds();
@@ -306,7 +307,7 @@ TEST_F(ForgingDetectorTest, filterSpuriousRegions)
     }
 
     {
-        simBlkOld = createSimilarBlockList(BITMAP, BLOCK_SIZE, vList);
+        simBlkOld = ForgingDetectorOld::createSimilarBlockList(BITMAP, BLOCK_SIZE, vList);
         Timer timeOld;
         ForgingDetectorOld::filterSpuriousRegions(simBlkOld, false);
         long double elapsedOld = timeOld.elapsedMicroseconds();

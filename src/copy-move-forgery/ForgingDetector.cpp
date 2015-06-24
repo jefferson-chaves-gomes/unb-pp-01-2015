@@ -349,7 +349,7 @@ SimilarBlocks* ForgingDetector::createSimilarBlockList(Bitmap const& image, int 
 void ForgingDetector::filterSpuriousRegions(SimilarBlocks* simList, bool multiregion)
 {
     MaxShifts maxSh;
-    SimilarBlocks* mainShift;
+    DeltaPos mainShift(0,0);
 
     if(multiregion)
         maxSh = getMainShifts(simList);
@@ -365,7 +365,7 @@ void ForgingDetector::filterSpuriousRegions(SimilarBlocks* simList, bool multire
         if(multiregion)
             bRegions = isGreaterShift(simBlock, maxSh, MAX_SHIFT);
         else
-            bRegions = (ABS((simBlock->dx - mainShift->dx)) > MAX_SHIFT || ABS((simBlock->dy - mainShift->dy)) > MAX_SHIFT);
+            bRegions = (ABS((simBlock->delta.dx - mainShift.dx)) > MAX_SHIFT || ABS((simBlock->delta.dy - mainShift.dy)) > MAX_SHIFT);
 
         if(!bRegions)
             simTrace = simBlock;
@@ -385,11 +385,11 @@ void ForgingDetector::filterSpuriousRegions(SimilarBlocks* simList, bool multire
     }
 }
 
-bool ForgingDetector::isGreaterShift(SimilarBlocks* simBlock, MaxShifts maxSh, int maxShift)
+bool ForgingDetector::isGreaterShift(SimilarBlocks* simBlock, MaxShifts const& maxSh, int maxShift)
 {
-    bool shift1 = (ABS((simBlock->dx - maxSh.dx1)) > maxShift) || (ABS((simBlock->dy - maxSh.dy1)) > maxShift);
-    bool shift2 = (ABS((simBlock->dx - maxSh.dx2)) > maxShift) || (ABS((simBlock->dy - maxSh.dy2)) > maxShift);
-    bool shift3 = (ABS((simBlock->dx - maxSh.dx3)) > maxShift) || (ABS((simBlock->dy - maxSh.dy3)) > maxShift);
+    bool shift1 = (ABS((simBlock->delta.dx - maxSh.delta1.dx)) > maxShift) || (ABS((simBlock->delta.dy - maxSh.delta1.dy)) > maxShift);
+    bool shift2 = (ABS((simBlock->delta.dx - maxSh.delta2.dx)) > maxShift) || (ABS((simBlock->delta.dy - maxSh.delta2.dy)) > maxShift);
+    bool shift3 = (ABS((simBlock->delta.dx - maxSh.delta3.dx)) > maxShift) || (ABS((simBlock->delta.dy - maxSh.delta3.dy)) > maxShift);
 
     if(shift1 && shift2 && shift3)
         return true;
@@ -423,7 +423,7 @@ int ForgingDetector::getShift(Pos const& pos1, Pos const& pos2)
 MaxShifts ForgingDetector::getMainShifts(SimilarBlocks* blocks)
 {
     int dx, dy, count = 0;
-    SimilarBlocks* main = NULL;
+    DeltaPos main;
     SimilarBlocks* auxBlock = blocks;
     Histogram* hist = NULL;
     Histogram* hTrace = NULL;
@@ -433,12 +433,11 @@ MaxShifts ForgingDetector::getMainShifts(SimilarBlocks* blocks)
     /* criar histograma de vetores */
     while(auxBlock != NULL)
     {
-        dx = auxBlock->dx;
-        dy = auxBlock->dy;
+        dx = auxBlock->delta.dx;
+        dy = auxBlock->delta.dy;
         if(hist == NULL)
         {
             hist = new Histogram(dx, dy);
-            hist->setRep(auxBlock);
             hLast = hist;
         }
 
@@ -446,14 +445,13 @@ MaxShifts ForgingDetector::getMainShifts(SimilarBlocks* blocks)
         hTrace = hist;
         while(hTrace != NULL)
         {
-            if(hTrace->dx == dx && hTrace->dy == dy)
+            if(hTrace->delta.dx == dx && hTrace->delta.dy == dy)
                 break;
             hTrace = hTrace->next;
         }
         if(hTrace == NULL)
         {
             hTrace = new Histogram(dx, dy);
-            hTrace->setRep(auxBlock);
             hLast->next = hTrace;
             hLast = hTrace;
         }
@@ -463,16 +461,13 @@ MaxShifts ForgingDetector::getMainShifts(SimilarBlocks* blocks)
         if(hTrace->freq > count)
 		{
 			count = hTrace->freq;
-			main = hTrace->rep;
+			main = hTrace->delta;
 
 			/* atualizar frequencias */
-			maxSh.dx3 = maxSh.dx2;
-			maxSh.dx2 = maxSh.dx1;
-			maxSh.dx1 = main->dx;
 
-			maxSh.dy3 = maxSh.dy2;
-			maxSh.dy2 = maxSh.dy1;
-			maxSh.dy1 = main->dy;
+			maxSh.delta3 = maxSh.delta2;
+            maxSh.delta2 = maxSh.delta1;
+            maxSh.delta1 = main;
 		}
 
         auxBlock = auxBlock->next;
@@ -490,10 +485,10 @@ MaxShifts ForgingDetector::getMainShifts(SimilarBlocks* blocks)
  * @param blocks lista de blocos
  * @return bloco que representa o principal shift
  */
-SimilarBlocks* ForgingDetector::getMainShiftVector(SimilarBlocks* blocks)
+DeltaPos ForgingDetector::getMainShiftVector(SimilarBlocks* blocks)
 {
     int dx, dy, count = 0;
-    SimilarBlocks* main = NULL;
+    DeltaPos main(0,0);
     SimilarBlocks* auxBlock = blocks;
     Histogram* hist = NULL;
     Histogram* hTrace = NULL;
@@ -502,12 +497,11 @@ SimilarBlocks* ForgingDetector::getMainShiftVector(SimilarBlocks* blocks)
     /* criar histograma de vetores */
     while(auxBlock != NULL)
     {
-        dx = auxBlock->dx;
-        dy = auxBlock->dy;
+        dx = auxBlock->delta.dx;
+        dy = auxBlock->delta.dy;
         if(hist == NULL)
         {
             hist = new Histogram(dx, dy);
-            hist->setRep(auxBlock);
             hLast = hist;
         }
 
@@ -515,7 +509,7 @@ SimilarBlocks* ForgingDetector::getMainShiftVector(SimilarBlocks* blocks)
         hTrace = hist;
         while(hTrace != NULL)
         {
-            if(hTrace->dx == dx && hTrace->dy == dy)
+            if(hTrace->delta.dx == dx && hTrace->delta.dy == dy)
                 break;
             hTrace = hTrace->next;
         }
@@ -523,7 +517,6 @@ SimilarBlocks* ForgingDetector::getMainShiftVector(SimilarBlocks* blocks)
         if(hTrace == NULL)
         {
             hTrace = new Histogram(dx, dy);
-            hTrace->setRep(auxBlock);
             hLast->next = hTrace;
             hLast = hTrace;
         }
@@ -533,7 +526,7 @@ SimilarBlocks* ForgingDetector::getMainShiftVector(SimilarBlocks* blocks)
         if(hTrace->freq > count)
 		{
 			count = hTrace->freq;
-			main = hTrace->rep;
+			main = hTrace->delta;
 		}
 
         auxBlock = auxBlock->next;
