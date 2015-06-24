@@ -321,7 +321,7 @@ SimilarBlocks* ForgingDetector::createSimilarBlockList(Bitmap const& image, int 
         if((diffVector)
                 && (diff[0] + diff[1] + diff[2] < t1)
                 && (diff[3] + diff[4] + diff[5] + diff[6] < t2)
-                && ABS(getShift(iterator->vect.pos.x, iterator->next->vect.pos.x, iterator->vect.pos.y, iterator->next->vect.pos.y)) > vectOffsetSize)
+                && ABS(getShift(iterator->vect.pos, iterator->next->vect.pos)) > vectOffsetSize)
         {
             // blocos b1 e b2 sao similares
             simBlock = new SimilarBlocks(
@@ -394,10 +394,10 @@ void ForgingDetector::filterSpuriousRegions(SimilarBlocks* simList, bool multire
  * @param y2 coordenada y do bloco 2
  * @return comprimento
  */
-int ForgingDetector::getShift(int x1, int x2, int y1, int y2)
+int ForgingDetector::getShift(Pos const& pos1, Pos const& pos2)
 {
-    int h = x1 - x2;
-    int v = y1 - y2;
+    int h = pos1.x - pos2.x;
+    int v = pos1.y - pos2.y;
 
     return (int) sqrt((h * h) + (v * v));
 }

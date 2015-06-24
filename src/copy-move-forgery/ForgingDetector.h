@@ -31,7 +31,7 @@ protected:
     static SimilarBlocks* createSimilarBlockList(Bitmap const& image, int bSize, CharVectList* vList);
     static void filterSpuriousRegions(SimilarBlocks* simList, bool multiregion);
 
-    static int getShift(int x1, int x2, int y1, int y2);
+    static int getShift(Pos const& pos1, Pos const& pos2);
     static MaxShifts getMainShifts(SimilarBlocks* blocks);
     static SimilarBlocks* getMainShiftVector(SimilarBlocks* blocks);
     static bool isGreaterShift(SimilarBlocks* simBlock, MaxShifts maxSh, int maxShift);
