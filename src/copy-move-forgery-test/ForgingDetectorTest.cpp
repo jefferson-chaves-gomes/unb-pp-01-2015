@@ -87,8 +87,8 @@ protected:
             ASSERT_TRUE(left != NULL);
             ASSERT_TRUE(right != NULL);
 
-            ASSERT_EQ(left->vect.x, right->vect.x);
-            ASSERT_EQ(left->vect.y, right->vect.y);
+            ASSERT_EQ(left->vect.pos.x, right->vect.pos.x);
+            ASSERT_EQ(left->vect.pos.y, right->vect.pos.y);
 
             for(int i = 0; i < CharVect::CHARS_SIZE; i++)
                 ASSERT_EQ(left->vect.c[i], right->vect.c[i]);
@@ -225,15 +225,15 @@ TEST_F(ForgingDetectorTest, operatorEqualSimilarBlock)
     SimilarBlocks* simBlkOld = new SimilarBlocks;
     SimilarBlocks* simBlkNew = new SimilarBlocks;
 
-    CharVect charVectOld1(0,0);
-    CharVect charVectOld2(0,0);
-    simBlkOld->setValues(charVectOld1, charVectOld2);
-    CharVect charVectNew1(1,1);
-    CharVect charVectNew2(1,1);
-    simBlkNew->setValues(charVectNew1, charVectNew2);
+    Pos posOld1(0,0);
+    Pos posOld2(0,0);
+    simBlkOld->setValues(posOld1, posOld2);
+    Pos posNew1(1,1);
+    Pos posNew2(1,1);
+    simBlkNew->setValues(posNew1, posNew2);
     ASSERT_TRUE(*simBlkOld != *simBlkNew);
 
-    simBlkOld->setValues(charVectNew1, charVectNew2);
+    simBlkOld->setValues(posNew1, posNew2);
     ASSERT_TRUE(*simBlkOld == *simBlkNew);
 
     assertEqualsSimilarBlocks(simBlkOld, simBlkNew);

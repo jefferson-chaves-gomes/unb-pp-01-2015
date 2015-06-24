@@ -90,10 +90,10 @@ bool ForgingDetector::byCharact(Bitmap const& image, bool multiregion, int bSize
     SimilarBlocks*simBlock = simList;
     while(simBlock != NULL)
     {
-        int b1x = simBlock->b1x;
-        int b1y = simBlock->b1y;
-        int b2x = simBlock->b2x;
-        int b2y = simBlock->b2y;
+        int b1x = simBlock->b1.x;
+        int b1y = simBlock->b1.y;
+        int b2x = simBlock->b2.x;
+        int b2y = simBlock->b2.y;
         for(int i = b1x; i < b1x + bSize; i++)
         {
             for(int j = b1y; j < b1y + bSize; j++)
@@ -102,7 +102,7 @@ bool ForgingDetector::byCharact(Bitmap const& image, bool multiregion, int bSize
                 detectImage.setPixel(b2x, b2y++, 255, 255, 255);
             }
             b2x++;
-            b2y = simBlock->b2y;
+            b2y = simBlock->b2.y;
         }
         simBlock = simBlock->next;
     }
@@ -321,12 +321,12 @@ SimilarBlocks* ForgingDetector::createSimilarBlockList(Bitmap const& image, int 
         if((diffVector)
                 && (diff[0] + diff[1] + diff[2] < t1)
                 && (diff[3] + diff[4] + diff[5] + diff[6] < t2)
-                && ABS(getShift(iterator->vect.x, iterator->next->vect.x, iterator->vect.y, iterator->next->vect.y)) > vectOffsetSize)
+                && ABS(getShift(iterator->vect.pos.x, iterator->next->vect.pos.x, iterator->vect.pos.y, iterator->next->vect.pos.y)) > vectOffsetSize)
         {
             // blocos b1 e b2 sao similares
             simBlock = new SimilarBlocks(
-                    iterator->vect,
-                    iterator->next->vect);
+                    iterator->vect.pos,
+                    iterator->next->vect.pos);
 
             if(simList == NULL)
             {

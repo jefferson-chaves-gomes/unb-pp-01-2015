@@ -1,21 +1,20 @@
 #include "utils.h"
 
 CharVect::CharVect() :
-        x(0), y(0)
+    pos()
 {
     initChars();
 }
 
 CharVect::CharVect(int x_, int y_) :
-        x(x_), y(y_)
+            pos(x_, y_)
 {
     initChars();
 }
 
 CharVect& CharVect::operator =(CharVect const& other)
 {
-    x = other.x;
-    y = other.y;
+    pos = other.pos;
     setChars(
         other.c[0],
         other.c[1],
@@ -29,8 +28,7 @@ CharVect& CharVect::operator =(CharVect const& other)
 
 CharVect::CharVect(CharVect const& other)
 {
-    x = other.x;
-    y = other.y;
+    pos = other.pos;
     setChars(
         other.c[0],
         other.c[1],
@@ -100,41 +98,34 @@ CharVectList& CharVectList::operator =(CharVectList const& other)
 /********************************************************************************/
 
 SimilarBlocks::SimilarBlocks() :
-        b1x(0),
-        b2x(0),
-        b1y(0),
-        b2y(0),
+        b1(),
+        b2(),
         dx(0),
         dy(0),
         next(NULL)
 {
 }
 
-SimilarBlocks::SimilarBlocks(CharVect const& b1, CharVect const& b2) :
+SimilarBlocks::SimilarBlocks(Pos const& b1, Pos const& b2) :
         next(NULL)
 {
     setValues(b1, b2);
 }
 
-void SimilarBlocks::setValues(CharVect const& b1, CharVect const& b2)
+void SimilarBlocks::setValues(Pos const& b1_, Pos const& b2_)
 {
-    b1x = b1.x;
-    b2x = b2.x;
-    b1y = b1.y;
-    b2y = b2.y;
-    dx = b1x - b2x;
-    dy = b1y - b2y;
+    b1 = b1_;
+    b2 = b2_;
+    dx = b1.x - b2.x;
+    dy = b1.y - b2.y;
 }
 
 bool SimilarBlocks::operator==(SimilarBlocks const& other)
 {
-    if(b1x != other.b1x) return false;
-    if(b2x != other.b2x) return false;
-    if(b1y != other.b1y) return false;
-    if(b2y != other.b2y) return false;
+    if(b1 != other.b1) return false;
+    if(b2 != other.b2) return false;
     if(dx != other.dx) return false;
     if(dy != other.dy) return false;
-
     return true;
 }
 

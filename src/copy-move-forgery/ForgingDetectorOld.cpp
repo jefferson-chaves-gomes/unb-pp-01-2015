@@ -90,10 +90,10 @@ bool ForgingDetectorOld::byCharact(Bitmap image, bool multiregion, int bSize)
     SimilarBlocks*simBlock = simList;
     while(simBlock != NULL)
     {
-        int b1x = simBlock->b1x;
-        int b1y = simBlock->b1y;
-        int b2x = simBlock->b2x;
-        int b2y = simBlock->b2y;
+        int b1x = simBlock->b1.x;
+        int b1y = simBlock->b1.y;
+        int b2x = simBlock->b2.x;
+        int b2y = simBlock->b2.y;
         for(int i = b1x; i < b1x + bSize; i++)
         {
             for(int j = b1y; j < b1y + bSize; j++)
@@ -102,7 +102,7 @@ bool ForgingDetectorOld::byCharact(Bitmap image, bool multiregion, int bSize)
                 detectImage.setPixel(b2x, b2y++, 255, 255, 255);
             }
             b2x++;
-            b2y = simBlock->b2y;
+            b2y = simBlock->b2.y;
         }
         simBlock = simBlock->next;
     }
@@ -201,8 +201,8 @@ CharVectList* ForgingDetectorOld::charactVector(Bitmap image, int bSize)
         }
 
         // percorrer bloco da imagem original
-        vetor->vect.x = dx;
-        vetor->vect.y = dy;
+        vetor->vect.pos.x = dx;
+        vetor->vect.pos.y = dy;
         for(int i = dx; i < dx + bSize && i < width; i++)
         {
             for(int j = dy; j < dy + bSize && j < height; j++)
@@ -319,10 +319,10 @@ SimilarBlocks* ForgingDetectorOld::createSimilarBlockList(Bitmap const& image, i
 
             if(diffVector && (diff[0] + diff[1] + diff[2] < t1) && (diff[3] + diff[4] + diff[5] + diff[6] < t2))
             {
-                if(ABS(getShift(b1Vector->vect.x, b2Vector->vect.x, b1Vector->vect.y, b2Vector->vect.y)) > L)
+                if(ABS(getShift(b1Vector->vect.pos.x, b2Vector->vect.pos.x, b1Vector->vect.pos.y, b2Vector->vect.pos.y)) > L)
                 {
                     // blocos b1 e b2 sao similares
-                    simBlock = newSimilarBlock(b1Vector->vect.x, b2Vector->vect.x, b1Vector->vect.y, b2Vector->vect.y);
+                    simBlock = newSimilarBlock(b1Vector->vect.pos.x, b2Vector->vect.pos.x, b1Vector->vect.pos.y, b2Vector->vect.pos.y);
                     if(simList == NULL)
                     {
                         simList = simBlock;
@@ -416,10 +416,10 @@ SimilarBlocks* ForgingDetectorOld::newSimilarBlock(int x1, int x2, int y1, int y
 {
     SimilarBlocks* block = new SimilarBlocks;
 
-    block->b1x = x1;
-    block->b2x = x2;
-    block->b1y = y1;
-    block->b2y = y2;
+    block->b1.x = x1;
+    block->b2.x = x2;
+    block->b1.y = y1;
+    block->b2.y = y2;
     block->dx = x1 - x2;
     block->dy = y1 - y2;
     block->next = NULL;

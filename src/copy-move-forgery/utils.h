@@ -46,7 +46,27 @@ class Pos
 public:
     int x;       // coordenada inicial x do bloco
     int y;       // coordenada inicial y do bloco
+    Pos() : x(0), y(0){}
     Pos(int x_, int y_) : x(x_), y(y_){}
+    Pos(Pos const& other) : x(other.x), y(other.y){}
+    Pos& operator=(Pos const& other)
+    {
+        x = other.x;
+        y = other.y;
+        return *(this);
+    }
+
+    bool operator==(Pos const& other)
+    {
+        if(x != other.x) return false;
+        if(y != other.y) return false;
+        return true;
+    }
+
+    bool operator!=(Pos const& other)
+    {
+        return !((*this) == other);
+    }
 };
 
 
@@ -55,8 +75,7 @@ class CharVect
 {
 public:
     static const int CHARS_SIZE = 7;
-    int x;       // coordenada inicial x do bloco
-    int y;       // coordenada inicial y do bloco
+    Pos pos;
     double c[CHARS_SIZE];
     //     c1:   // media R
     //     c2:   // media G
@@ -94,19 +113,17 @@ class SimilarBlocks
 {
 public:
     // para blocos de tamanho fixo
-    int b1x;    // coordenada x de inicio do bloco 1
-    int b2x;    // coordenada y de inicio do bloco 1
-    int b1y;    // coordenada x de inicio do bloco 2
-    int b2y;    // coordenada y de inicio do bloco 2
+    Pos b1;
+    Pos b2;
     int dx;     // dx = |x1 - x2|
     int dy;     // dy = |y1 - y2|
     SimilarBlocks* next;
 
     SimilarBlocks();
-    SimilarBlocks(CharVect const& b1, CharVect const& b2);
+    SimilarBlocks(Pos const& b1, Pos const& b2);
     bool operator==(SimilarBlocks const& other);
     bool operator!=(SimilarBlocks const& other);
-    void setValues(CharVect const& b1, CharVect const& b2);
+    void setValues(Pos const& b1, Pos const& b2);
 };
 
 class Histogram
