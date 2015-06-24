@@ -385,6 +385,17 @@ void ForgingDetector::filterSpuriousRegions(SimilarBlocks* simList, bool multire
     }
 }
 
+bool ForgingDetector::isGreaterShift(SimilarBlocks* simBlock, MaxShifts maxSh, int maxShift)
+{
+    bool shift1 = (ABS((simBlock->dx - maxSh.dx1)) > maxShift) || (ABS((simBlock->dy - maxSh.dy1)) > maxShift);
+    bool shift2 = (ABS((simBlock->dx - maxSh.dx2)) > maxShift) || (ABS((simBlock->dy - maxSh.dy2)) > maxShift);
+    bool shift3 = (ABS((simBlock->dx - maxSh.dx3)) > maxShift) || (ABS((simBlock->dy - maxSh.dy3)) > maxShift);
+
+    if(shift1 && shift2 && shift3)
+        return true;
+    return false;
+}
+
 /**
  * @func getShift
  * @brief calcula o comprimento do vetor de shift
@@ -532,16 +543,6 @@ SimilarBlocks* ForgingDetector::getMainShiftVector(SimilarBlocks* blocks)
 
     return main;
 }
-
-bool ForgingDetector::isGreaterShift(SimilarBlocks* simBlock, MaxShifts maxSh, int maxShift)
-{
-    if((ABS((simBlock->dx - maxSh.dx1)) > maxShift || ABS((simBlock->dy - maxSh.dy1)) > maxShift)
-    && (ABS((simBlock->dx - maxSh.dx2)) > maxShift || ABS((simBlock->dy - maxSh.dy2)) > maxShift)
-    && (ABS((simBlock->dx - maxSh.dx3)) > maxShift || ABS((simBlock->dy - maxSh.dy3)) > maxShift))
-        return true;
-    return false;
-}
-
 
 /**
  * @func opening
