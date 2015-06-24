@@ -91,8 +91,8 @@ bool ForgingDetector::byCharact(Bitmap const& image, bool multiregion, int bSize
     while(simBlock != NULL)
     {
         int b1x = simBlock->b1x;
-        int b1y = simBlock->b2x;
-        int b2x = simBlock->b1y;
+        int b1y = simBlock->b1y;
+        int b2x = simBlock->b2x;
         int b2y = simBlock->b2y;
         for(int i = b1x; i < b1x + bSize; i++)
         {

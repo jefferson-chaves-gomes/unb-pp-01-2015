@@ -91,8 +91,8 @@ bool ForgingDetectorOld::byCharact(Bitmap image, bool multiregion, int bSize)
     while(simBlock != NULL)
     {
         int b1x = simBlock->b1x;
-        int b1y = simBlock->b2x;
-        int b2x = simBlock->b1y;
+        int b1y = simBlock->b1y;
+        int b2x = simBlock->b2x;
         int b2y = simBlock->b2y;
         for(int i = b1x; i < b1x + bSize; i++)
         {
@@ -417,8 +417,8 @@ SimilarBlocks* ForgingDetectorOld::newSimilarBlock(int x1, int x2, int y1, int y
     SimilarBlocks* block = new SimilarBlocks;
 
     block->b1x = x1;
-    block->b1y = x2;
-    block->b2x = y1;
+    block->b2x = x2;
+    block->b1y = y1;
     block->b2y = y2;
     block->dx = x1 - x2;
     block->dy = y1 - y2;

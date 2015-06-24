@@ -86,8 +86,8 @@ class SimilarBlocks
 public:
     // para blocos de tamanho fixo
     int b1x;    // coordenada x de inicio do bloco 1
-    int b1y;    // coordenada y de inicio do bloco 1
-    int b2x;    // coordenada x de inicio do bloco 2
+    int b2x;    // coordenada y de inicio do bloco 1
+    int b1y;    // coordenada x de inicio do bloco 2
     int b2y;    // coordenada y de inicio do bloco 2
     int dx;     // dx = |x1 - x2|
     int dy;     // dy = |y1 - y2|

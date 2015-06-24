@@ -101,8 +101,8 @@ CharVectList& CharVectList::operator =(CharVectList const& other)
 
 SimilarBlocks::SimilarBlocks() :
         b1x(0),
-        b1y(0),
         b2x(0),
+        b1y(0),
         b2y(0),
         dx(0),
         dy(0),
@@ -135,8 +135,8 @@ void SimilarBlocks::setValues(int b1x_,
             int dy_)
 {
     b1x = b1x_;
-    b1y = b1y_;
-    b2x = b2x_;
+    b2x = b1y_;
+    b1y = b2x_;
     b2y = b2y_;
     dx = dx_;
     dy = dy_;
@@ -145,8 +145,8 @@ void SimilarBlocks::setValues(int b1x_,
 bool SimilarBlocks::operator==(SimilarBlocks const& other)
 {
     if(b1x != other.b1x) return false;
-    if(b1y != other.b1y) return false;
     if(b2x != other.b2x) return false;
+    if(b1y != other.b1y) return false;
     if(b2y != other.b2y) return false;
     if(dx != other.dx) return false;
     if(dy != other.dy) return false;
