@@ -325,12 +325,8 @@ SimilarBlocks* ForgingDetector::createSimilarBlockList(Bitmap const& image, int 
         {
             // blocos b1 e b2 sao similares
             simBlock = new SimilarBlocks(
-                    iterator->vect.x,
-                    iterator->next->vect.x,
-                    iterator->vect.y,
-                    iterator->next->vect.y,
-                    iterator->vect.x - iterator->next->vect.x,
-                    iterator->vect.y - iterator->next->vect.y);
+                    iterator->vect,
+                    iterator->next->vect);
 
             if(simList == NULL)
             {

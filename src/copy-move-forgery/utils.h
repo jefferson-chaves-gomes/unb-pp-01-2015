@@ -41,6 +41,15 @@ public:
     }
 };
 
+class Pos
+{
+public:
+    int x;       // coordenada inicial x do bloco
+    int y;       // coordenada inicial y do bloco
+    Pos(int x_, int y_) : x(x_), y(y_){}
+};
+
+
 /* para o algoritmo de vetor de caracteristicas */
 class CharVect
 {
@@ -94,10 +103,10 @@ public:
     SimilarBlocks* next;
 
     SimilarBlocks();
-    SimilarBlocks(int b1x_, int b1y_, int b2x_, int b2y_, int dx_, int dy_);
+    SimilarBlocks(CharVect const& b1, CharVect const& b2);
     bool operator==(SimilarBlocks const& other);
     bool operator!=(SimilarBlocks const& other);
-    void setValues(int b1x_, int b1y_, int b2x_, int b2y_, int dx_, int dy_);
+    void setValues(CharVect const& b1, CharVect const& b2);
 };
 
 class Histogram

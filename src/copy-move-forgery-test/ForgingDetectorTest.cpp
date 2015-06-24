@@ -225,13 +225,15 @@ TEST_F(ForgingDetectorTest, operatorEqualSimilarBlock)
     SimilarBlocks* simBlkOld = new SimilarBlocks;
     SimilarBlocks* simBlkNew = new SimilarBlocks;
 
-    simBlkOld->setValues(0,0,0,0,0,0);
-    simBlkNew->setValues(1,1,1,1,1,1);
-
+    CharVect charVectOld1(0,0);
+    CharVect charVectOld2(0,0);
+    simBlkOld->setValues(charVectOld1, charVectOld2);
+    CharVect charVectNew1(1,1);
+    CharVect charVectNew2(1,1);
+    simBlkNew->setValues(charVectNew1, charVectNew2);
     ASSERT_TRUE(*simBlkOld != *simBlkNew);
 
-    simBlkOld->setValues(1,1,1,1,1,1);
-
+    simBlkOld->setValues(charVectNew1, charVectNew2);
     ASSERT_TRUE(*simBlkOld == *simBlkNew);
 
     assertEqualsSimilarBlocks(simBlkOld, simBlkNew);

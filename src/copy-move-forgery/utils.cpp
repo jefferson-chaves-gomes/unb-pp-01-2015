@@ -110,36 +110,20 @@ SimilarBlocks::SimilarBlocks() :
 {
 }
 
-SimilarBlocks::SimilarBlocks(
-            int b1x_,
-            int b1y_,
-            int b2x_,
-            int b2y_,
-            int dx_,
-            int dy_) :
+SimilarBlocks::SimilarBlocks(CharVect const& b1, CharVect const& b2) :
         next(NULL)
 {
-    setValues(b1x_,
-            b1y_,
-            b2x_,
-            b2y_,
-            dx_,
-            dy_);
+    setValues(b1, b2);
 }
 
-void SimilarBlocks::setValues(int b1x_,
-            int b1y_,
-            int b2x_,
-            int b2y_,
-            int dx_,
-            int dy_)
+void SimilarBlocks::setValues(CharVect const& b1, CharVect const& b2)
 {
-    b1x = b1x_;
-    b2x = b1y_;
-    b1y = b2x_;
-    b2y = b2y_;
-    dx = dx_;
-    dy = dy_;
+    b1x = b1.x;
+    b2x = b2.x;
+    b1y = b1.y;
+    b2y = b2.y;
+    dx = b1x - b2x;
+    dy = b1y - b2y;
 }
 
 bool SimilarBlocks::operator==(SimilarBlocks const& other)
