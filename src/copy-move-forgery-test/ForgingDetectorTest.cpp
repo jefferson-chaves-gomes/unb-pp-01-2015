@@ -17,13 +17,13 @@ class ForgingDetectorTest :
 {
 protected:
 
-    void assertEqualsSimilarBlocks(SimilarBlocksOld* left, VecSimilarBlocks& vect)
+    void assertEqualsSimilarBlocks(SimilarBlocksOld* left, ListSimilarBlocks& vect)
     {
         ASSERT_TRUE(left != NULL);
         ASSERT_TRUE(vect.size() != 0);
 //        int count(0);
 
-        for(VecSimilarBlocks::iterator right=vect.begin();
+        for(ListSimilarBlocks::iterator right=vect.begin();
                 left != NULL || right != vect.end();
                 right++, left = left->next)
         {
@@ -56,10 +56,10 @@ protected:
         std::cout << "Delta: " << delta.dx << "|" << delta.dy << std::endl;
     }
 
-    void printSimilarBlocks(VecSimilarBlocks const& auxBlock, int limit = 0)
+    void printSimilarBlocks(ListSimilarBlocks const& auxBlock, int limit = 0)
     {
         int count(0);
-        for(VecSimilarBlocks::const_iterator it=auxBlock.begin();
+        for(ListSimilarBlocks::const_iterator it=auxBlock.begin();
                 it != auxBlock.end();
                 it++)
         {
@@ -179,9 +179,9 @@ protected:
         return head;
     }
 
-    VecSimilarBlocks createSimilarBlocks(VectPos const& vectPos)
+    ListSimilarBlocks createSimilarBlocks(VectPos const& vectPos)
     {
-        VecSimilarBlocks headNew;
+        ListSimilarBlocks headNew;
 
         for(VectPos::const_iterator it = vectPos.begin(); it != vectPos.end(); it++)
             headNew.push_back(SimilarBlocks(it->first, it->second));
@@ -358,7 +358,7 @@ TEST_F(ForgingDetectorTest, createSimilarBlockList)
     long double elapsedOld = timeOld.elapsedMicroseconds();
 
     Timer timeNew;
-    VecSimilarBlocks simBlkNew;
+    ListSimilarBlocks simBlkNew;
     createSimilarBlockList(BITMAP, BLOCK_SIZE, vList, simBlkNew);
     long double elapsedNew = timeNew.elapsedMicroseconds();
 
@@ -374,7 +374,7 @@ TEST_F(ForgingDetectorTest, createSimilarBlockList)
 TEST_F(ForgingDetectorTest, getMainShiftVector)
 {
     {
-    VecSimilarBlocks headNew;
+    ListSimilarBlocks headNew;
     headNew.push_back(SimilarBlocks(Pos(0,0), Pos(1,1)));
     headNew.push_back(SimilarBlocks(Pos(0,0), Pos(2,2)));
     headNew.push_back(SimilarBlocks(Pos(0,0), Pos(1,1)));
@@ -395,7 +395,7 @@ TEST_F(ForgingDetectorTest, getMainShiftVector)
     CharVectList* vList = getCopyOfCharacVec();
     SimilarBlocksOld* simBlkOld =
             ForgingDetectorOld::createSimilarBlockList(BITMAP, BLOCK_SIZE, vList);
-    VecSimilarBlocks simBlkNew;
+    ListSimilarBlocks simBlkNew;
     createSimilarBlockList(BITMAP, BLOCK_SIZE, vList, simBlkNew);
 
     Timer timeOld;
@@ -418,7 +418,7 @@ TEST_F(ForgingDetectorTest, filterSpuriousRegionsFake)
 {
     VectPos vectPos(createFakeVectPos());
 
-    VecSimilarBlocks headNew(createSimilarBlocks(vectPos));
+    ListSimilarBlocks headNew(createSimilarBlocks(vectPos));
     SimilarBlocksOld *headOld(createSimilarBlocksOld(vectPos));
 
     assertEqualsSimilarBlocks(headOld, headNew);
@@ -449,7 +449,7 @@ TEST_F(ForgingDetectorTest, filterSpuriousRegions)
     CharVectList* vList = getCopyOfCharacVec();
 
     SimilarBlocksOld* simBlkOld = ForgingDetectorOld::createSimilarBlockList(BITMAP, BLOCK_SIZE, vList);
-    VecSimilarBlocks simBlkNew;
+    ListSimilarBlocks simBlkNew;
     createSimilarBlockList(BITMAP, BLOCK_SIZE, vList, simBlkNew);
 
     SimilarBlocksOld* deltaPosOld = ForgingDetectorOld::getMainShiftVector(simBlkOld);

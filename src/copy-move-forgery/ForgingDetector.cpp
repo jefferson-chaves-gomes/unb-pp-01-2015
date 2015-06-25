@@ -59,7 +59,7 @@ bool ForgingDetector::byCharact(Bitmap const& image, int bSize)
 
     /* passo 2: buscar blocos similares */
     logger("[MSG " << ++dbgmsg << "] Buscando blocos similares...");
-    VecSimilarBlocks simList;
+    ListSimilarBlocks simList;
     createSimilarBlockList(image, bSize, vList, simList);
 
     /* passo 3: */
@@ -90,7 +90,7 @@ bool ForgingDetector::byCharact(Bitmap const& image, int bSize)
     }
 
 
-    for(VecSimilarBlocks::iterator it = simList.begin(); it!=simList.end(); it++)
+    for(ListSimilarBlocks::iterator it = simList.begin(); it!=simList.end(); it++)
     {
         int b1x = it->b1.x;
         int b1y = it->b1.y;
@@ -292,7 +292,7 @@ CharVectList* ForgingDetector::addVectLexOrder(CharVectList* vecOrdered, CharVec
     return *head_ref;
 }
 
-void ForgingDetector::createSimilarBlockList(Bitmap const& image, int bSize, CharVectList* vList, VecSimilarBlocks & simList)
+void ForgingDetector::createSimilarBlockList(Bitmap const& image, int bSize, CharVectList* vList, ListSimilarBlocks & simList)
 {
     int width = image.getWidth();
     int height = image.getHeight();
@@ -336,10 +336,10 @@ bool ForgingDetector::isBlockSimilarSpurious(DeltaPos const& current, DeltaPos c
     return (ABS((current.dx - mainShift.dx)) > MAX_SHIFT || ABS((current.dy - mainShift.dy)) > MAX_SHIFT);
 }
 
-void ForgingDetector::filterSpuriousRegions(VecSimilarBlocks& simList)
+void ForgingDetector::filterSpuriousRegions(ListSimilarBlocks& simList)
 {
     DeltaPos mainShift(getMainShiftVector(simList));
-    for (VecSimilarBlocks::iterator it = simList.begin(); it != simList.end();)
+    for (ListSimilarBlocks::iterator it = simList.begin(); it != simList.end();)
     {
     	if(isBlockSimilarSpurious(it->delta, mainShift))
     		it = simList.erase(it);
@@ -373,14 +373,14 @@ int ForgingDetector::getShift(Pos const& pos1, Pos const& pos2)
  * @return bloco que representa o principal shift
  */
 
-DeltaPos ForgingDetector::getMainShiftVector(VecSimilarBlocks const& blocks)
+DeltaPos ForgingDetector::getMainShiftVector(ListSimilarBlocks const& blocks)
 {
     int count(0);
     DeltaPos main(0,0);
     std::map<DeltaPos, int> histograms;
     /* criar histograma de deltas */
 
-    for(VecSimilarBlocks::const_iterator it = blocks.begin(); it!=blocks.end(); it++)
+    for(ListSimilarBlocks::const_iterator it = blocks.begin(); it!=blocks.end(); it++)
     {
         int& freq(histograms[it->delta]);
         if(++freq > count)

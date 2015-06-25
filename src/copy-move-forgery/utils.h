@@ -2,7 +2,7 @@
 #define _UTILS_H_
 
 #include <stddef.h>
-#include <vector>
+#include <list>
 
 #define CHARACT_VECTOR      "-v"
 #define GRAYSCALE           "-c"
@@ -181,7 +181,7 @@ public:
     void setValues(Pos const& b1, Pos const& b2);
 };
 
-typedef std::vector<SimilarBlocks>  VecSimilarBlocks;
+typedef std::list<SimilarBlocks>  ListSimilarBlocks;
 
 class HistogramOld
 {
