@@ -100,16 +100,14 @@ CharVectList& CharVectList::operator =(CharVectList const& other)
 SimilarBlocks::SimilarBlocks() :
         b1(),
         b2(),
-        delta(0, 0),
-        next(NULL)
+        delta(0, 0)
 {
 }
 
 SimilarBlocks::SimilarBlocks(Pos const& b1_, Pos const& b2_) :
         b1(b1_),
         b2(b2_),
-        delta(b1_, b2_),
-        next(NULL)
+        delta(b1_, b2_)
 {
 }
 

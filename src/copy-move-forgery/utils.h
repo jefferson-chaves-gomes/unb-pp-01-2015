@@ -2,6 +2,7 @@
 #define _UTILS_H_
 
 #include <stddef.h>
+#include <vector>
 
 #define CHARACT_VECTOR      "-v"
 #define GRAYSCALE           "-c"
@@ -46,14 +47,14 @@ public:
         return *(this);
     }
 
-    bool operator==(Pos const& other)
+    bool operator==(Pos const& other) const
     {
         if(x != other.x) return false;
         if(y != other.y) return false;
         return true;
     }
 
-    bool operator!=(Pos const& other)
+    bool operator!=(Pos const& other) const
     {
         return !((*this) == other);
     }
@@ -172,7 +173,6 @@ public:
     Pos b1;
     Pos b2;
     DeltaPos delta;
-    SimilarBlocks* next;
 
     SimilarBlocks();
     SimilarBlocks(Pos const& b1, Pos const& b2);
@@ -180,6 +180,8 @@ public:
     bool operator!=(SimilarBlocks const& other);
     void setValues(Pos const& b1, Pos const& b2);
 };
+
+typedef std::vector<SimilarBlocks>  VecSimilarBlocks;
 
 class HistogramOld
 {

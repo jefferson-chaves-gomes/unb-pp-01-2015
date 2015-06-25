@@ -28,11 +28,11 @@ protected:
     static CharVectList* charactVector(Bitmap const& image, int bSize);
     static CharVectList* getCharVectListForBlock(Bitmap const& image, int blkPosX, int blkPosY, int blkSize);
     static CharVectList* addVectLexOrder(CharVectList* start, CharVectList* vetor);
-    static SimilarBlocks* createSimilarBlockList(Bitmap const& image, int bSize, CharVectList* vList);
-    static void filterSpuriousRegions(SimilarBlocks* simList);
+    static void createSimilarBlockList(Bitmap const& image, int bSize, CharVectList* vList, VecSimilarBlocks &simList);
+    static void filterSpuriousRegions(VecSimilarBlocks& simList);
 
     static int getShift(Pos const& pos1, Pos const& pos2);
-    static DeltaPos getMainShiftVector(SimilarBlocks* blocks);
+    static DeltaPos getMainShiftVector(VecSimilarBlocks const& blocks);
 };
 
 #endif

@@ -18,23 +18,23 @@ class ForgingDetectorTest :
 {
 protected:
 
-    void assertEqualsSimilarBlocks(SimilarBlocksOld* left, SimilarBlocks* right)
+    void assertEqualsSimilarBlocks(SimilarBlocksOld* left, VecSimilarBlocks& vect)
     {
         ASSERT_TRUE(left != NULL);
-        ASSERT_TRUE(right != NULL);
+        ASSERT_TRUE(vect.size() != 0);
+        int count(0);
 
-        while(left != NULL || right != NULL)
+        for(VecSimilarBlocks::iterator right=vect.begin();
+                left != NULL || right != vect.end();
+                right++, left = left->next)
         {
             ASSERT_TRUE(left != NULL);
-            ASSERT_TRUE(right != NULL);
+            ASSERT_TRUE(right != vect.end());
 
-            ASSERT_TRUE(left->b1 == right->b1);
-            ASSERT_TRUE(left->b2 == right->b2);
-            ASSERT_TRUE(left->dx == right->delta.dx);
-            ASSERT_TRUE(left->dy == right->delta.dy);
-
-            left = left->next;
-            right = right->next;
+            ASSERT_EQ(left->b1, right->b1);
+            ASSERT_EQ(left->b2, right->b2);
+            ASSERT_EQ(left->dx, right->delta.dx);
+            ASSERT_EQ(left->dy, right->delta.dy);
         }
     }
 
@@ -52,31 +52,35 @@ protected:
         std::cout << "######################" << std::endl;
     }
 
-
     void printDeltaPos(DeltaPos const& delta)
     {
         std::cout << "Delta: " << delta.dx << "|" << delta.dy << std::endl;
     }
 
-    void printSimilarBlocks(SimilarBlocks* auxBlock)
+    void printSimilarBlocks(VecSimilarBlocks const& auxBlock, int limit = 0)
     {
         int count(0);
-        while(auxBlock != NULL)
+        for(VecSimilarBlocks::const_iterator it=auxBlock.begin();
+                it != auxBlock.end();
+                it++)
         {
             std::cout << "Block " << count++ << ": ";
-            printDeltaPos(auxBlock->delta);
-            auxBlock = auxBlock->next;
+            printDeltaPos(it->delta);
+            if(limit!=0 && limit <= count)
+                break;
         }
     }
 
-    void printSimilarBlocksOld(SimilarBlocksOld* auxBlock)
+    void printSimilarBlocksOld(SimilarBlocksOld* auxBlock, int limit = 0)
     {
         int count(0);
         while(auxBlock != NULL)
         {
-            std::cout << "Block " << count++ << ": ";
+            std::cout << "Old Block " << count++ << ": ";
             std::cout << "Delta: " << auxBlock->dx << "|" << auxBlock->dy << std::endl;
             auxBlock = auxBlock->next;
+            if(limit!=0 && limit <= count)
+                break;
         }
     }
 
@@ -163,167 +167,181 @@ protected:
 
 CharVectList* ForgingDetectorTest::vList;
 
-TEST_F(ForgingDetectorTest, addVectLexOrder)
-{
-    CharVectList * firstOld = new CharVectList;
-    firstOld->vect.setChars(0,0,0,0,0,0,1);
-    CharVectList * secndOld = new CharVectList;
-    secndOld->vect.setChars(0,0,0,0,0,1,1);
-    CharVectList * thirdOld = new CharVectList;
-    thirdOld->vect.setChars(0,0,0,0,1,1,1);
-    CharVectList * thirdRepOld = new CharVectList;
-    thirdOld->vect.setChars(0,0,0,0,1,1,1);
-
-    CharVectList * firstNew = new CharVectList;
-    firstNew->vect.setChars(0,0,0,0,0,0,1);
-    CharVectList * secndNew = new CharVectList;
-    secndNew->vect.setChars(0,0,0,0,0,1,1);
-    CharVectList * thirdNew = new CharVectList;
-    thirdNew->vect.setChars(0,0,0,0,1,1,1);
-    CharVectList * thirdRepNew = new CharVectList;
-    thirdOld->vect.setChars(0,0,0,0,1,1,1);
-
-    CharVectList * orderedNew = NULL;
-    CharVectList * orderedOld = NULL;
-
-    orderedOld = ForgingDetectorOld::addVectLexOrder(orderedOld, secndOld);
-    ASSERT_EQ(orderedOld, secndOld);
-    orderedOld = ForgingDetectorOld::addVectLexOrder(orderedOld, firstOld);
-    orderedOld = ForgingDetectorOld::addVectLexOrder(orderedOld, thirdOld);
-    orderedOld = ForgingDetectorOld::addVectLexOrder(orderedOld, thirdRepOld);
-
-    orderedNew = addVectLexOrder(orderedNew, secndNew);
-    ASSERT_EQ(orderedNew, secndNew);
-    orderedNew = addVectLexOrder(orderedNew, firstNew);
-    orderedNew = addVectLexOrder(orderedNew, thirdNew);
-    orderedNew = addVectLexOrder(orderedNew, thirdRepNew);
-    assertEqualsCharVectList(orderedOld, orderedNew);
-
-    orderedNew = addVectLexOrder(orderedNew, secndOld);
-    orderedNew = addVectLexOrder(orderedNew, thirdRepOld);
-    orderedNew = addVectLexOrder(orderedNew, firstOld);
-    orderedNew = addVectLexOrder(orderedNew, thirdOld);
-    assertLexicalOrderCharVectList(orderedNew);
-
-    thirdRepOld->next = NULL;
-    orderedNew = NULL;
-    orderedNew = addVectLexOrder(orderedNew, thirdRepOld);
-    orderedNew = addVectLexOrder(orderedNew, thirdNew);
-    orderedNew = addVectLexOrder(orderedNew, secndOld);
-    orderedNew = addVectLexOrder(orderedNew, firstNew);
-    assertLexicalOrderCharVectList(orderedNew);
-}
-
-TEST_F(ForgingDetectorTest, operator_less_or_equals_to)
-{
-    CharVect secnd;
-    CharVect first;
-
-    first.setChars(0,0,0,0,0,0,1);
-    secnd.setChars(0,0,0,0,1,1,1);
-
-    ASSERT_FALSE( secnd <= first);
-    ASSERT_TRUE( first <= secnd);
-
-    first.setChars(0,0,0,1,1,1,1);
-    secnd.setChars(0,0,1,1,1,1,1);
-
-    ASSERT_FALSE( secnd <= first);
-    ASSERT_TRUE( first <= secnd);
-
-    first.setChars(0,0,0,0,0,0,1);
-    secnd.setChars(0,0,0,0,0,1,0);
-
-    ASSERT_FALSE( secnd <= first);
-    ASSERT_TRUE( first <= secnd);
-
-    first.setChars(0,0,0,0,0,0,0);
-    secnd.setChars(1,0,0,0,0,0,0);
-
-    ASSERT_FALSE( secnd <= first);
-    ASSERT_TRUE( first <= secnd);
-
-    first.setChars(0,0,0,0,0,0,0);
-    secnd.setChars(0,0,0,0,0,0,0);
-
-    ASSERT_TRUE( secnd <= first);
-    ASSERT_TRUE( first <= secnd);
-}
-
-TEST_F(ForgingDetectorTest, operatorEqualSimilarBlock)
-{
-    Timer timeOld;
-    SimilarBlocks* simBlkOld = new SimilarBlocks;
-    SimilarBlocks* simBlkNew = new SimilarBlocks;
-
-    Pos posOld1(0,0);
-    Pos posOld2(0,0);
-    simBlkOld->setValues(posOld1, posOld2);
-    Pos posNew1(1,1);
-    Pos posNew2(1,1);
-    simBlkNew->setValues(posNew1, posNew2);
-    ASSERT_TRUE(*simBlkOld != *simBlkNew);
-
-    simBlkOld->setValues(posNew1, posNew2);
-    ASSERT_TRUE(*simBlkOld == *simBlkNew);
-}
-
-TEST_F(ForgingDetectorTest, charac_vec)
-{
-    Bitmap bmp(std::string("../copy-move-forgery/resource/icone.bmp"));
-
-    const int BLOCK_SIZE = 20;
-
-    Timer timeOld;
-    CharVectList* vListOld = ForgingDetectorOld::charactVector(bmp, BLOCK_SIZE);
-    long double elapsedOld = timeOld.elapsedMicroseconds();
-
-    Timer timeNew;
-    CharVectList* vListNew = ForgingDetectorTest::charactVector(bmp, BLOCK_SIZE);
-    long double elapsedNew = timeNew.elapsedMicroseconds();
-
-    std::cout << "Old: " << elapsedOld << std::endl;
-    std::cout << "New: " << elapsedNew << std::endl;
-    std::cout << "Speedup: " << (elapsedOld / elapsedNew) << std::endl;
-
-    assertEqualsCharVectList(vListOld, vListNew);
-}
-
-TEST_F(ForgingDetectorTest, createSimilarBlockList)
-{
-    CharVectList* vList = getCopyOfCharacVec();
-
-    Timer timeOld;
-    SimilarBlocksOld* simBlkOld = ForgingDetectorOld::createSimilarBlockList(BITMAP, BLOCK_SIZE, vList);
-    long double elapsedOld = timeOld.elapsedMicroseconds();
-
-    Timer timeNew;
-    SimilarBlocks* simBlkNew = createSimilarBlockList(BITMAP, BLOCK_SIZE, vList);
-    long double elapsedNew = timeNew.elapsedMicroseconds();
-
-    std::cout << "Old: " << elapsedOld << std::endl;
-    std::cout << "New: " << elapsedNew << std::endl;
-    std::cout << "Speedup: " << (elapsedOld / elapsedNew) << std::endl;
-
-    assertEqualsSimilarBlocks(simBlkOld, simBlkNew);
-
-    LinkedListCleaner::clear(vList);
-}
+//TEST_F(ForgingDetectorTest, addVectLexOrder)
+//{
+//    CharVectList * firstOld = new CharVectList;
+//    firstOld->vect.setChars(0,0,0,0,0,0,1);
+//    CharVectList * secndOld = new CharVectList;
+//    secndOld->vect.setChars(0,0,0,0,0,1,1);
+//    CharVectList * thirdOld = new CharVectList;
+//    thirdOld->vect.setChars(0,0,0,0,1,1,1);
+//    CharVectList * thirdRepOld = new CharVectList;
+//    thirdOld->vect.setChars(0,0,0,0,1,1,1);
+//
+//    CharVectList * firstNew = new CharVectList;
+//    firstNew->vect.setChars(0,0,0,0,0,0,1);
+//    CharVectList * secndNew = new CharVectList;
+//    secndNew->vect.setChars(0,0,0,0,0,1,1);
+//    CharVectList * thirdNew = new CharVectList;
+//    thirdNew->vect.setChars(0,0,0,0,1,1,1);
+//    CharVectList * thirdRepNew = new CharVectList;
+//    thirdOld->vect.setChars(0,0,0,0,1,1,1);
+//
+//    CharVectList * orderedNew = NULL;
+//    CharVectList * orderedOld = NULL;
+//
+//    orderedOld = ForgingDetectorOld::addVectLexOrder(orderedOld, secndOld);
+//    ASSERT_EQ(orderedOld, secndOld);
+//    orderedOld = ForgingDetectorOld::addVectLexOrder(orderedOld, firstOld);
+//    orderedOld = ForgingDetectorOld::addVectLexOrder(orderedOld, thirdOld);
+//    orderedOld = ForgingDetectorOld::addVectLexOrder(orderedOld, thirdRepOld);
+//
+//    orderedNew = addVectLexOrder(orderedNew, secndNew);
+//    ASSERT_EQ(orderedNew, secndNew);
+//    orderedNew = addVectLexOrder(orderedNew, firstNew);
+//    orderedNew = addVectLexOrder(orderedNew, thirdNew);
+//    orderedNew = addVectLexOrder(orderedNew, thirdRepNew);
+//    assertEqualsCharVectList(orderedOld, orderedNew);
+//
+//    orderedNew = addVectLexOrder(orderedNew, secndOld);
+//    orderedNew = addVectLexOrder(orderedNew, thirdRepOld);
+//    orderedNew = addVectLexOrder(orderedNew, firstOld);
+//    orderedNew = addVectLexOrder(orderedNew, thirdOld);
+//    assertLexicalOrderCharVectList(orderedNew);
+//
+//    thirdRepOld->next = NULL;
+//    orderedNew = NULL;
+//    orderedNew = addVectLexOrder(orderedNew, thirdRepOld);
+//    orderedNew = addVectLexOrder(orderedNew, thirdNew);
+//    orderedNew = addVectLexOrder(orderedNew, secndOld);
+//    orderedNew = addVectLexOrder(orderedNew, firstNew);
+//    assertLexicalOrderCharVectList(orderedNew);
+//}
+//
+//TEST_F(ForgingDetectorTest, operator_less_or_equals_to)
+//{
+//    CharVect secnd;
+//    CharVect first;
+//
+//    first.setChars(0,0,0,0,0,0,1);
+//    secnd.setChars(0,0,0,0,1,1,1);
+//
+//    ASSERT_FALSE( secnd <= first);
+//    ASSERT_TRUE( first <= secnd);
+//
+//    first.setChars(0,0,0,1,1,1,1);
+//    secnd.setChars(0,0,1,1,1,1,1);
+//
+//    ASSERT_FALSE( secnd <= first);
+//    ASSERT_TRUE( first <= secnd);
+//
+//    first.setChars(0,0,0,0,0,0,1);
+//    secnd.setChars(0,0,0,0,0,1,0);
+//
+//    ASSERT_FALSE( secnd <= first);
+//    ASSERT_TRUE( first <= secnd);
+//
+//    first.setChars(0,0,0,0,0,0,0);
+//    secnd.setChars(1,0,0,0,0,0,0);
+//
+//    ASSERT_FALSE( secnd <= first);
+//    ASSERT_TRUE( first <= secnd);
+//
+//    first.setChars(0,0,0,0,0,0,0);
+//    secnd.setChars(0,0,0,0,0,0,0);
+//
+//    ASSERT_TRUE( secnd <= first);
+//    ASSERT_TRUE( first <= secnd);
+//}
+//
+//TEST_F(ForgingDetectorTest, operatorEqualSimilarBlock)
+//{
+//    Timer timeOld;
+//    SimilarBlocks* simBlkOld = new SimilarBlocks;
+//    SimilarBlocks* simBlkNew = new SimilarBlocks;
+//
+//    Pos posOld1(0,0);
+//    Pos posOld2(0,0);
+//    simBlkOld->setValues(posOld1, posOld2);
+//    Pos posNew1(1,1);
+//    Pos posNew2(1,1);
+//    simBlkNew->setValues(posNew1, posNew2);
+//    ASSERT_TRUE(*simBlkOld != *simBlkNew);
+//
+//    simBlkOld->setValues(posNew1, posNew2);
+//    ASSERT_TRUE(*simBlkOld == *simBlkNew);
+//}
+//
+//TEST_F(ForgingDetectorTest, charac_vec)
+//{
+//    Bitmap bmp(std::string("../copy-move-forgery/resource/icone.bmp"));
+//
+//    const int BLOCK_SIZE = 20;
+//
+//    Timer timeOld;
+//    CharVectList* vListOld = ForgingDetectorOld::charactVector(bmp, BLOCK_SIZE);
+//    long double elapsedOld = timeOld.elapsedMicroseconds();
+//
+//    Timer timeNew;
+//    CharVectList* vListNew = ForgingDetectorTest::charactVector(bmp, BLOCK_SIZE);
+//    long double elapsedNew = timeNew.elapsedMicroseconds();
+//
+//    std::cout << "Old: " << elapsedOld << std::endl;
+//    std::cout << "New: " << elapsedNew << std::endl;
+//    std::cout << "Speedup: " << (elapsedOld / elapsedNew) << std::endl;
+//
+//    assertEqualsCharVectList(vListOld, vListNew);
+//}
+//
+//TEST_F(ForgingDetectorTest, createSimilarBlockList)
+//{
+//    CharVectList* vList = getCopyOfCharacVec();
+//
+//    Timer timeOld;
+//    SimilarBlocksOld* simBlkOld = ForgingDetectorOld::createSimilarBlockList(BITMAP, BLOCK_SIZE, vList);
+//    long double elapsedOld = timeOld.elapsedMicroseconds();
+//
+//    Timer timeNew;
+//    VecSimilarBlocks simBlkNew;
+//    createSimilarBlockList(BITMAP, BLOCK_SIZE, vList, simBlkNew);
+//    long double elapsedNew = timeNew.elapsedMicroseconds();
+//
+//    std::cout << "Old: " << elapsedOld << std::endl;
+//    std::cout << "New: " << elapsedNew << std::endl;
+//    std::cout << "Speedup: " << (elapsedOld / elapsedNew) << std::endl;
+//
+//    assertEqualsSimilarBlocks(simBlkOld, simBlkNew);
+//
+//    LinkedListCleaner::clear(vList);
+//}
 
 TEST_F(ForgingDetectorTest, filterSpuriousRegions)
 {
     CharVectList* vList = getCopyOfCharacVec();
-    SimilarBlocksOld* simBlkOld = NULL;
-    SimilarBlocks* simBlkNew = NULL;
+    SimilarBlocksOld* simBlkOld = ForgingDetectorOld::createSimilarBlockList(BITMAP, BLOCK_SIZE, vList);
+    VecSimilarBlocks simBlkNew;
+    createSimilarBlockList(BITMAP, BLOCK_SIZE, vList, simBlkNew);
 
-    simBlkOld = ForgingDetectorOld::createSimilarBlockList(BITMAP, BLOCK_SIZE, vList);
+    SimilarBlocksOld* deltaPosOld = ForgingDetectorOld::getMainShiftVector(simBlkOld);
+    DeltaPos deltaPos = getMainShiftVector(simBlkNew);
+
+    ASSERT_EQ(deltaPos.dx, deltaPosOld->dx);
+    ASSERT_EQ(deltaPos.dy, deltaPosOld->dy);
+
+    assertEqualsSimilarBlocks(simBlkOld, simBlkNew);
+
+    const int PRINT_MAX=0;
+
     Timer timeOld;
     ForgingDetectorOld::filterSpuriousRegions(simBlkOld);
+    std::cout << "### OLD AFTER" << std::endl;
+    printSimilarBlocksOld(simBlkOld, PRINT_MAX);
     long double elapsedOld = timeOld.elapsedMicroseconds();
 
-    simBlkNew = createSimilarBlockList(BITMAP, BLOCK_SIZE, vList);
     Timer timeNew;
     filterSpuriousRegions(simBlkNew);
+    std::cout << "### NEW AFTER" << std::endl;
+    printSimilarBlocks(simBlkNew, PRINT_MAX);
     long double elapsedNew = timeNew.elapsedMicroseconds();
 
     assertEqualsSimilarBlocks(simBlkOld, simBlkNew);
@@ -335,45 +353,45 @@ TEST_F(ForgingDetectorTest, filterSpuriousRegions)
     LinkedListCleaner::clear(vList);
 }
 
-TEST_F(ForgingDetectorTest, getMainShiftVector)
-{
-    {
-    SimilarBlocks *headNew, *auxNew;
-    auxNew = headNew      = new SimilarBlocks(Pos(0,0), Pos(1,1));
-    auxNew = auxNew->next = new SimilarBlocks(Pos(0,0), Pos(2,2));
-    auxNew = auxNew->next = new SimilarBlocks(Pos(0,0), Pos(1,1));
-    auxNew = auxNew->next = new SimilarBlocks(Pos(0,0), Pos(2,2));
-    DeltaPos deltaPos = getMainShiftVector(headNew);
-
-    SimilarBlocksOld *headOld, *auxOld;
-    auxOld = headOld      = new SimilarBlocksOld(Pos(0,0), Pos(1,1));
-    auxOld = auxOld->next = new SimilarBlocksOld(Pos(0,0), Pos(2,2));
-    auxOld = auxOld->next = new SimilarBlocksOld(Pos(0,0), Pos(1,1));
-    auxOld = auxOld->next = new SimilarBlocksOld(Pos(0,0), Pos(2,2));
-    SimilarBlocksOld *deltaPosOld = ForgingDetectorOld::getMainShiftVector(headOld);
-
-    ASSERT_EQ(deltaPos.dx, deltaPosOld->dx);
-    ASSERT_EQ(deltaPos.dy, deltaPosOld->dy);
-    }
-
-    CharVectList* vList = getCopyOfCharacVec();
-    SimilarBlocksOld* simBlkOld =
-            ForgingDetectorOld::createSimilarBlockList(BITMAP, BLOCK_SIZE, vList);
-    SimilarBlocks* simBlkNew =
-            createSimilarBlockList(BITMAP, BLOCK_SIZE, vList);
-
-    Timer timeOld;
-    SimilarBlocksOld* deltaPosOld = ForgingDetectorOld::getMainShiftVector(simBlkOld);
-    long double elapsedOld = timeOld.elapsedMicroseconds();
-
-    Timer timeNew;
-    DeltaPos deltaPos = getMainShiftVector(simBlkNew);
-    long double elapsedNew = timeNew.elapsedMicroseconds();
-
-    std::cout << "Old: " << elapsedOld << std::endl;
-    std::cout << "New: " << elapsedNew << std::endl;
-    std::cout << "Speedup: " << (elapsedOld / elapsedNew) << std::endl;
-
-    ASSERT_EQ(deltaPos.dx, deltaPosOld->dx);
-    ASSERT_EQ(deltaPos.dy, deltaPosOld->dy);
-}
+//TEST_F(ForgingDetectorTest, getMainShiftVector)
+//{
+//    {
+//    VecSimilarBlocks headNew;
+//    headNew.push_back(SimilarBlocks(Pos(0,0), Pos(1,1)));
+//    headNew.push_back(SimilarBlocks(Pos(0,0), Pos(2,2)));
+//    headNew.push_back(SimilarBlocks(Pos(0,0), Pos(1,1)));
+//    headNew.push_back(SimilarBlocks(Pos(0,0), Pos(2,2)));
+//    DeltaPos deltaPos = getMainShiftVector(headNew);
+//
+//    SimilarBlocksOld *headOld, *auxOld;
+//    auxOld = headOld      = new SimilarBlocksOld(Pos(0,0), Pos(1,1));
+//    auxOld = auxOld->next = new SimilarBlocksOld(Pos(0,0), Pos(2,2));
+//    auxOld = auxOld->next = new SimilarBlocksOld(Pos(0,0), Pos(1,1));
+//    auxOld = auxOld->next = new SimilarBlocksOld(Pos(0,0), Pos(2,2));
+//    SimilarBlocksOld *deltaPosOld = ForgingDetectorOld::getMainShiftVector(headOld);
+//
+//    ASSERT_EQ(deltaPos.dx, deltaPosOld->dx);
+//    ASSERT_EQ(deltaPos.dy, deltaPosOld->dy);
+//    }
+//
+//    CharVectList* vList = getCopyOfCharacVec();
+//    SimilarBlocksOld* simBlkOld =
+//            ForgingDetectorOld::createSimilarBlockList(BITMAP, BLOCK_SIZE, vList);
+//    VecSimilarBlocks simBlkNew;
+//    createSimilarBlockList(BITMAP, BLOCK_SIZE, vList, simBlkNew);
+//
+//    Timer timeOld;
+//    SimilarBlocksOld* deltaPosOld = ForgingDetectorOld::getMainShiftVector(simBlkOld);
+//    long double elapsedOld = timeOld.elapsedMicroseconds();
+//
+//    Timer timeNew;
+//    DeltaPos deltaPos = getMainShiftVector(simBlkNew);
+//    long double elapsedNew = timeNew.elapsedMicroseconds();
+//
+//    std::cout << "Old: " << elapsedOld << std::endl;
+//    std::cout << "New: " << elapsedNew << std::endl;
+//    std::cout << "Speedup: " << (elapsedOld / elapsedNew) << std::endl;
+//
+//    ASSERT_EQ(deltaPos.dx, deltaPosOld->dx);
+//    ASSERT_EQ(deltaPos.dy, deltaPosOld->dy);
+//}

@@ -59,11 +59,12 @@ bool ForgingDetector::byCharact(Bitmap const& image, int bSize)
 
     /* passo 2: buscar blocos similares */
     logger("[MSG " << ++dbgmsg << "] Buscando blocos similares...");
-    SimilarBlocks* simList = createSimilarBlockList(image, bSize, vList);
+    VecSimilarBlocks simList;
+    createSimilarBlockList(image, bSize, vList, simList);
 
     /* passo 3: */
     // Se nao ha blocos similares, a imagem nao foi adulterada por copy-move
-    if(simList == NULL)
+    if(!simList.size())
         return false;
 
     logger("[MSG " << ++dbgmsg << "] Analisando shifts de deslocamento...");
@@ -88,13 +89,13 @@ bool ForgingDetector::byCharact(Bitmap const& image, int bSize)
         }
     }
 
-    SimilarBlocks*simBlock = simList;
-    while(simBlock != NULL)
+
+    for(VecSimilarBlocks::iterator it = simList.begin(); it!=simList.end(); it++)
     {
-        int b1x = simBlock->b1.x;
-        int b1y = simBlock->b1.y;
-        int b2x = simBlock->b2.x;
-        int b2y = simBlock->b2.y;
+        int b1x = it->b1.x;
+        int b1y = it->b1.y;
+        int b2x = it->b2.x;
+        int b2y = it->b2.y;
         for(int i = b1x; i < b1x + bSize; i++)
         {
             for(int j = b1y; j < b1y + bSize; j++)
@@ -103,9 +104,8 @@ bool ForgingDetector::byCharact(Bitmap const& image, int bSize)
                 detectImage.setPixel(b2x, b2y++, 255, 255, 255);
             }
             b2x++;
-            b2y = simBlock->b2.y;
+            b2y = it->b2.y;
         }
-        simBlock = simBlock->next;
     }
 
     // operacao de abertura na imagem
@@ -139,7 +139,6 @@ bool ForgingDetector::byCharact(Bitmap const& image, int bSize)
     /***/
 
     LinkedListCleaner::clear(vList);
-    LinkedListCleaner::clear(simList);
 
     return bForged;
 }
@@ -293,13 +292,10 @@ CharVectList* ForgingDetector::addVectLexOrder(CharVectList* vecOrdered, CharVec
     return *head_ref;
 }
 
-SimilarBlocks* ForgingDetector::createSimilarBlockList(Bitmap const& image, int bSize, CharVectList* vList)
+void ForgingDetector::createSimilarBlockList(Bitmap const& image, int bSize, CharVectList* vList, VecSimilarBlocks & simList)
 {
     int width = image.getWidth();
     int height = image.getHeight();
-    SimilarBlocks* simList = NULL;
-    SimilarBlocks* simBlock = NULL;
-    SimilarBlocks* simEnd = NULL;
     double diff[CharVect::CHARS_SIZE] = { 0, 0, 0, 0, 0, 0, 0 };
 
     int vectOffsetSize(BASE_L);
@@ -325,51 +321,23 @@ SimilarBlocks* ForgingDetector::createSimilarBlockList(Bitmap const& image, int 
                 && ABS(getShift(iterator->vect.pos, iterator->next->vect.pos)) > vectOffsetSize)
         {
             // blocos b1 e b2 sao similares
-            simBlock = new SimilarBlocks(
+            simList.push_back(
+                SimilarBlocks(
                     iterator->vect.pos,
-                    iterator->next->vect.pos);
-
-            if(simList == NULL)
-            {
-                simList = simBlock;
-                simEnd = simList;
-            }
-            else
-            {
-                simEnd->next = simBlock;
-                simEnd = simBlock;
-            }
+                    iterator->next->vect.pos));
         }
 
         iterator = iterator->next;
     }
-
-    return simList;
 }
 
-void ForgingDetector::filterSpuriousRegions(SimilarBlocks* simList)
+void ForgingDetector::filterSpuriousRegions(VecSimilarBlocks& simList)
 {
-    SimilarBlocks* simTrace = simList;
-    SimilarBlocks* simBlock = simList;
-
     DeltaPos mainShift = getMainShiftVector(simList);
-    while(simBlock != NULL)
+    for(VecSimilarBlocks::iterator it = simList.begin(); it!=simList.end(); it++)
     {
-        if(!(ABS((simBlock->delta.dx - mainShift.dx)) > MAX_SHIFT || ABS((simBlock->delta.dy - mainShift.dy)) > MAX_SHIFT))
-            simTrace = simBlock;
-        else
-        {
-            if(simBlock != simList)
-                simTrace->next = simBlock->next;
-            else
-            {
-                simList = simList->next;
-                simTrace = simList;
-            }
-            delete simBlock;
-        }
-
-        simBlock = simTrace->next;
+        if(ABS((it->delta.dx - mainShift.dx)) > MAX_SHIFT || ABS((it->delta.dy - mainShift.dy)) > MAX_SHIFT)
+            simList.erase(it);
     }
 }
 
@@ -398,21 +366,21 @@ int ForgingDetector::getShift(Pos const& pos1, Pos const& pos2)
  * @return bloco que representa o principal shift
  */
 
-DeltaPos ForgingDetector::getMainShiftVector(SimilarBlocks* blocks)
+DeltaPos ForgingDetector::getMainShiftVector(VecSimilarBlocks const& blocks)
 {
     int count(0);
     DeltaPos main(0,0);
     std::map<DeltaPos, int> histograms;
     /* criar histograma de deltas */
-    while(blocks != NULL)
+
+    for(VecSimilarBlocks::const_iterator it = blocks.begin(); it!=blocks.end(); it++)
     {
-        int& freq(histograms[blocks->delta]);
+        int& freq(histograms[it->delta]);
         if(++freq > count)
         {
-            main = blocks->delta;
+            main = it->delta;
             count = freq;
         }
-        blocks = blocks->next;
     }
 
     return main;

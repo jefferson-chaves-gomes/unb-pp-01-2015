@@ -361,6 +361,7 @@ void ForgingDetectorOld::filterSpuriousRegions(SimilarBlocksOld* simList)
             }
             else
                 simTrace->next = simBlock->next;
+
             delete simBlock;
             simBlock = simTrace->next;
         }
