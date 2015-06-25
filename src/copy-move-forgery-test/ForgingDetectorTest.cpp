@@ -7,7 +7,6 @@
 #include <string>
 #include "Timer.h"
 
-
 const int BLOCK_SIZE = 20;
 const std::string IMG_PATH("../copy-move-forgery/resource/publico.bmp");
 const Bitmap BITMAP(IMG_PATH);
@@ -372,74 +371,6 @@ TEST_F(ForgingDetectorTest, createSimilarBlockList)
     LinkedListCleaner::clear(vList);
 }
 
-TEST_F(ForgingDetectorTest, filterSpuriousRegions)
-{
-    CharVectList* vList = getCopyOfCharacVec();
-
-	{
-    VectPos vectPos(createFakeVectPos());
-
-    VecSimilarBlocks headNew(createSimilarBlocks(vectPos));
-    SimilarBlocksOld *headOld(createSimilarBlocksOld(vectPos));
-
-    assertEqualsSimilarBlocks(headOld, headNew);
-
-    DeltaPos deltaPos = getMainShiftVector(headNew);
-    SimilarBlocksOld *deltaPosOld = ForgingDetectorOld::getMainShiftVector(headOld);
-
-    ASSERT_EQ(deltaPos.dx, deltaPosOld->dx);
-    ASSERT_EQ(deltaPos.dy, deltaPosOld->dy);
-
-    SimilarBlocksOld* simBlkOld = ForgingDetectorOld::createSimilarBlockList(BITMAP, BLOCK_SIZE, vList);
-    deltaPosOld = ForgingDetectorOld::getMainShiftVector(simBlkOld);
-
-    ASSERT_EQ(deltaPos.dx, deltaPosOld->dx);
-    ASSERT_EQ(deltaPos.dy, deltaPosOld->dy);
-
-    Timer timeOld;
-    ForgingDetectorOld::filterSpuriousRegions(&headOld);
-    long double elapsedOld = timeOld.elapsedMicroseconds();
-
-    Timer timeNew;
-    filterSpuriousRegions(headNew);
-    long double elapsedNew = timeNew.elapsedMicroseconds();
-
-    std::cout << "Old: " << elapsedOld << std::endl;
-    std::cout << "New: " << elapsedNew << std::endl;
-    std::cout << "Speedup: " << (elapsedOld / elapsedNew) << std::endl;
-
-    assertEqualsSimilarBlocks(headOld, headNew);
-	}
-
-    SimilarBlocksOld* simBlkOld = ForgingDetectorOld::createSimilarBlockList(BITMAP, BLOCK_SIZE, vList);
-    VecSimilarBlocks simBlkNew;
-    createSimilarBlockList(BITMAP, BLOCK_SIZE, vList, simBlkNew);
-
-    SimilarBlocksOld* deltaPosOld = ForgingDetectorOld::getMainShiftVector(simBlkOld);
-    DeltaPos deltaPos = getMainShiftVector(simBlkNew);
-
-    ASSERT_EQ(deltaPos.dx, deltaPosOld->dx);
-    ASSERT_EQ(deltaPos.dy, deltaPosOld->dy);
-
-    assertEqualsSimilarBlocks(simBlkOld, simBlkNew);
-
-    Timer timeOld;
-    ForgingDetectorOld::filterSpuriousRegions(&simBlkOld);
-    long double elapsedOld = timeOld.elapsedMicroseconds();
-
-    Timer timeNew;
-    filterSpuriousRegions(simBlkNew);
-    long double elapsedNew = timeNew.elapsedMicroseconds();
-
-    assertEqualsSimilarBlocks(simBlkOld, simBlkNew);
-
-    std::cout << "Old: " << elapsedOld << std::endl;
-    std::cout << "New: " << elapsedNew << std::endl;
-    std::cout << "Speedup: " << (elapsedOld / elapsedNew) << std::endl;
-
-    LinkedListCleaner::clear(vList);
-}
-
 TEST_F(ForgingDetectorTest, getMainShiftVector)
 {
     {
@@ -481,4 +412,67 @@ TEST_F(ForgingDetectorTest, getMainShiftVector)
 
     ASSERT_EQ(deltaPos.dx, deltaPosOld->dx);
     ASSERT_EQ(deltaPos.dy, deltaPosOld->dy);
+}
+
+TEST_F(ForgingDetectorTest, filterSpuriousRegionsFake)
+{
+    VectPos vectPos(createFakeVectPos());
+
+    VecSimilarBlocks headNew(createSimilarBlocks(vectPos));
+    SimilarBlocksOld *headOld(createSimilarBlocksOld(vectPos));
+
+    assertEqualsSimilarBlocks(headOld, headNew);
+
+    DeltaPos deltaPos = getMainShiftVector(headNew);
+    SimilarBlocksOld *deltaPosOld = ForgingDetectorOld::getMainShiftVector(headOld);
+
+    ASSERT_EQ(deltaPos.dx, deltaPosOld->dx);
+    ASSERT_EQ(deltaPos.dy, deltaPosOld->dy);
+
+    Timer timeOld;
+    ForgingDetectorOld::filterSpuriousRegions(&headOld);
+    long double elapsedOld = timeOld.elapsedMicroseconds();
+
+    Timer timeNew;
+    filterSpuriousRegions(headNew);
+    long double elapsedNew = timeNew.elapsedMicroseconds();
+
+    std::cout << "Old: " << elapsedOld << std::endl;
+    std::cout << "New: " << elapsedNew << std::endl;
+    std::cout << "Speedup: " << (elapsedOld / elapsedNew) << std::endl;
+
+    assertEqualsSimilarBlocks(headOld, headNew);
+}
+
+TEST_F(ForgingDetectorTest, filterSpuriousRegions)
+{
+    CharVectList* vList = getCopyOfCharacVec();
+
+    SimilarBlocksOld* simBlkOld = ForgingDetectorOld::createSimilarBlockList(BITMAP, BLOCK_SIZE, vList);
+    VecSimilarBlocks simBlkNew;
+    createSimilarBlockList(BITMAP, BLOCK_SIZE, vList, simBlkNew);
+
+    SimilarBlocksOld* deltaPosOld = ForgingDetectorOld::getMainShiftVector(simBlkOld);
+    DeltaPos deltaPos = getMainShiftVector(simBlkNew);
+
+    ASSERT_EQ(deltaPos.dx, deltaPosOld->dx);
+    ASSERT_EQ(deltaPos.dy, deltaPosOld->dy);
+
+    assertEqualsSimilarBlocks(simBlkOld, simBlkNew);
+
+    Timer timeOld;
+    ForgingDetectorOld::filterSpuriousRegions(&simBlkOld);
+    long double elapsedOld = timeOld.elapsedMicroseconds();
+
+    Timer timeNew;
+    filterSpuriousRegions(simBlkNew);
+    long double elapsedNew = timeNew.elapsedMicroseconds();
+
+    assertEqualsSimilarBlocks(simBlkOld, simBlkNew);
+
+    std::cout << "Old: " << elapsedOld << std::endl;
+    std::cout << "New: " << elapsedNew << std::endl;
+    std::cout << "Speedup: " << (elapsedOld / elapsedNew) << std::endl;
+
+    LinkedListCleaner::clear(vList);
 }
