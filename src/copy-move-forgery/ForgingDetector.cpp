@@ -338,12 +338,40 @@ bool ForgingDetector::isBlockSimilarSpurious(DeltaPos const& current, DeltaPos c
 
 void ForgingDetector::filterSpuriousRegions(VecSimilarBlocks& simList)
 {
+	VecSimilarBlocks simListRes;
+
     DeltaPos mainShift = getMainShiftVector(simList);
-    for(VecSimilarBlocks::iterator it = simList.begin(); it!=simList.end(); it++)
+    VecSimilarBlocks::iterator *temp;
+    VecSimilarBlocks::iterator it = simList.begin();
+
+    while(it != simList.end())
     {
-        if(isBlockSimilarSpurious(it->delta, mainShift))
-            simList.erase(it);
+    	if(!isBlockSimilarSpurious(it->delta, mainShift))
+    		simListRes.push_back(SimilarBlocks(*it));
+
+    	it++;
+
+//    	if(isBlockSimilarSpurious(it->delta, mainShift))
+//    	{
+//    		std::cout << "Deleted: " << it->delta.dx << "|" << it->delta.dy << std::endl;
+//        	temp = &it;
+//        	it++;
+//    		simList.erase(*temp);
+//    	}
+//    	else
+//    	{
+//    		std::cout << "Mantained: " << it->delta.dx << "|" << it->delta.dy << std::endl;
+//    		it++;
+//    	}
     }
+
+    simList.clear();
+    it = simListRes.begin();
+    while(it != simListRes.end())
+	{
+    	simList.push_back(SimilarBlocks(*it));
+		it++;
+	}
 }
 
 /**
