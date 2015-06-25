@@ -31,6 +31,7 @@ protected:
     static void createSimilarBlockList(Bitmap const& image, int bSize, CharVectList* vList, VecSimilarBlocks &simList);
     static void filterSpuriousRegions(VecSimilarBlocks& simList);
 
+    static bool isBlockSimilarSpurious(DeltaPos const& current, DeltaPos const& mainShift);
     static int getShift(Pos const& pos1, Pos const& pos2);
     static DeltaPos getMainShiftVector(VecSimilarBlocks const& blocks);
 };

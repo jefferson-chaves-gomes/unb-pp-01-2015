@@ -66,7 +66,7 @@ bool ForgingDetectorOld::byCharact(Bitmap image, int bSize)
         return false;
 
     logger("[MSG " << ++dbgmsg << "] Analisando shifts de deslocamento...");
-    filterSpuriousRegions(simList);
+    filterSpuriousRegions(&simList);
 
     /* passo 4: detectar adulteracao */
     logger("[MSG " << ++dbgmsg << "] Pesquisando adulteracao...");
@@ -345,31 +345,36 @@ SimilarBlocksOld* ForgingDetectorOld::createSimilarBlockList(Bitmap const& image
     return simList;
 }
 
-void ForgingDetectorOld::filterSpuriousRegions(SimilarBlocksOld* simList)
+bool ForgingDetectorOld::isBlockSimilarSpurious(SimilarBlocksOld* current, SimilarBlocksOld* mainShift)
 {
-    SimilarBlocksOld* simTrace = simList;
-    SimilarBlocksOld* simBlock = simList;
-    SimilarBlocksOld* mainShift = getMainShiftVector(simList);
-    while(simBlock != NULL)
-    {
-        if(ABS((simBlock->dx - mainShift->dx)) > MAX_SHIFT || ABS((simBlock->dy - mainShift->dy)) > MAX_SHIFT)
-        {
-            if(simBlock == simList)
-            {
-                simList = simList->next;
-                simTrace = simList;
-            }
-            else
-                simTrace->next = simBlock->next;
+    return (ABS((current->dx - mainShift->dx)) > MAX_SHIFT || ABS((current->dy - mainShift->dy)) > MAX_SHIFT);
+}
 
-            delete simBlock;
-            simBlock = simTrace->next;
-        }
-        else
+void ForgingDetectorOld::filterSpuriousRegions(SimilarBlocksOld** head)
+{   
+    SimilarBlocksOld* temp = *head, *prev;
+    SimilarBlocksOld* mainShift = getMainShiftVector(*head);
+
+    while (temp != NULL && isBlockSimilarSpurious(temp, mainShift))
+    {
+        *head = temp->next;
+        delete temp;
+        temp = *head;
+    }
+
+    while (temp != NULL)
+    {
+        while (temp != NULL && !isBlockSimilarSpurious(temp, mainShift))
         {
-            simTrace = simBlock;
-            simBlock = simBlock->next;
+            prev = temp;
+            temp = temp->next;
         }
+
+        if (temp == NULL) return;
+
+        prev->next = temp->next;
+        delete temp;
+        temp = prev->next;
     }
 }
 

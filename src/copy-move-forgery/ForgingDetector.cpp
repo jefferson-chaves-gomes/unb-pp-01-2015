@@ -331,12 +331,17 @@ void ForgingDetector::createSimilarBlockList(Bitmap const& image, int bSize, Cha
     }
 }
 
+bool ForgingDetector::isBlockSimilarSpurious(DeltaPos const& current, DeltaPos const& mainShift)
+{
+    return (ABS((current.dx - mainShift.dx)) > MAX_SHIFT || ABS((current.dy - mainShift.dy)) > MAX_SHIFT);
+}
+
 void ForgingDetector::filterSpuriousRegions(VecSimilarBlocks& simList)
 {
     DeltaPos mainShift = getMainShiftVector(simList);
     for(VecSimilarBlocks::iterator it = simList.begin(); it!=simList.end(); it++)
     {
-        if(ABS((it->delta.dx - mainShift.dx)) > MAX_SHIFT || ABS((it->delta.dy - mainShift.dy)) > MAX_SHIFT)
+        if(isBlockSimilarSpurious(it->delta, mainShift))
             simList.erase(it);
     }
 }

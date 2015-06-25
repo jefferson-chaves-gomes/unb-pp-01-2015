@@ -22,7 +22,7 @@ protected:
     {
         ASSERT_TRUE(left != NULL);
         ASSERT_TRUE(vect.size() != 0);
-        int count(0);
+//        int count(0);
 
         for(VecSimilarBlocks::iterator right=vect.begin();
                 left != NULL || right != vect.end();
@@ -77,7 +77,9 @@ protected:
         while(auxBlock != NULL)
         {
             std::cout << "Old Block " << count++ << ": ";
-            std::cout << "Delta: " << auxBlock->dx << "|" << auxBlock->dy << std::endl;
+            std::cout << "Delta: " << auxBlock->dx << "," << auxBlock->dy;
+            std::cout << " | B1: " << auxBlock->b1.x << "," << auxBlock->b1.y;
+            std::cout << " | B2: " << auxBlock->b2.x << "," << auxBlock->b2.y << std::endl;
             auxBlock = auxBlock->next;
             if(limit!=0 && limit <= count)
                 break;
@@ -133,6 +135,61 @@ protected:
         }
     }
 
+
+    typedef std::vector< std::pair<Pos, Pos> > VectPos;
+    VectPos createFakeVectPos()
+    {
+        std::vector< std::pair<Pos, Pos> > vecPos;
+
+//        vecPos.push_back(std::make_pair(Pos(302,52), Pos(217,61)));
+//        vecPos.push_back(std::make_pair(Pos(216,62), Pos(302,53)));
+//        vecPos.push_back(std::make_pair(Pos(302,49), Pos(217,58)));
+//        vecPos.push_back(std::make_pair(Pos(301,53), Pos(218,61)));
+//        vecPos.push_back(std::make_pair(Pos(218,61), Pos(300,52)));
+//        vecPos.push_back(std::make_pair(Pos(302,50), Pos(218,60)));
+//        vecPos.push_back(std::make_pair(Pos(218,60), Pos(299,52)));
+//        vecPos.push_back(std::make_pair(Pos(298,52), Pos(218,59)));
+//        vecPos.push_back(std::make_pair(Pos(218,59), Pos(301,49)));
+//        vecPos.push_back(std::make_pair(Pos(304,51), Pos(28,136)));
+        vecPos.push_back(std::make_pair(Pos(27,136), Pos(302,54)));
+        vecPos.push_back(std::make_pair(Pos(302,54), Pos(28,135)));
+        vecPos.push_back(std::make_pair(Pos(304,49), Pos(217,62)));
+//        vecPos.push_back(std::make_pair(Pos(217,62), Pos(27,134)));
+//        vecPos.push_back(std::make_pair(Pos(301,50), Pos(219,61)));
+        vecPos.push_back(std::make_pair(Pos(28,135), Pos(304,51)));
+        vecPos.push_back(std::make_pair(Pos(28,135), Pos(304,51)));
+        vecPos.push_back(std::make_pair(Pos(28,135), Pos(304,51)));
+        vecPos.push_back(std::make_pair(Pos(28,135), Pos(304,51)));
+
+        return vecPos;
+    }
+
+    SimilarBlocksOld * createSimilarBlocksOld(VectPos const& vectPos)
+    {
+        SimilarBlocksOld *head = NULL, *aux = NULL;
+
+        for(VectPos::const_iterator it = vectPos.begin(); it != vectPos.end(); it++)
+        {
+            SimilarBlocksOld * simBlk = new SimilarBlocksOld(it->first, it->second);
+            if(head == NULL)
+                head = aux = simBlk;
+            else
+                aux = aux->next = simBlk;
+        }
+
+        return head;
+    }
+
+    VecSimilarBlocks createSimilarBlocks(VectPos const& vectPos)
+    {
+        VecSimilarBlocks headNew;
+
+        for(VectPos::const_iterator it = vectPos.begin(); it != vectPos.end(); it++)
+            headNew.push_back(SimilarBlocks(it->first, it->second));
+
+        return headNew;
+    }
+
     static CharVectList* getCopyOfCharacVec()
     {
         if(vList == NULL)
@@ -160,7 +217,7 @@ protected:
     static void SetUpTestCase()
     {
         std::cout << "Generating vector of chars..." << std::endl;
-        vList = ForgingDetectorTest::charactVector(BITMAP, BLOCK_SIZE);
+//        vList = ForgingDetectorTest::charactVector(BITMAP, BLOCK_SIZE);
         std::cout << "Vector of chars generated!!!" << std::endl;
     }
 };
@@ -317,40 +374,97 @@ CharVectList* ForgingDetectorTest::vList;
 
 TEST_F(ForgingDetectorTest, filterSpuriousRegions)
 {
-    CharVectList* vList = getCopyOfCharacVec();
-    SimilarBlocksOld* simBlkOld = ForgingDetectorOld::createSimilarBlockList(BITMAP, BLOCK_SIZE, vList);
-    VecSimilarBlocks simBlkNew;
-    createSimilarBlockList(BITMAP, BLOCK_SIZE, vList, simBlkNew);
+    VectPos vectPos(createFakeVectPos());
 
-    SimilarBlocksOld* deltaPosOld = ForgingDetectorOld::getMainShiftVector(simBlkOld);
-    DeltaPos deltaPos = getMainShiftVector(simBlkNew);
+    VecSimilarBlocks headNew(createSimilarBlocks(vectPos));
+    SimilarBlocksOld *headOld(createSimilarBlocksOld(vectPos));
+
+    assertEqualsSimilarBlocks(headOld, headNew);
+
+    DeltaPos deltaPos = getMainShiftVector(headNew);
+    SimilarBlocksOld *deltaPosOld = ForgingDetectorOld::getMainShiftVector(headOld);
 
     ASSERT_EQ(deltaPos.dx, deltaPosOld->dx);
     ASSERT_EQ(deltaPos.dy, deltaPosOld->dy);
 
-    assertEqualsSimilarBlocks(simBlkOld, simBlkNew);
+//    CharVectList* vList = getCopyOfCharacVec();
+//    SimilarBlocksOld* simBlkOld = ForgingDetectorOld::createSimilarBlockList(BITMAP, BLOCK_SIZE, vList);
+//    deltaPosOld = ForgingDetectorOld::getMainShiftVector(simBlkOld);
+//
+//    ASSERT_EQ(deltaPos.dx, deltaPosOld->dx);
+//    ASSERT_EQ(deltaPos.dy, deltaPosOld->dy);
 
-    const int PRINT_MAX=0;
 
     Timer timeOld;
-    ForgingDetectorOld::filterSpuriousRegions(simBlkOld);
+    std::cout << "### OLD BEFORE" << std::endl;
+    printSimilarBlocksOld(headOld);
+    ForgingDetectorOld::filterSpuriousRegions(&headOld);
     std::cout << "### OLD AFTER" << std::endl;
-    printSimilarBlocksOld(simBlkOld, PRINT_MAX);
+    printSimilarBlocksOld(headOld);
     long double elapsedOld = timeOld.elapsedMicroseconds();
 
     Timer timeNew;
-    filterSpuriousRegions(simBlkNew);
+    std::cout << "### NEW BEFORE" << std::endl;
+    printSimilarBlocks(headNew);
+    filterSpuriousRegions(headNew);
     std::cout << "### NEW AFTER" << std::endl;
-    printSimilarBlocks(simBlkNew, PRINT_MAX);
+    printSimilarBlocks(headNew);
     long double elapsedNew = timeNew.elapsedMicroseconds();
 
-    assertEqualsSimilarBlocks(simBlkOld, simBlkNew);
 
-    std::cout << "Old: " << elapsedOld << std::endl;
-    std::cout << "New: " << elapsedNew << std::endl;
-    std::cout << "Speedup: " << (elapsedOld / elapsedNew) << std::endl;
 
-    LinkedListCleaner::clear(vList);
+
+//    std::cout << "Old: " << elapsedOld << std::endl;
+//    std::cout << "New: " << elapsedNew << std::endl;
+//    std::cout << "Speedup: " << (elapsedOld / elapsedNew) << std::endl;
+
+
+    assertEqualsSimilarBlocks(headOld, headNew);
+
+
+
+
+
+//    SimilarBlocksOld* simBlkOld *aux;
+
+
+//
+//
+//    CharVectList* vList = getCopyOfCharacVec();
+//    SimilarBlocksOld* simBlkOld = ForgingDetectorOld::createSimilarBlockList(BITMAP, BLOCK_SIZE, vList);
+//    VecSimilarBlocks simBlkNew;
+//    createSimilarBlockList(BITMAP, BLOCK_SIZE, vList, simBlkNew);
+//
+//    SimilarBlocksOld* deltaPosOld = ForgingDetectorOld::getMainShiftVector(simBlkOld);
+//    DeltaPos deltaPos = getMainShiftVector(simBlkNew);
+//
+//    ASSERT_EQ(deltaPos.dx, deltaPosOld->dx);
+//    ASSERT_EQ(deltaPos.dy, deltaPosOld->dy);
+//
+//    assertEqualsSimilarBlocks(simBlkOld, simBlkNew);
+//
+//    const int PRINT_MAX=0;
+//
+//    Timer timeOld;
+//    printSimilarBlocksOld(simBlkOld, 15);
+//    ForgingDetectorOld::filterSpuriousRegions(simBlkOld);
+//    std::cout << "### OLD AFTER" << std::endl;
+//    printSimilarBlocksOld(simBlkOld, PRINT_MAX);
+//    long double elapsedOld = timeOld.elapsedMicroseconds();
+//
+//    Timer timeNew;
+//    filterSpuriousRegions(simBlkNew);
+//    std::cout << "### NEW AFTER" << std::endl;
+//    printSimilarBlocks(simBlkNew, PRINT_MAX);
+//    long double elapsedNew = timeNew.elapsedMicroseconds();
+//
+//    assertEqualsSimilarBlocks(simBlkOld, simBlkNew);
+//
+//    std::cout << "Old: " << elapsedOld << std::endl;
+//    std::cout << "New: " << elapsedNew << std::endl;
+//    std::cout << "Speedup: " << (elapsedOld / elapsedNew) << std::endl;
+//
+//    LinkedListCleaner::clear(vList);
 }
 
 //TEST_F(ForgingDetectorTest, getMainShiftVector)
