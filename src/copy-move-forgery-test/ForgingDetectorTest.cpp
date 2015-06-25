@@ -288,42 +288,41 @@ TEST_F(ForgingDetectorTest, filterSpuriousRegions)
     SimilarBlocksOld* simBlkOld = NULL;
     SimilarBlocks* simBlkNew = NULL;
 
-    {
-        simBlkOld = ForgingDetectorOld::createSimilarBlockList(BITMAP, BLOCK_SIZE, vList);
-        Timer timeOld;
-        ForgingDetectorOld::filterSpuriousRegions(simBlkOld, true);
-        long double elapsedOld = timeOld.elapsedMicroseconds();
+    simBlkOld = ForgingDetectorOld::createSimilarBlockList(BITMAP, BLOCK_SIZE, vList);
+    Timer timeOld;
+    ForgingDetectorOld::filterSpuriousRegions(simBlkOld);
+    long double elapsedOld = timeOld.elapsedMicroseconds();
 
-        simBlkNew = createSimilarBlockList(BITMAP, BLOCK_SIZE, vList);
-        Timer timeNew;
-        filterSpuriousRegions(simBlkNew, true);
-        long double elapsedNew = timeNew.elapsedMicroseconds();
+    simBlkNew = createSimilarBlockList(BITMAP, BLOCK_SIZE, vList);
+    Timer timeNew;
+    filterSpuriousRegions(simBlkNew);
+    long double elapsedNew = timeNew.elapsedMicroseconds();
 
-        assertEqualsSimilarBlocks(simBlkOld, simBlkNew);
+    assertEqualsSimilarBlocks(simBlkOld, simBlkNew);
 
-        std::cout << "Old: " << elapsedOld << std::endl;
-        std::cout << "New: " << elapsedNew << std::endl;
-        std::cout << "Speedup: " << (elapsedOld / elapsedNew) << std::endl;
-    }
-
-    {
-        simBlkOld = ForgingDetectorOld::createSimilarBlockList(BITMAP, BLOCK_SIZE, vList);
-        Timer timeOld;
-        ForgingDetectorOld::filterSpuriousRegions(simBlkOld, false);
-        long double elapsedOld = timeOld.elapsedMicroseconds();
-
-        simBlkNew = createSimilarBlockList(BITMAP, BLOCK_SIZE, vList);
-        Timer timeNew;
-        filterSpuriousRegions(simBlkNew, false);
-        long double elapsedNew = timeNew.elapsedMicroseconds();
-
-        assertEqualsSimilarBlocks(simBlkOld, simBlkNew);
-
-        std::cout << "Old: " << elapsedOld << std::endl;
-        std::cout << "New: " << elapsedNew << std::endl;
-        std::cout << "Speedup: " << (elapsedOld / elapsedNew) << std::endl;
-    }
+    std::cout << "Old: " << elapsedOld << std::endl;
+    std::cout << "New: " << elapsedNew << std::endl;
+    std::cout << "Speedup: " << (elapsedOld / elapsedNew) << std::endl;
 
     LinkedListCleaner::clear(vList);
 }
 
+
+//TEST_F(ForgingDetectorTest, getMainShifts)
+//{
+//    SimilarBlocks* head = new SimilarBlocks(Pos(0,0), Pos(2, 2));
+//    SimilarBlocks* aux = head;
+////    aux = aux->next = new SimilarBlocks(Pos(0,0), Pos(1, 1));
+//    aux->next = new SimilarBlocks(Pos(0,0), Pos(1, 1));
+//    aux = aux->next;
+//
+//    MaxShifts maxShifts = getMainShifts(head);
+//
+//    printMaxShifts(maxShifts);
+//
+//
+//
+//
+//
+//
+//}

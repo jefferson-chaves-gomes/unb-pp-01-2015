@@ -17,8 +17,6 @@ void printUsage(void)
     std::cout << std::endl << "Available operation modes:" << std::endl;
     std::cout << CHARACT_VECTOR << "\tsearches image <image> for adulteration by characteristics vector"
             << " with block size <param>. Block size defaults to 16px." << std::endl;
-    std::cout << MULT_CHARACT_VECTOR << "\tsearches image <image> by characteristics vector for adulteration"
-            << " in multiple regions with block size <param>. Block size defaults to 16px." << std::endl;
     std::cout << GRAYSCALE << "\tconverts image <image> to grayscale. No <param>." << std::endl;
     std::cout << EROSION << "\tapplies erosion operation to image <image> with"
             << " structuring element of size <param>. Block size defaults to 16px." << std::endl;

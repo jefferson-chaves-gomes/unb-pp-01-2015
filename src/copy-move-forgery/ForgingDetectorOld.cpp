@@ -45,7 +45,7 @@ const int MAX_SHIFT = 2;
  * @param bSize dimensao do bloco
  * @return true, foi detectada adulteracao; false, se imagem eh original
  */
-bool ForgingDetectorOld::byCharact(Bitmap image, bool multiregion, int bSize)
+bool ForgingDetectorOld::byCharact(Bitmap image, int bSize)
 {
     /* passo 1: extrair as caracteristicas dos blocos da imagem */
     logger("[MSG " << ++dbgmsg << "] Criando vetores de caracteristicas...");
@@ -66,7 +66,7 @@ bool ForgingDetectorOld::byCharact(Bitmap image, bool multiregion, int bSize)
         return false;
 
     logger("[MSG " << ++dbgmsg << "] Analisando shifts de deslocamento...");
-    filterSpuriousRegions(simList, multiregion);
+    filterSpuriousRegions(simList);
 
     /* passo 4: detectar adulteracao */
     logger("[MSG " << ++dbgmsg << "] Pesquisando adulteracao...");
@@ -345,28 +345,14 @@ SimilarBlocksOld* ForgingDetectorOld::createSimilarBlockList(Bitmap const& image
     return simList;
 }
 
-void ForgingDetectorOld::filterSpuriousRegions(SimilarBlocksOld* simList, bool multiregion)
+void ForgingDetectorOld::filterSpuriousRegions(SimilarBlocksOld* simList)
 {
-    MaxShiftsOld maxSh;
-    SimilarBlocksOld* mainShift;
-
-    if(multiregion)
-        maxSh = getMainShifts(simList);
-    else
-        mainShift = getMainShiftVector(simList);
-
     SimilarBlocksOld* simTrace = simList;
     SimilarBlocksOld* simBlock = simList;
-    bool bRegions = false;
-
+    SimilarBlocksOld* mainShift = getMainShiftVector(simList);
     while(simBlock != NULL)
     {
-        if(multiregion)
-            bRegions = isGreaterShift(simBlock, maxSh, MAX_SHIFT);
-        else
-            bRegions = (ABS((simBlock->dx - mainShift->dx)) > MAX_SHIFT || ABS((simBlock->dy - mainShift->dy)) > MAX_SHIFT);
-
-        if(bRegions == true)
+        if(ABS((simBlock->dx - mainShift->dx)) > MAX_SHIFT || ABS((simBlock->dy - mainShift->dy)) > MAX_SHIFT)
         {
             if(simBlock == simList)
             {
@@ -428,74 +414,6 @@ SimilarBlocksOld* ForgingDetectorOld::newSimilarBlock(int x1, int x2, int y1, in
 }
 
 /**
- * @func getMainShifts
- * @brief verifica todos os pares de blocos similares e retorna os mais frequentes shifts
- *   vetor deslocamento entre eles
- * @param blocks lista de blocos
- * @return shifts mais frequentes
- */
-MaxShiftsOld ForgingDetectorOld::getMainShifts(SimilarBlocksOld* blocks)
-{
-    int dx, dy, count = 0;
-    SimilarBlocksOld* main = NULL;
-    SimilarBlocksOld* auxBlock = blocks;
-    HistogramOld* hist = NULL;
-    HistogramOld* hTrace = NULL;
-    HistogramOld* hLast = NULL;
-    MaxShiftsOld maxSh;
-
-    /* criar HistogramOlda de vetores */
-    while(auxBlock != NULL)
-    {
-        dx = auxBlock->dx;
-        dy = auxBlock->dy;
-        if(hist == NULL)
-        {
-            hist = newHistogramOld(dx, dy, auxBlock);
-            hLast = hist;
-        }
-
-        /* procurar por entrada no HistogramOlda */
-        hTrace = hist;
-        while(hTrace != NULL)
-        {
-            if(hTrace->dx == dx && hTrace->dy == dy)
-                break;
-            hTrace = hTrace->next;
-        }
-        if(hTrace == NULL)
-        {
-            hTrace = newHistogramOld(dx, dy, auxBlock);
-            hLast->next = hTrace;
-            hLast = hTrace;
-        }
-
-        /* buscar maior frequencia */
-        hTrace->freq++;
-        if(hTrace->freq > count)
-		{
-			count = hTrace->freq;
-			main = hTrace->rep;
-
-			/* atualizar frequencias */
-			maxSh.dx3 = maxSh.dx2;
-			maxSh.dx2 = maxSh.dx1;
-			maxSh.dx1 = main->dx;
-
-			maxSh.dy3 = maxSh.dy2;
-			maxSh.dy2 = maxSh.dy1;
-			maxSh.dy1 = main->dy;
-		}
-
-        auxBlock = auxBlock->next;
-    }
-
-    clearHistogramOld(hist);
-
-    return maxSh;
-}
-
-/**
  * @func getMainShiftVector
  * @brief verifica todos os pares de blocos similares e retorna o mais frequente
  *   vetor deslocamento entre eles
@@ -551,15 +469,6 @@ SimilarBlocksOld* ForgingDetectorOld::getMainShiftVector(SimilarBlocksOld* block
     clearHistogramOld(hist);
 
     return main;
-}
-
-bool ForgingDetectorOld::isGreaterShift(SimilarBlocksOld* simBlock, MaxShiftsOld maxSh, int maxShift)
-{
-    if((ABS((simBlock->dx - maxSh.dx1)) > maxShift || ABS((simBlock->dy - maxSh.dy1)) > maxShift)
-            && (ABS((simBlock->dx - maxSh.dx2)) > maxShift || ABS((simBlock->dy - maxSh.dy2)) > maxShift)
-            && (ABS((simBlock->dx - maxSh.dx3)) > maxShift || ABS((simBlock->dy - maxSh.dy3)) > maxShift))
-        return true;
-    return false;
 }
 
 /**

@@ -4,7 +4,6 @@
 #include <stddef.h>
 
 #define CHARACT_VECTOR      "-v"
-#define MULT_CHARACT_VECTOR "-m"
 #define GRAYSCALE           "-c"
 #define EROSION             "-e"
 #define DILATION            "-d"
@@ -15,15 +14,6 @@
 #define BASE_L              50
 
 #define ABS(X) ((X < 0) ? -X : X)
-
-/* para a comparacao de shifts */
-class MaxShiftsOld
-{
-public:
-    int dx1, dy1;
-    int dx2, dy2;
-    int dx3, dy3;
-};
 
 class LinkedListCleaner
 {
@@ -111,14 +101,6 @@ public:
     {
         return !((*this) == other);
     }
-};
-
-class MaxShifts
-{
-public:
-    DeltaPos delta1;
-    DeltaPos delta2;
-    DeltaPos delta3;
 };
 
 /* para o algoritmo de vetor de caracteristicas */

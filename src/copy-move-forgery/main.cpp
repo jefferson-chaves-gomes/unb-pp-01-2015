@@ -10,9 +10,11 @@ int main(int argc, char *argv[])
 {
 
     if(argc < 2
-            || (std::string(argv[1]) != CHARACT_VECTOR && std::string(argv[1]) != MULT_CHARACT_VECTOR
-                    && std::string(argv[1]) != EROSION && std::string(argv[1]) != DILATION
-                    && std::string(argv[1]) != OPENING && std::string(argv[1]) != GRAYSCALE))
+            || (std::string(argv[1]) != CHARACT_VECTOR
+                && std::string(argv[1]) != EROSION
+                && std::string(argv[1]) != DILATION
+                && std::string(argv[1]) != OPENING
+                && std::string(argv[1]) != GRAYSCALE))
     {
         printUsage();
         exit(EXIT_SUCCESS);
@@ -30,16 +32,13 @@ void startSerialProcess(int argc, char *argv[])
     gettimeofday(&startTime, NULL);
 
     /* escolha de modo de operacao */
-    if(std::string(argv[1]) == CHARACT_VECTOR || std::string(argv[1]) == MULT_CHARACT_VECTOR)
+    if(std::string(argv[1]) == CHARACT_VECTOR)
     {
         int bSize = 16;
-        int multi = false;
         bool tampered = false;
-        if(std::string(argv[1]) == MULT_CHARACT_VECTOR)
-            multi = true;
         if(argc == 4)
             bSize = atoi(argv[3]);
-        tampered = ForgingDetector::byCharact(Bitmap(argv[2]), multi, bSize);
+        tampered = ForgingDetector::byCharact(Bitmap(argv[2]), bSize);
 
         if(tampered)
             std::cout << "Tampering was detected in image '" << argv[2] << "'." << std::endl;

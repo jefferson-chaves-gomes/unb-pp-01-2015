@@ -45,7 +45,7 @@ const int MAX_SHIFT = 2;
  * @param bSize dimensao do bloco
  * @return true, foi detectada adulteracao; false, se imagem eh original
  */
-bool ForgingDetector::byCharact(Bitmap const& image, bool multiregion, int bSize)
+bool ForgingDetector::byCharact(Bitmap const& image, int bSize)
 {
     /* passo 1: extrair as caracteristicas dos blocos da imagem */
     logger("[MSG " << ++dbgmsg << "] Criando vetores de caracteristicas...");
@@ -66,7 +66,7 @@ bool ForgingDetector::byCharact(Bitmap const& image, bool multiregion, int bSize
         return false;
 
     logger("[MSG " << ++dbgmsg << "] Analisando shifts de deslocamento...");
-    filterSpuriousRegions(simList, multiregion);
+    filterSpuriousRegions(simList);
 
     /* passo 4: detectar adulteracao */
     logger("[MSG " << ++dbgmsg << "] Pesquisando adulteracao...");
@@ -346,28 +346,15 @@ SimilarBlocks* ForgingDetector::createSimilarBlockList(Bitmap const& image, int 
     return simList;
 }
 
-void ForgingDetector::filterSpuriousRegions(SimilarBlocks* simList, bool multiregion)
+void ForgingDetector::filterSpuriousRegions(SimilarBlocks* simList)
 {
-    MaxShifts maxSh;
-    DeltaPos mainShift(0,0);
-
-    if(multiregion)
-        maxSh = getMainShifts(simList);
-    else
-        mainShift = getMainShiftVector(simList);
-
     SimilarBlocks* simTrace = simList;
     SimilarBlocks* simBlock = simList;
-    bool bRegions = false;
 
+    DeltaPos mainShift = getMainShiftVector(simList);
     while(simBlock != NULL)
     {
-        if(multiregion)
-            bRegions = isGreaterShift(simBlock, maxSh, MAX_SHIFT);
-        else
-            bRegions = (ABS((simBlock->delta.dx - mainShift.dx)) > MAX_SHIFT || ABS((simBlock->delta.dy - mainShift.dy)) > MAX_SHIFT);
-
-        if(!bRegions)
+        if(!(ABS((simBlock->delta.dx - mainShift.dx)) > MAX_SHIFT || ABS((simBlock->delta.dy - mainShift.dy)) > MAX_SHIFT))
             simTrace = simBlock;
         else
         {
@@ -385,17 +372,6 @@ void ForgingDetector::filterSpuriousRegions(SimilarBlocks* simList, bool multire
     }
 }
 
-bool ForgingDetector::isGreaterShift(SimilarBlocks* simBlock, MaxShifts const& maxSh, int maxShift)
-{
-    bool shift1 = (ABS((simBlock->delta.dx - maxSh.delta1.dx)) > maxShift) || (ABS((simBlock->delta.dy - maxSh.delta1.dy)) > maxShift);
-    bool shift2 = (ABS((simBlock->delta.dx - maxSh.delta2.dx)) > maxShift) || (ABS((simBlock->delta.dy - maxSh.delta2.dy)) > maxShift);
-    bool shift3 = (ABS((simBlock->delta.dx - maxSh.delta3.dx)) > maxShift) || (ABS((simBlock->delta.dy - maxSh.delta3.dy)) > maxShift);
-
-    if(shift1 && shift2 && shift3)
-        return true;
-    return false;
-}
-
 /**
  * @func getShift
  * @brief calcula o comprimento do vetor de shift
@@ -411,71 +387,6 @@ int ForgingDetector::getShift(Pos const& pos1, Pos const& pos2)
     int v = pos1.y - pos2.y;
 
     return (int) sqrt((h * h) + (v * v));
-}
-
-/**
- * @func getMainShifts
- * @brief verifica todos os pares de blocos similares e retorna os mais frequentes shifts
- *   vetor deslocamento entre eles
- * @param blocks lista de blocos
- * @return shifts mais frequentes
- */
-MaxShifts ForgingDetector::getMainShifts(SimilarBlocks* blocks)
-{
-    int dx, dy, count = 0;
-    DeltaPos main;
-    SimilarBlocks* auxBlock = blocks;
-    Histogram* hist = NULL;
-    Histogram* hTrace = NULL;
-    Histogram* hLast = NULL;
-    MaxShifts maxSh;
-
-    /* criar histograma de vetores */
-    while(auxBlock != NULL)
-    {
-        dx = auxBlock->delta.dx;
-        dy = auxBlock->delta.dy;
-        if(hist == NULL)
-        {
-            hist = new Histogram(dx, dy);
-            hLast = hist;
-        }
-
-        /* procurar por entrada no histograma */
-        hTrace = hist;
-        while(hTrace != NULL)
-        {
-            if(hTrace->delta.dx == dx && hTrace->delta.dy == dy)
-                break;
-            hTrace = hTrace->next;
-        }
-        if(hTrace == NULL)
-        {
-            hTrace = new Histogram(dx, dy);
-            hLast->next = hTrace;
-            hLast = hTrace;
-        }
-
-        /* buscar maior frequencia */
-        hTrace->freq++;
-        if(hTrace->freq > count)
-		{
-			count = hTrace->freq;
-			main = hTrace->delta;
-
-			/* atualizar frequencias */
-
-			maxSh.delta3 = maxSh.delta2;
-            maxSh.delta2 = maxSh.delta1;
-            maxSh.delta1 = main;
-		}
-
-        auxBlock = auxBlock->next;
-    }
-
-    LinkedListCleaner::clear(hist);
-
-    return maxSh;
 }
 
 /**
