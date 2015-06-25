@@ -7,6 +7,7 @@
 #include <sstream>
 #include <fstream>
 #include <iostream>
+#include <map>
 
 //#define _DEBUG_
 #ifdef _DEBUG_
@@ -396,54 +397,23 @@ int ForgingDetector::getShift(Pos const& pos1, Pos const& pos2)
  * @param blocks lista de blocos
  * @return bloco que representa o principal shift
  */
+
 DeltaPos ForgingDetector::getMainShiftVector(SimilarBlocks* blocks)
 {
-    int dx, dy, count = 0;
+    int count(0);
     DeltaPos main(0,0);
-    SimilarBlocks* auxBlock = blocks;
-    Histogram* hist = NULL;
-    Histogram* hTrace = NULL;
-    Histogram* hLast = NULL;
-
-    /* criar histograma de vetores */
-    while(auxBlock != NULL)
+    std::map<DeltaPos, int> histograms;
+    /* criar histograma de deltas */
+    while(blocks != NULL)
     {
-        dx = auxBlock->delta.dx;
-        dy = auxBlock->delta.dy;
-        if(hist == NULL)
+        int& freq(histograms[blocks->delta]);
+        if(++freq > count)
         {
-            hist = new Histogram(dx, dy);
-            hLast = hist;
+            main = blocks->delta;
+            count = freq;
         }
-
-        /* procurar por entrada no histograma */
-        hTrace = hist;
-        while(hTrace != NULL)
-        {
-            if(hTrace->delta.dx == dx && hTrace->delta.dy == dy)
-                break;
-            hTrace = hTrace->next;
-        }
-
-        if(hTrace == NULL)
-        {
-            hTrace = new Histogram(dx, dy);
-            hLast->next = hTrace;
-            hLast = hTrace;
-        }
-
-        /* buscar maior frequencia */
-        hTrace->freq++;
-        if(hTrace->freq > count)
-		{
-			count = hTrace->freq;
-			main = hTrace->delta;
-		}
-
-        auxBlock = auxBlock->next;
+        blocks = blocks->next;
     }
-
-    LinkedListCleaner::clear(hist);
 
     return main;
 }

@@ -90,16 +90,21 @@ public:
         return *(this);
     }
 
-    bool operator==(DeltaPos const& other)
+    bool operator==(DeltaPos const& other) const
     {
         if(dx != other.dx) return false;
         if(dy != other.dy) return false;
         return true;
     }
 
-    bool operator!=(DeltaPos const& other)
+    bool operator!=(DeltaPos const& other) const
     {
         return !((*this) == other);
+    }
+
+    bool operator<(DeltaPos const& other) const
+    {
+        return (dx < other.dx) || ( (dx == other.dx)&&(dy < other.dy) );
     }
 };
 
@@ -174,26 +179,6 @@ public:
     bool operator==(SimilarBlocks const& other);
     bool operator!=(SimilarBlocks const& other);
     void setValues(Pos const& b1, Pos const& b2);
-};
-
-class Histogram
-{
-public:
-    int freq;            // contador de frequencia
-    DeltaPos delta;
-    Histogram* next;
-
-    Histogram() :
-        freq(0),
-        delta(0,0),
-        next(NULL){}
-
-    Histogram(
-            int dx_,
-            int dy_) :
-        freq(0),
-        delta(dx_, dy_),
-        next(NULL){}
 };
 
 class HistogramOld

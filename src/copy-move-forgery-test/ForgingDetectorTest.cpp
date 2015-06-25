@@ -52,6 +52,34 @@ protected:
         std::cout << "######################" << std::endl;
     }
 
+
+    void printDeltaPos(DeltaPos const& delta)
+    {
+        std::cout << "Delta: " << delta.dx << "|" << delta.dy << std::endl;
+    }
+
+    void printSimilarBlocks(SimilarBlocks* auxBlock)
+    {
+        int count(0);
+        while(auxBlock != NULL)
+        {
+            std::cout << "Block " << count++ << ": ";
+            printDeltaPos(auxBlock->delta);
+            auxBlock = auxBlock->next;
+        }
+    }
+
+    void printSimilarBlocksOld(SimilarBlocksOld* auxBlock)
+    {
+        int count(0);
+        while(auxBlock != NULL)
+        {
+            std::cout << "Block " << count++ << ": ";
+            std::cout << "Delta: " << auxBlock->dx << "|" << auxBlock->dy << std::endl;
+            auxBlock = auxBlock->next;
+        }
+    }
+
     void printCharVect(CharVect* charVec)
     {
         if(charVec == NULL)
@@ -307,22 +335,45 @@ TEST_F(ForgingDetectorTest, filterSpuriousRegions)
     LinkedListCleaner::clear(vList);
 }
 
+TEST_F(ForgingDetectorTest, getMainShiftVector)
+{
+    {
+    SimilarBlocks *headNew, *auxNew;
+    auxNew = headNew      = new SimilarBlocks(Pos(0,0), Pos(1,1));
+    auxNew = auxNew->next = new SimilarBlocks(Pos(0,0), Pos(2,2));
+    auxNew = auxNew->next = new SimilarBlocks(Pos(0,0), Pos(1,1));
+    auxNew = auxNew->next = new SimilarBlocks(Pos(0,0), Pos(2,2));
+    DeltaPos deltaPos = getMainShiftVector(headNew);
 
-//TEST_F(ForgingDetectorTest, getMainShifts)
-//{
-//    SimilarBlocks* head = new SimilarBlocks(Pos(0,0), Pos(2, 2));
-//    SimilarBlocks* aux = head;
-////    aux = aux->next = new SimilarBlocks(Pos(0,0), Pos(1, 1));
-//    aux->next = new SimilarBlocks(Pos(0,0), Pos(1, 1));
-//    aux = aux->next;
-//
-//    MaxShifts maxShifts = getMainShifts(head);
-//
-//    printMaxShifts(maxShifts);
-//
-//
-//
-//
-//
-//
-//}
+    SimilarBlocksOld *headOld, *auxOld;
+    auxOld = headOld      = new SimilarBlocksOld(Pos(0,0), Pos(1,1));
+    auxOld = auxOld->next = new SimilarBlocksOld(Pos(0,0), Pos(2,2));
+    auxOld = auxOld->next = new SimilarBlocksOld(Pos(0,0), Pos(1,1));
+    auxOld = auxOld->next = new SimilarBlocksOld(Pos(0,0), Pos(2,2));
+    SimilarBlocksOld *deltaPosOld = ForgingDetectorOld::getMainShiftVector(headOld);
+
+    ASSERT_EQ(deltaPos.dx, deltaPosOld->dx);
+    ASSERT_EQ(deltaPos.dy, deltaPosOld->dy);
+    }
+
+    CharVectList* vList = getCopyOfCharacVec();
+    SimilarBlocksOld* simBlkOld =
+            ForgingDetectorOld::createSimilarBlockList(BITMAP, BLOCK_SIZE, vList);
+    SimilarBlocks* simBlkNew =
+            createSimilarBlockList(BITMAP, BLOCK_SIZE, vList);
+
+    Timer timeOld;
+    SimilarBlocksOld* deltaPosOld = ForgingDetectorOld::getMainShiftVector(simBlkOld);
+    long double elapsedOld = timeOld.elapsedMicroseconds();
+
+    Timer timeNew;
+    DeltaPos deltaPos = getMainShiftVector(simBlkNew);
+    long double elapsedNew = timeNew.elapsedMicroseconds();
+
+    std::cout << "Old: " << elapsedOld << std::endl;
+    std::cout << "New: " << elapsedNew << std::endl;
+    std::cout << "Speedup: " << (elapsedOld / elapsedNew) << std::endl;
+
+    ASSERT_EQ(deltaPos.dx, deltaPosOld->dx);
+    ASSERT_EQ(deltaPos.dy, deltaPosOld->dy);
+}
