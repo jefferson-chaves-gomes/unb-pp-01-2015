@@ -212,7 +212,7 @@ CharVectListOld* ForgingDetector::getCharVectListForBlock(Bitmap const& image, i
 
     unsigned char red, green, blue, grey;
     int half = (int) blkSize / 2;
-    CharVectListOld* charVecList = new CharVectList(blkPosX, blkPosY);
+    CharVectListOld* charVecList = new CharVectListOld(blkPosX, blkPosY);
     double part[4][2] = { { 0, 0 }, { 0, 0 }, { 0, 0 }, { 0, 0 } };
 
     // percorrer pixels do bloco na imagem original
@@ -276,7 +276,7 @@ CharVectListOld* ForgingDetector::getCharVectListForBlock(Bitmap const& image, i
 
 CharVectListOld* ForgingDetector::addVectLexOrder(CharVectListOld* vecOrdered, CharVectListOld* valToAdd)
 {
-    CharVectList ** head_ref = &vecOrdered;
+    CharVectListOld ** head_ref = &vecOrdered;
     /* Adiciona antes da cabeca */
     if(*head_ref == NULL || valToAdd->vect <= (*head_ref)->vect)
     {
@@ -286,7 +286,7 @@ CharVectListOld* ForgingDetector::addVectLexOrder(CharVectListOld* vecOrdered, C
     else
     {
         /* Adiciona entre o atual e o proximo */
-        CharVectList * current = *head_ref;
+        CharVectListOld * current = *head_ref;
         while(current->next != NULL && current->next->vect <= valToAdd->vect)
             current = current->next;
         valToAdd->next = current->next;

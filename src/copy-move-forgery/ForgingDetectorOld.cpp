@@ -196,7 +196,7 @@ CharVectListOld* ForgingDetectorOld::charactVector(Bitmap image, int bSize)
                 part[i][j] = 0.0;
 
         // criar vetor de caracteristicas
-        vetor = new CharVectList;
+        vetor = new CharVectListOld;
         vetor->next = NULL;
         if(!vetor)
         {
