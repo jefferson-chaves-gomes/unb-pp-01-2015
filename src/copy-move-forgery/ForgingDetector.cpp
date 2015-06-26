@@ -10,8 +10,6 @@
 #include <map>
 #include "Timer.h"
 
-const bool PRINT_TIME = true;
-
 //#define _DEBUG_
 #ifdef _DEBUG_
 #define logger(token) \
