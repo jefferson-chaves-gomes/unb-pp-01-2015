@@ -3,6 +3,7 @@
 #include <ForgingDetectorOld.h>
 #include <Timer.h>
 #include <utils.h>
+#include "ImgUtils.h"
 
 #include <iostream>
 #include <string>
