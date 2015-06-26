@@ -50,7 +50,7 @@ bool ForgingDetector::byCharact(Bitmap const& image, int bSize)
 {
     /* passo 1: extrair as caracteristicas dos blocos da imagem */
     logger("[MSG " << ++dbgmsg << "] Criando vetores de caracteristicas...");
-    CharVectList* vList = charactVector(image, bSize);
+    CharVectListOld* vList = charactVector(image, bSize);
     if(vList == NULL)
     {
         std::cout << "Nao foi possivel criar o vetor de caracteristicas." << std::endl;
@@ -171,15 +171,15 @@ bool ForgingDetector::byCharact(Bitmap const& image, int bSize)
  |______\|      |/______|
  */
 
-CharVectList* ForgingDetector::charactVector(Bitmap const& image, int bSize)
+CharVectListOld* ForgingDetector::charactVector(Bitmap const& image, int bSize)
 {
     int width = image.getWidth();
     int height = image.getHeight();
     if(width < bSize || height < bSize)
         return NULL;
 
-    CharVectList* vList = NULL;
-    CharVectList* charVecList = NULL;
+    CharVectListOld* vList = NULL;
+    CharVectListOld* charVecList = NULL;
 
     int bTotalX = width - bSize + 1;
     int bTotalY = height - bSize + 1;
@@ -202,7 +202,7 @@ CharVectList* ForgingDetector::charactVector(Bitmap const& image, int bSize)
     return vList;
 }
 
-CharVectList* ForgingDetector::getCharVectListForBlock(Bitmap const& image, int blkPosX, int blkPosY, int blkSize)
+CharVectListOld* ForgingDetector::getCharVectListForBlock(Bitmap const& image, int blkPosX, int blkPosY, int blkSize)
 {
     int width = image.getWidth();
     int height = image.getHeight();
@@ -212,7 +212,7 @@ CharVectList* ForgingDetector::getCharVectListForBlock(Bitmap const& image, int 
 
     unsigned char red, green, blue, grey;
     int half = (int) blkSize / 2;
-    CharVectList* charVecList = new CharVectList(blkPosX, blkPosY);
+    CharVectListOld* charVecList = new CharVectList(blkPosX, blkPosY);
     double part[4][2] = { { 0, 0 }, { 0, 0 }, { 0, 0 }, { 0, 0 } };
 
     // percorrer pixels do bloco na imagem original
@@ -274,7 +274,7 @@ CharVectList* ForgingDetector::getCharVectListForBlock(Bitmap const& image, int 
  * @return ponteiro inicial da lista
  */
 
-CharVectList* ForgingDetector::addVectLexOrder(CharVectList* vecOrdered, CharVectList* valToAdd)
+CharVectListOld* ForgingDetector::addVectLexOrder(CharVectListOld* vecOrdered, CharVectListOld* valToAdd)
 {
     CharVectList ** head_ref = &vecOrdered;
     /* Adiciona antes da cabeca */
@@ -295,7 +295,7 @@ CharVectList* ForgingDetector::addVectLexOrder(CharVectList* vecOrdered, CharVec
     return *head_ref;
 }
 
-void ForgingDetector::createSimilarBlockList(Bitmap const& image, int bSize, CharVectList* vList, ListSimilarBlocks & simList)
+void ForgingDetector::createSimilarBlockList(Bitmap const& image, int bSize, CharVectListOld* vList, ListSimilarBlocks & simList)
 {
     int width = image.getWidth();
     int height = image.getHeight();
@@ -307,7 +307,7 @@ void ForgingDetector::createSimilarBlockList(Bitmap const& image, int bSize, Cha
 
     // percorrer toda a lista de blocos; execucao em O(n)
     // somente sao comparados dois blocos consecutivos, pois ja estao ordenados
-    CharVectList* iterator = vList;
+    CharVectListOld* iterator = vList;
     while(iterator != NULL && iterator->next != NULL)
     {
         // calcular diferencas

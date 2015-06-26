@@ -49,7 +49,7 @@ bool ForgingDetectorOld::byCharact(Bitmap image, int bSize)
 {
     /* passo 1: extrair as caracteristicas dos blocos da imagem */
     logger("[MSG " << ++dbgmsg << "] Criando vetores de caracteristicas...");
-    CharVectList* vList = charactVector(image, bSize);
+    CharVectListOld* vList = charactVector(image, bSize);
     if(vList == NULL)
     {
         std::cout << "Nao foi possivel criar o vetor de caracteristicas." << std::endl;
@@ -170,15 +170,15 @@ bool ForgingDetectorOld::byCharact(Bitmap image, int bSize)
  | R2 \  |      |  / R2 |
  |______\|      |/______|
  */
-CharVectList* ForgingDetectorOld::charactVector(Bitmap image, int bSize)
+CharVectListOld* ForgingDetectorOld::charactVector(Bitmap image, int bSize)
 {
     int width = image.getWidth();
     int height = image.getHeight();
     Bitmap block(bSize, bSize);
     unsigned char red, green, blue, grey;
 
-    CharVectList* vList = NULL;
-    CharVectList* vetor = NULL;
+    CharVectListOld* vList = NULL;
+    CharVectListOld* vetor = NULL;
     double part[4][2];    // soma das partes part[tipobloco][regiao]
     int dx = 0, dy = 0;
     int half = (int) bSize / 2;
@@ -287,7 +287,7 @@ CharVectList* ForgingDetectorOld::charactVector(Bitmap image, int bSize)
     return vList;
 }
 
-SimilarBlocksOld* ForgingDetectorOld::createSimilarBlockList(Bitmap const& image, int bSize, CharVectList* vList)
+SimilarBlocksOld* ForgingDetectorOld::createSimilarBlockList(Bitmap const& image, int bSize, CharVectListOld* vList)
 {
     SimilarBlocksOld* simList = NULL;
     SimilarBlocksOld* simBlock = NULL;
@@ -295,8 +295,8 @@ SimilarBlocksOld* ForgingDetectorOld::createSimilarBlockList(Bitmap const& image
     int height = image.getHeight();
 
     SimilarBlocksOld* simEnd = NULL;
-    CharVectList* b1Vector = vList;
-    CharVectList* b2Vector = NULL;
+    CharVectListOld* b1Vector = vList;
+    CharVectListOld* b2Vector = NULL;
     double diff[CharVect::CHARS_SIZE] = { 0, 0, 0, 0, 0, 0, 0 };
     int L;                           // comprimento do vetor deslocamento
 
@@ -497,9 +497,9 @@ Bitmap ForgingDetectorOld::opening(Bitmap image, int bSize)
  * @brief limpa a lista de vetores de caracteristicas
  * @param start ponteiro para o inicio da lista
  */
-void ForgingDetectorOld::clearCharVectors(CharVectList* start)
+void ForgingDetectorOld::clearCharVectors(CharVectListOld* start)
 {
-    CharVectList* aux = start;
+    CharVectListOld* aux = start;
 
     while(start != NULL)
     {
@@ -533,13 +533,13 @@ void ForgingDetectorOld::clearSimilarBlocks(SimilarBlocksOld* start)
  * @return ponteiro inicial da lista
  */
 
-CharVectList* ForgingDetectorOld::addVectLexOrder(CharVectList* start, CharVectList* vetor)
+CharVectListOld* ForgingDetectorOld::addVectLexOrder(CharVectListOld* start, CharVectListOld* vetor)
 {
     if(start == NULL)
         return vetor;
 
-    CharVectList* aux = start;
-    CharVectList* trace = start;
+    CharVectListOld* aux = start;
+    CharVectListOld* trace = start;
     bool isGreater = false;
     bool isSmaller = false;
 

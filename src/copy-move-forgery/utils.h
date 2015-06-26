@@ -136,15 +136,17 @@ private:
     void initChars();
 };
 
-class CharVectList
+typedef std::list<CharVect> ListCharVect;
+
+class CharVectListOld
 {
 public:
     CharVect vect;
-    CharVectList* next;
-    CharVectList();
-    CharVectList(int x_, int y_);
-    CharVectList(CharVectList const&);
-    CharVectList& operator =(CharVectList const& other);
+    CharVectListOld* next;
+    CharVectListOld();
+    CharVectListOld(int x_, int y_);
+    CharVectListOld(CharVectListOld const&);
+    CharVectListOld& operator =(CharVectListOld const& other);
 };
 
 /* para os blocos similares */
