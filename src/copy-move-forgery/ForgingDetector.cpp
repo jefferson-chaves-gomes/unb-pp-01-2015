@@ -8,6 +8,9 @@
 #include <fstream>
 #include <iostream>
 #include <map>
+#include "Timer.h"
+
+const bool PRINT_TIME = true;
 
 //#define _DEBUG_
 #ifdef _DEBUG_
@@ -124,6 +127,7 @@ bool ForgingDetector::byCharact(Bitmap const& image, int bSize)
 
 void ForgingDetector::charactVector(ListCharVect& listChar, Bitmap const& image, int bSize)
 {
+    Timer time(PRINT_TIME, __PRETTY_FUNCTION__, __LINE__);
     int width = image.getWidth();
     int height = image.getHeight();
     if(width < bSize || height < bSize)
@@ -219,6 +223,7 @@ void ForgingDetector::addVectLexOrder(ListCharVect& vecOrdered, CharVect& valToA
 
 void ForgingDetector::createSimilarBlockList(Bitmap const& image, int bSize, ListCharVect const& vList, ListSimilarBlocks & simList)
 {
+    Timer time(PRINT_TIME, __PRETTY_FUNCTION__, __LINE__);
     int width = image.getWidth();
     int height = image.getHeight();
     double diff[CharVect::CHARS_SIZE] = { 0, 0, 0, 0, 0, 0, 0 };
@@ -265,6 +270,7 @@ bool ForgingDetector::isBlockSimilarSpurious(DeltaPos const& current, DeltaPos c
 
 void ForgingDetector::filterSpuriousRegions(ListSimilarBlocks& simList, DeltaPos const& mainShift)
 {
+    Timer time(PRINT_TIME, __PRETTY_FUNCTION__, __LINE__);
     for (ListSimilarBlocks::iterator it = simList.begin(); it != simList.end();)
     {
     	if(isBlockSimilarSpurious(it->delta, mainShift))
@@ -301,6 +307,7 @@ int ForgingDetector::getShift(Pos const& pos1, Pos const& pos2)
 
 DeltaPos ForgingDetector::getMainShiftVector(ListSimilarBlocks const& blocks)
 {
+    Timer time(PRINT_TIME, __PRETTY_FUNCTION__, __LINE__);
     int count(0);
     DeltaPos main(0,0);
     std::map<DeltaPos, int> histograms;
@@ -321,6 +328,7 @@ DeltaPos ForgingDetector::getMainShiftVector(ListSimilarBlocks const& blocks)
 
 void ForgingDetector::createImageWithSimilarAreas(Bitmap& detectImage, Bitmap const& image, int bSize, ListSimilarBlocks const& simList)
 {
+    Timer time(PRINT_TIME, __PRETTY_FUNCTION__, __LINE__);
     int width = image.getWidth();
     int height = image.getHeight();
     // criar imagem binaria com as areas similares encontradas
@@ -358,6 +366,7 @@ void ForgingDetector::createImageWithSimilarAreas(Bitmap& detectImage, Bitmap co
  */
 Bitmap ForgingDetector::imageOpeningOperation(Bitmap const& image, int bSize)
 {
+    Timer time(PRINT_TIME, __PRETTY_FUNCTION__, __LINE__);
     /* operacao de erosao + dilatacao */
     Bitmap imageEroded(imageErosionOperation(image, bSize));
     Bitmap imageDilated(imageDilationOperation(imageEroded, bSize));
@@ -451,6 +460,7 @@ Bitmap ForgingDetector::imageDilationOperation(Bitmap const& image, int bSize)
 
 bool ForgingDetector::isImageForged(Bitmap const& image, Bitmap const& detectImage, Bitmap& mergedImage)
 {
+    Timer time(PRINT_TIME, __PRETTY_FUNCTION__, __LINE__);
     int width = image.getWidth();
     int height = image.getHeight();
     unsigned char red, green, blue, grey;
