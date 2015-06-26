@@ -345,15 +345,14 @@ void ForgingDetector::createImageWithSimilarAreas(Bitmap& detectImage, Bitmap co
         int b1y = it->b1.y;
         int b2x = it->b2.x;
         int b2y = it->b2.y;
-        for(int i = b1x; i < b1x + bSize; i++)
+
+        for(int i = 0; i < bSize; i++)
         {
-            for(int j = b1y; j < b1y + bSize; j++)
+            for(int j = 0; j < bSize; j++)
             {
-                detectImage.setPixel(i, j, 255, 255, 255);
-                detectImage.setPixel(b2x, b2y++, 255, 255, 255);
+                detectImage.setPixel(i+b1x, j+b1y, 255, 255, 255);
+                detectImage.setPixel(i+b2x, j+b2y, 255, 255, 255);
             }
-            b2x++;
-            b2y = it->b2.y;
         }
     }
 }

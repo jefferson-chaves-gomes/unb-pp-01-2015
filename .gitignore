@@ -3,3 +3,5 @@
 /.project
 /build
 /system
+/src/copy-move-forgery/resource/*_detect.bmp
+*~
