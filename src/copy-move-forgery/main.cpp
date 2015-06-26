@@ -54,7 +54,7 @@ void startSerialProcess(int argc, char *argv[])
     }
     else if(std::string(argv[1]) == EROSION)
     {
-        Bitmap eroded = ForgingDetector::erosion(Bitmap(argv[2]), atoi(argv[3]));
+        Bitmap eroded = ForgingDetector::imageErosionOperation(Bitmap(argv[2]), atoi(argv[3]));
         std::string path;
         path.append(ImgUtils::imgTrueName(argv[2]));
         path.append(std::string("_eroded.bmp"));
@@ -63,7 +63,7 @@ void startSerialProcess(int argc, char *argv[])
     }
     else if(std::string(argv[1]) == DILATION)
     {
-        Bitmap dilated = ForgingDetector::dilation(Bitmap(argv[2]), atoi(argv[3]));
+        Bitmap dilated = ForgingDetector::imageDilationOperation(Bitmap(argv[2]), atoi(argv[3]));
         std::string path;
         path.append(ImgUtils::imgTrueName(argv[2]));
         path.append(std::string("_dilated.bmp"));
@@ -72,7 +72,7 @@ void startSerialProcess(int argc, char *argv[])
     }
     else if(std::string(argv[1]) == OPENING)
     {
-        Bitmap opened = ForgingDetector::opening(Bitmap(argv[2]), atoi(argv[3]));
+        Bitmap opened = ForgingDetector::imageOpeningOperation(Bitmap(argv[2]), atoi(argv[3]));
         std::string path;
         path.append(ImgUtils::imgTrueName(argv[2]));
         path.append(std::string("_opened.bmp"));

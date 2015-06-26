@@ -37,7 +37,6 @@ const double vectorP[CharVect::CHARS_SIZE] = {
         0.0125};    // P(7)
 const int MAX_SHIFT = 2;
 
-
 /**
  * @func forgeringByCharact
  * @brief algoritmo de deteccao por vetor de caracteristicas
@@ -74,47 +73,18 @@ bool ForgingDetector::byCharact(Bitmap const& image, int bSize)
     logger("[MSG " << ++dbgmsg << "] Filtrando regioes espurias...");
     filterSpuriousRegions(simList, mainShift);
 
-    /* passo 4: detectar adulteracao */
-    logger("[MSG " << ++dbgmsg << "] Pesquisando adulteracao...");
-
     int width = image.getWidth();
     int height = image.getHeight();
-    unsigned char red, green, blue, grey;
-    Bitmap forgedImage(width, height);
+    /* passo 4: detectar adulteracao */
+    logger("[MSG " << ++dbgmsg << "] Criando imagem com as areas similares...");
     Bitmap detectImage(width, height);
-    // criar imagem binaria com as areas similares encontradas
-    for(int i = 0; i < width; i++)
-    {
-        for(int j = 0; j < height; j++)
-        {
-            image.getPixel(i, j, red, green, blue);
-            forgedImage.setPixel(i, j, red, green, blue);
-            detectImage.setPixel(i, j, 0, 0, 0);
-        }
-    }
-
-
-    for(ListSimilarBlocks::iterator it = simList.begin(); it!=simList.end(); it++)
-    {
-        int b1x = it->b1.x;
-        int b1y = it->b1.y;
-        int b2x = it->b2.x;
-        int b2y = it->b2.y;
-        for(int i = b1x; i < b1x + bSize; i++)
-        {
-            for(int j = b1y; j < b1y + bSize; j++)
-            {
-                detectImage.setPixel(i, j, 255, 255, 255);
-                detectImage.setPixel(b2x, b2y++, 255, 255, 255);
-            }
-            b2x++;
-            b2y = it->b2.y;
-        }
-    }
+    createImageWithSimilarAreas(detectImage, image, bSize, simList);
 
     // operacao de abertura na imagem
-    detectImage = opening(detectImage, bSize);
+    detectImage = imageOpeningOperation(detectImage, bSize);
 
+    unsigned char red, green, blue, grey;
+    Bitmap forgedImage(width, height);
     bool bForged = false;
     // mergear com imagem original
     for(int i = 0; i < width; i++)
@@ -126,6 +96,11 @@ bool ForgingDetector::byCharact(Bitmap const& image, int bSize)
             {
                 forgedImage.setPixel(i, j, 0, 255, 0);
                 bForged = true;
+            }
+            else
+            {
+                image.getPixel(i, j, red, green, blue);
+                forgedImage.setPixel(i, j, red, green, blue);
             }
         }
     }
@@ -366,6 +341,36 @@ DeltaPos ForgingDetector::getMainShiftVector(ListSimilarBlocks const& blocks)
     return main;
 }
 
+void ForgingDetector::createImageWithSimilarAreas(Bitmap& detectImage, Bitmap const& image, int bSize, ListSimilarBlocks const& simList)
+{
+    int width = image.getWidth();
+    int height = image.getHeight();
+    // criar imagem binaria com as areas similares encontradas
+    for(int i = 0; i < width; i++)
+    {
+        for(int j = 0; j < height; j++)
+            detectImage.setPixel(i, j, 0, 0, 0);
+    }
+
+    for(ListSimilarBlocks::const_iterator it = simList.begin(); it!=simList.end(); it++)
+    {
+        int b1x = it->b1.x;
+        int b1y = it->b1.y;
+        int b2x = it->b2.x;
+        int b2y = it->b2.y;
+        for(int i = b1x; i < b1x + bSize; i++)
+        {
+            for(int j = b1y; j < b1y + bSize; j++)
+            {
+                detectImage.setPixel(i, j, 255, 255, 255);
+                detectImage.setPixel(b2x, b2y++, 255, 255, 255);
+            }
+            b2x++;
+            b2y = it->b2.y;
+        }
+    }
+}
+
 /**
  * @func opening
  * @brief efetua operacao de abertura na imagem
@@ -373,10 +378,10 @@ DeltaPos ForgingDetector::getMainShiftVector(ListSimilarBlocks const& blocks)
  * @param bSize dimensao do elemento estruturante, que eh um quadrado
  * @return imagem tratada
  */
-Bitmap ForgingDetector::opening(Bitmap const& image, int bSize)
+Bitmap ForgingDetector::imageOpeningOperation(Bitmap const& image, int bSize)
 {
     /* operacao de erosao + dilatacao */
-    return dilation(erosion(image, bSize), bSize);
+    return imageDilationOperation(imageErosionOperation(image, bSize), bSize);
 }
 
 /**
@@ -386,7 +391,7 @@ Bitmap ForgingDetector::opening(Bitmap const& image, int bSize)
  * @param bSize dimensao do elemento estruturante, que eh um quadrado
  * @return imagem erodida
  */
-Bitmap ForgingDetector::erosion(Bitmap const& image, int bSize)
+Bitmap ForgingDetector::imageErosionOperation(Bitmap const& image, int bSize)
 {
     Bitmap eroded(image);
     int width = image.getWidth();
@@ -403,21 +408,21 @@ Bitmap ForgingDetector::erosion(Bitmap const& image, int bSize)
         {
             image.getPixel(i, j, value, value, value);
             // pixel branco; aplicar elemento estruturante
-            if(value == 0)
+            if(value != 0)
+                continue;
+
+            // verificar se a origem se encontra na regiao
+            bPaint = true;
+            for(k = i - origin; k < i + origin && k < width && bPaint; k++)
             {
-                // verificar se a origem se encontra na regiao
-                bPaint = true;
-                for(k = i - origin; k < i + origin && k < width && bPaint; k++)
+                for(l = j - origin; l < j + origin && l < height && bPaint; l++)
                 {
-                    for(l = j - origin; l < j + origin && l < height && bPaint; l++)
-                    {
-                        image.getPixel(k, l, value, value, value);
-                        bPaint = bPaint & (value != 0);
-                    }
+                    image.getPixel(k, l, value, value, value);
+                    bPaint = bPaint & (value != 0);
                 }
-                stValue = (bPaint ? 255 : 0);
-                eroded.setPixel(i, j, stValue, stValue, stValue);
             }
+            stValue = (bPaint ? 255 : 0);
+            eroded.setPixel(i, j, stValue, stValue, stValue);
         }
     }
 
@@ -431,7 +436,7 @@ Bitmap ForgingDetector::erosion(Bitmap const& image, int bSize)
  * @param bSize dimensao do elemento estruturante, que eh um quadrado
  * @return imagem dilatada
  */
-Bitmap ForgingDetector::dilation(Bitmap const& image, int bSize)
+Bitmap ForgingDetector::imageDilationOperation(Bitmap const& image, int bSize)
 {
     Bitmap dilated(image);
 
@@ -449,14 +454,14 @@ Bitmap ForgingDetector::dilation(Bitmap const& image, int bSize)
             //dilated.setPixel(i, j, 0, 0, 0);
             image.getPixel(i, j, value, value, value);
             // pixel branco; aplicar elemento estruturante
-            if(value != 0)
+            if(value == 0)
+                continue;
+
+            // verificar se a origem se encontra na regiao
+            for(k = i - origin; k < i + origin && k < width; k++)
             {
-                // verificar se a origem se encontra na regiao
-                for(k = i - origin; k < i + origin && k < width; k++)
-                {
-                    for(l = j - origin; l < j + origin && l < height; l++)
-                        dilated.setPixel(k, l, 255, 255, 255);
-                }
+                for(l = j - origin; l < j + origin && l < height; l++)
+                    dilated.setPixel(k, l, 255, 255, 255);
             }
         }
     }
