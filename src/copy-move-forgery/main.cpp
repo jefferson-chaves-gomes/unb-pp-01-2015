@@ -79,7 +79,6 @@ void startSerialProcess(int argc, char *argv[])
 //        ImgUtils::saveImageAs(opened, path);
 //        std::cout << "Done." << std::endl;
 //    }
-
     timeval endTime;
     gettimeofday(&endTime, NULL);
     long time = ((endTime.tv_sec * 1000000 + endTime.tv_usec) - (startTime.tv_sec * 1000000 + startTime.tv_usec));

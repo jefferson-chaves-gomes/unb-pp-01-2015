@@ -37,7 +37,6 @@ const double vectorP[CharVect::CHARS_SIZE] = {
         0.0125};    // P(7)
 const int MAX_SHIFT = 2;
 
-
 /**
  * @func forgeringByCharact
  * @brief algoritmo de deteccao por vetor de caracteristicas
@@ -50,8 +49,9 @@ bool ForgingDetector::byCharact(Bitmap const& image, int bSize)
 {
     /* passo 1: extrair as caracteristicas dos blocos da imagem */
     logger("[MSG " << ++dbgmsg << "] Criando vetores de caracteristicas...");
-    CharVectListOld* vList = charactVector(image, bSize);
-    if(vList == NULL)
+    ListCharVect vList;
+    charactVector(vList, image, bSize);
+    if(!vList.size())
     {
         std::cout << "Nao foi possivel criar o vetor de caracteristicas." << std::endl;
         return false;
@@ -74,76 +74,27 @@ bool ForgingDetector::byCharact(Bitmap const& image, int bSize)
     filterSpuriousRegions(simList, mainShift);
 
     /* passo 4: detectar adulteracao */
-    logger("[MSG " << ++dbgmsg << "] Pesquisando adulteracao...");
+    logger("[MSG " << ++dbgmsg << "] Criando imagem com as areas similares...");
+    Bitmap detectImage(image.getWidth(), image.getHeight());
+    createImageWithSimilarAreas(detectImage, image, bSize, simList);
 
-    int width = image.getWidth();
-    int height = image.getHeight();
-    unsigned char red, green, blue, grey;
-    Bitmap forgedImage(width, height);
-    Bitmap detectImage(width, height);
-    // criar imagem binaria com as areas similares encontradas
-    for(int i = 0; i < width; i++)
-    {
-        for(int j = 0; j < height; j++)
-        {
-            image.getPixel(i, j, red, green, blue);
-            forgedImage.setPixel(i, j, red, green, blue);
-            detectImage.setPixel(i, j, 0, 0, 0);
-        }
-    }
+    logger("[MSG " << ++dbgmsg << "] Fazendo operacao de abertura na imagem...");
+    detectImage = imageOpeningOperation(detectImage, bSize);
 
-
-    for(ListSimilarBlocks::iterator it = simList.begin(); it!=simList.end(); it++)
-    {
-        int b1x = it->b1.x;
-        int b1y = it->b1.y;
-        int b2x = it->b2.x;
-        int b2y = it->b2.y;
-        for(int i = b1x; i < b1x + bSize; i++)
-        {
-            for(int j = b1y; j < b1y + bSize; j++)
-            {
-                detectImage.setPixel(i, j, 255, 255, 255);
-                detectImage.setPixel(b2x, b2y++, 255, 255, 255);
-            }
-            b2x++;
-            b2y = it->b2.y;
-        }
-    }
-
-    // operacao de abertura na imagem
-    detectImage = opening(detectImage, bSize);
-
-    bool bForged = false;
-    // mergear com imagem original
-    for(int i = 0; i < width; i++)
-    {
-        for(int j = 0; j < height; j++)
-        {
-            detectImage.getPixel(i, j, grey, grey, grey);
-            if(grey > 0)
-            {
-                forgedImage.setPixel(i, j, 0, 255, 0);
-                bForged = true;
-            }
-        }
-    }
-
+    logger("[MSG " << ++dbgmsg << "] Verificando se imagem foi alterada...");
+    Bitmap forgedImage(image.getWidth(), image.getHeight());
     // salvar a imagem criada
-    if(bForged == true)
-    {
-        std::string path;
-        path.append(ImgUtils::imgTrueName(image.getPath()));
-        path.append(std::string("_detect.bmp"));
-        ImgUtils::saveImageAs(forgedImage, path);
+    if(!isImageForged(image, detectImage, forgedImage))
+        return false;
 
-        logger("[MSG " << ++dbgmsg << "] Imagem forjada gravada.");
-    }
-    /***/
+    logger("[MSG " << ++dbgmsg << "] Criando imagem forjada...");
+    std::string path(ImgUtils::imgTrueName(image.getPath()));
+    path.append(std::string("_detect.bmp"));
+    ImgUtils::saveImageAs(forgedImage, path);
 
-    LinkedListCleaner::clear(vList);
+    logger("[MSG " << ++dbgmsg << "] Imagem forjada gravada.");
 
-    return bForged;
+    return true;
 }
 
 
@@ -171,15 +122,12 @@ bool ForgingDetector::byCharact(Bitmap const& image, int bSize)
  |______\|      |/______|
  */
 
-CharVectListOld* ForgingDetector::charactVector(Bitmap const& image, int bSize)
+void ForgingDetector::charactVector(ListCharVect& listChar, Bitmap const& image, int bSize)
 {
     int width = image.getWidth();
     int height = image.getHeight();
     if(width < bSize || height < bSize)
-        return NULL;
-
-    CharVectListOld* vList = NULL;
-    CharVectListOld* charVecList = NULL;
+        return;
 
     int bTotalX = width - bSize + 1;
     int bTotalY = height - bSize + 1;
@@ -192,27 +140,19 @@ CharVectListOld* ForgingDetector::charactVector(Bitmap const& image, int bSize)
         for(int by = 0; by < bTotalY; by++)
         {
             // criar vetor de caracteristicas
-            charVecList = getCharVectListForBlock(image, bx, by, bSize);
+            CharVect charVect(bx, by);
+            getCharVectListForBlock(charVect, image, bx, by, bSize);
 
             // adicionar o bloco lido ao conjunto de vetores de caracteristicas
-            vList = addVectLexOrder(vList, charVecList);
+            addVectLexOrder(listChar, charVect);
         }
     }
-
-    return vList;
 }
 
-CharVectListOld* ForgingDetector::getCharVectListForBlock(Bitmap const& image, int blkPosX, int blkPosY, int blkSize)
+void ForgingDetector::getCharVectListForBlock(CharVect& charVect, Bitmap const& image, int blkPosX, int blkPosY, int blkSize)
 {
-    int width = image.getWidth();
-    int height = image.getHeight();
-
-    if(width < blkPosX + blkSize || height < blkPosY + blkSize)
-        return NULL;
-
     unsigned char red, green, blue, grey;
     int half = (int) blkSize / 2;
-    CharVectListOld* charVecList = new CharVectListOld(blkPosX, blkPosY);
     double part[4][2] = { { 0, 0 }, { 0, 0 }, { 0, 0 }, { 0, 0 } };
 
     // percorrer pixels do bloco na imagem original
@@ -222,9 +162,9 @@ CharVectListOld* ForgingDetector::getCharVectListForBlock(Bitmap const& image, i
         {
             image.getPixel(x + blkPosX, y + blkPosY, red, green, blue);
 
-            charVecList->vect.c[0] += (int) red;
-            charVecList->vect.c[1] += (int) green;
-            charVecList->vect.c[2] += (int) blue;
+            charVect.c[0] += (int) red;
+            charVect.c[1] += (int) green;
+            charVect.c[2] += (int) blue;
 
             // converter o pixel para escala de cinza conforme canal y
             grey = toUnsignedChar(0.299 * (int) red + 0.587 * (int) green + 0.114 * (int) blue);
@@ -257,45 +197,27 @@ CharVectListOld* ForgingDetector::getCharVectListForBlock(Bitmap const& image, i
 
     // calcular media RGB
     for(int i = 0; i < 3; i++)
-        charVecList->vect.c[i] = (int) charVecList->vect.c[i] / (blkSize * blkSize);
+        charVect.c[i] = (int) charVect.c[i] / (blkSize * blkSize);
 
     // soma das partes part[tipobloco][regiao]
     for(int i = 0; i < 4; i++)
-        charVecList->vect.c[i + 3] = part[i][0] / (part[i][0] + part[i][1]);
-
-    return charVecList;
+        charVect.c[i + 3] = part[i][0] / (part[i][0] + part[i][1]);
 }
 
-/**
- * @func addVectLexOrder
- * @brief adiciona aa lista um vetor de caracteristicas em ordem lexicografica
- * @param start ponteiro para o inicio da lista
- * @param vetor vetor a ser adicionado
- * @return ponteiro inicial da lista
- */
-
-CharVectListOld* ForgingDetector::addVectLexOrder(CharVectListOld* vecOrdered, CharVectListOld* valToAdd)
+void ForgingDetector::addVectLexOrder(ListCharVect& vecOrdered, CharVect& valToAdd)
 {
-    CharVectListOld ** head_ref = &vecOrdered;
-    /* Adiciona antes da cabeca */
-    if(*head_ref == NULL || valToAdd->vect <= (*head_ref)->vect)
+    for(ListCharVect::iterator it = vecOrdered.begin(); it != vecOrdered.end(); it++)
     {
-        valToAdd->next = *head_ref;
-        *head_ref = valToAdd;
+        if(valToAdd  <= (*it))
+        {
+            vecOrdered.insert(it, valToAdd);
+            return;
+        }
     }
-    else
-    {
-        /* Adiciona entre o atual e o proximo */
-        CharVectListOld * current = *head_ref;
-        while(current->next != NULL && current->next->vect <= valToAdd->vect)
-            current = current->next;
-        valToAdd->next = current->next;
-        current->next = valToAdd;
-    }
-    return *head_ref;
+    vecOrdered.push_back(valToAdd);
 }
 
-void ForgingDetector::createSimilarBlockList(Bitmap const& image, int bSize, CharVectListOld* vList, ListSimilarBlocks & simList)
+void ForgingDetector::createSimilarBlockList(Bitmap const& image, int bSize, ListCharVect const& vList, ListSimilarBlocks & simList)
 {
     int width = image.getWidth();
     int height = image.getHeight();
@@ -307,30 +229,32 @@ void ForgingDetector::createSimilarBlockList(Bitmap const& image, int bSize, Cha
 
     // percorrer toda a lista de blocos; execucao em O(n)
     // somente sao comparados dois blocos consecutivos, pois ja estao ordenados
-    CharVectListOld* iterator = vList;
-    while(iterator != NULL && iterator->next != NULL)
+
+    CharVect prev;
+    for(ListCharVect::const_iterator it = vList.begin(); it != vList.end(); prev = *(it++))
     {
+        if(it == vList.begin())
+            continue;
+
         // calcular diferencas
         bool diffVector = true;
         for(int i = 0; i < CharVect::CHARS_SIZE && diffVector; i++)
         {
-            diff[i] = ABS((iterator->vect.c[i] - iterator->next->vect.c[i]));
+            diff[i] = ABS((prev.c[i] - it->c[i]));
             diffVector = diffVector && (diff[i] < vectorP[i]);
         }
 
         if((diffVector)
                 && (diff[0] + diff[1] + diff[2] < t1)
                 && (diff[3] + diff[4] + diff[5] + diff[6] < t2)
-                && ABS(getShift(iterator->vect.pos, iterator->next->vect.pos)) > vectOffsetSize)
+                && ABS(getShift(prev.pos, it->pos)) > vectOffsetSize)
         {
             // blocos b1 e b2 sao similares
             simList.push_back(
                 SimilarBlocks(
-                    iterator->vect.pos,
-                    iterator->next->vect.pos));
+                    prev.pos,
+                    it->pos));
         }
-
-        iterator = iterator->next;
     }
 }
 
@@ -395,6 +319,36 @@ DeltaPos ForgingDetector::getMainShiftVector(ListSimilarBlocks const& blocks)
     return main;
 }
 
+void ForgingDetector::createImageWithSimilarAreas(Bitmap& detectImage, Bitmap const& image, int bSize, ListSimilarBlocks const& simList)
+{
+    int width = image.getWidth();
+    int height = image.getHeight();
+    // criar imagem binaria com as areas similares encontradas
+    for(int i = 0; i < width; i++)
+    {
+        for(int j = 0; j < height; j++)
+            detectImage.setPixel(i, j, 0, 0, 0);
+    }
+
+    for(ListSimilarBlocks::const_iterator it = simList.begin(); it!=simList.end(); it++)
+    {
+        int b1x = it->b1.x;
+        int b1y = it->b1.y;
+        int b2x = it->b2.x;
+        int b2y = it->b2.y;
+        for(int i = b1x; i < b1x + bSize; i++)
+        {
+            for(int j = b1y; j < b1y + bSize; j++)
+            {
+                detectImage.setPixel(i, j, 255, 255, 255);
+                detectImage.setPixel(b2x, b2y++, 255, 255, 255);
+            }
+            b2x++;
+            b2y = it->b2.y;
+        }
+    }
+}
+
 /**
  * @func opening
  * @brief efetua operacao de abertura na imagem
@@ -402,10 +356,12 @@ DeltaPos ForgingDetector::getMainShiftVector(ListSimilarBlocks const& blocks)
  * @param bSize dimensao do elemento estruturante, que eh um quadrado
  * @return imagem tratada
  */
-Bitmap ForgingDetector::opening(Bitmap const& image, int bSize)
+Bitmap ForgingDetector::imageOpeningOperation(Bitmap const& image, int bSize)
 {
     /* operacao de erosao + dilatacao */
-    return dilation(erosion(image, bSize), bSize);
+    Bitmap imageEroded(imageErosionOperation(image, bSize));
+    Bitmap imageDilated(imageDilationOperation(imageEroded, bSize));
+    return imageDilated;
 }
 
 /**
@@ -415,7 +371,7 @@ Bitmap ForgingDetector::opening(Bitmap const& image, int bSize)
  * @param bSize dimensao do elemento estruturante, que eh um quadrado
  * @return imagem erodida
  */
-Bitmap ForgingDetector::erosion(Bitmap const& image, int bSize)
+Bitmap ForgingDetector::imageErosionOperation(Bitmap const& image, int bSize)
 {
     Bitmap eroded(image);
     int width = image.getWidth();
@@ -432,21 +388,21 @@ Bitmap ForgingDetector::erosion(Bitmap const& image, int bSize)
         {
             image.getPixel(i, j, value, value, value);
             // pixel branco; aplicar elemento estruturante
-            if(value == 0)
+            if(value != 0)
+                continue;
+
+            // verificar se a origem se encontra na regiao
+            bPaint = true;
+            for(k = i - origin; k < i + origin && k < width && bPaint; k++)
             {
-                // verificar se a origem se encontra na regiao
-                bPaint = true;
-                for(k = i - origin; k < i + origin && k < width && bPaint; k++)
+                for(l = j - origin; l < j + origin && l < height && bPaint; l++)
                 {
-                    for(l = j - origin; l < j + origin && l < height && bPaint; l++)
-                    {
-                        image.getPixel(k, l, value, value, value);
-                        bPaint = bPaint & (value != 0);
-                    }
+                    image.getPixel(k, l, value, value, value);
+                    bPaint = bPaint & (value != 0);
                 }
-                stValue = (bPaint ? 255 : 0);
-                eroded.setPixel(i, j, stValue, stValue, stValue);
             }
+            stValue = (bPaint ? 255 : 0);
+            eroded.setPixel(i, j, stValue, stValue, stValue);
         }
     }
 
@@ -460,7 +416,7 @@ Bitmap ForgingDetector::erosion(Bitmap const& image, int bSize)
  * @param bSize dimensao do elemento estruturante, que eh um quadrado
  * @return imagem dilatada
  */
-Bitmap ForgingDetector::dilation(Bitmap const& image, int bSize)
+Bitmap ForgingDetector::imageDilationOperation(Bitmap const& image, int bSize)
 {
     Bitmap dilated(image);
 
@@ -478,18 +434,46 @@ Bitmap ForgingDetector::dilation(Bitmap const& image, int bSize)
             //dilated.setPixel(i, j, 0, 0, 0);
             image.getPixel(i, j, value, value, value);
             // pixel branco; aplicar elemento estruturante
-            if(value != 0)
+            if(value == 0)
+                continue;
+
+            // verificar se a origem se encontra na regiao
+            for(k = i - origin; k < i + origin && k < width; k++)
             {
-                // verificar se a origem se encontra na regiao
-                for(k = i - origin; k < i + origin && k < width; k++)
-                {
-                    for(l = j - origin; l < j + origin && l < height; l++)
-                        dilated.setPixel(k, l, 255, 255, 255);
-                }
+                for(l = j - origin; l < j + origin && l < height; l++)
+                    dilated.setPixel(k, l, 255, 255, 255);
             }
         }
     }
 
     return dilated;
+}
+
+bool ForgingDetector::isImageForged(Bitmap const& image, Bitmap const& detectImage, Bitmap& mergedImage)
+{
+    int width = image.getWidth();
+    int height = image.getHeight();
+    unsigned char red, green, blue, grey;
+    bool bForged = false;
+
+    for(int i = 0; i < width; i++)
+    {
+        for(int j = 0; j < height; j++)
+        {
+            detectImage.getPixel(i, j, grey, grey, grey);
+            if(grey > 0)
+            {
+                mergedImage.setPixel(i, j, 0, 255, 0);
+                bForged = true;
+            }
+            else
+            {
+                image.getPixel(i, j, red, green, blue);
+                mergedImage.setPixel(i, j, red, green, blue);
+            }
+        }
+    }
+
+    return bForged;
 }
 

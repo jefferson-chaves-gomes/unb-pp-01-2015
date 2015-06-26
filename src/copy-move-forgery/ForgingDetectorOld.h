@@ -1,7 +1,7 @@
 #ifndef FORGINGDETECTOROLD_H_
 #define FORGINGDETECTOROLD_H_
 
-#include "utils.h"
+#include "utils_old.h"
 #include "Bitmap.h"
 
 class ForgingDetectorOld

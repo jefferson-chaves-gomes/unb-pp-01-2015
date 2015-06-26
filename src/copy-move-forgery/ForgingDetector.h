@@ -13,9 +13,9 @@ class ForgingDetector
 
 public:
     static bool byCharact(Bitmap const& image, int bSize = 16);
-    static Bitmap opening(Bitmap const& image, int bSize);
-    static Bitmap dilation(Bitmap const& image, int bSize);
-    static Bitmap erosion(Bitmap const& image, int bSize);
+    static Bitmap imageOpeningOperation(Bitmap const& image, int bSize);
+    static Bitmap imageDilationOperation(Bitmap const& image, int bSize);
+    static Bitmap imageErosionOperation(Bitmap const& image, int bSize);
 
 protected:
     ForgingDetector()
@@ -25,15 +25,17 @@ protected:
     {
     }
     /* metodos de deteccao */
-    static CharVectListOld* charactVector(Bitmap const& image, int bSize);
-    static CharVectListOld* getCharVectListForBlock(Bitmap const& image, int blkPosX, int blkPosY, int blkSize);
-    static CharVectListOld* addVectLexOrder(CharVectListOld* start, CharVectListOld* vetor);
-    static void createSimilarBlockList(Bitmap const& image, int bSize, CharVectListOld* vList, ListSimilarBlocks &simList);
+    static void charactVector(ListCharVect& listChar, Bitmap const& image, int bSize);
+    static void getCharVectListForBlock(CharVect& charVect, Bitmap const& image, int blkPosX, int blkPosY, int blkSize);
+    static void addVectLexOrder(ListCharVect& orderedVector, CharVect& charVect);
+    static void createSimilarBlockList(Bitmap const& image, int bSize, ListCharVect const& vList, ListSimilarBlocks &simList);
     static void filterSpuriousRegions(ListSimilarBlocks& simList, DeltaPos const& mainShift);
 
     static bool isBlockSimilarSpurious(DeltaPos const& current, DeltaPos const& mainShift);
     static int getShift(Pos const& pos1, Pos const& pos2);
     static DeltaPos getMainShiftVector(ListSimilarBlocks const& blocks);
+    static void createImageWithSimilarAreas(Bitmap& detectImage, Bitmap const& image, int bSize, ListSimilarBlocks const& simList);
+    static bool isImageForged(Bitmap const& image, Bitmap const& detectImage, Bitmap& mergedImage);
 };
 
 #endif
