@@ -381,7 +381,8 @@ void ForgingDetector::createImageWithSimilarAreas(Bitmap& detectImage, Bitmap co
 Bitmap ForgingDetector::imageOpeningOperation(Bitmap const& image, int bSize)
 {
     /* operacao de erosao + dilatacao */
-    return imageDilationOperation(imageErosionOperation(image, bSize), bSize);
+    Bitmap imageEroded(imageErosionOperation(image, bSize));
+    return imageDilationOperation(imageEroded, bSize);
 }
 
 /**
