@@ -65,8 +65,12 @@ bool ForgingDetectorOld::byCharact(Bitmap image, int bSize)
     if(simList == NULL)
         return false;
 
+
+    logger("[MSG " << ++dbgmsg << "] Buscando deslocamento mais recorrente...");
+    SimilarBlocksOld* mainShift = getMainShiftVector(simList);
+
     logger("[MSG " << ++dbgmsg << "] Analisando shifts de deslocamento...");
-    filterSpuriousRegions(&simList);
+    filterSpuriousRegions(&simList, mainShift);
 
     /* passo 4: detectar adulteracao */
     logger("[MSG " << ++dbgmsg << "] Pesquisando adulteracao...");
@@ -350,11 +354,9 @@ bool ForgingDetectorOld::isBlockSimilarSpurious(SimilarBlocksOld* current, Simil
     return (ABS((current->dx - mainShift->dx)) > MAX_SHIFT || ABS((current->dy - mainShift->dy)) > MAX_SHIFT);
 }
 
-void ForgingDetectorOld::filterSpuriousRegions(SimilarBlocksOld** head)
+void ForgingDetectorOld::filterSpuriousRegions(SimilarBlocksOld** head, SimilarBlocksOld* mainShift)
 {   
     SimilarBlocksOld* temp = *head, *prev;
-    SimilarBlocksOld* mainShift = getMainShiftVector(*head);
-
     while (temp != NULL && isBlockSimilarSpurious(temp, mainShift))
     {
         *head = temp->next;
