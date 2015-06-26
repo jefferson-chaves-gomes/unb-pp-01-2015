@@ -26,6 +26,9 @@ const bool PRINT_TIME = true;
 
 #ifdef _DEBUG_
 int ForgingDetector::dbgmsg(0);
+const bool PRINT_TIME = true;
+#else
+const bool PRINT_TIME = false;
 #endif
 
 /* parametros pre-definidos */
