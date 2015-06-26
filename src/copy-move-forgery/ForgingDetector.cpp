@@ -382,7 +382,8 @@ Bitmap ForgingDetector::imageOpeningOperation(Bitmap const& image, int bSize)
 {
     /* operacao de erosao + dilatacao */
     Bitmap imageEroded(imageErosionOperation(image, bSize));
-    return imageDilationOperation(imageEroded, bSize);
+    Bitmap imageDilated(imageDilationOperation(imageEroded, bSize));
+    return imageDilated;
 }
 
 /**
