@@ -35,6 +35,7 @@ protected:
     static int getShift(Pos const& pos1, Pos const& pos2);
     static DeltaPos getMainShiftVector(ListSimilarBlocks const& blocks);
     static void createImageWithSimilarAreas(Bitmap& detectImage, Bitmap const& image, int bSize, ListSimilarBlocks const& simList);
+    static bool isImageForged(Bitmap const& image, Bitmap const& detectImage, Bitmap& mergedImage);
 };
 
 #endif

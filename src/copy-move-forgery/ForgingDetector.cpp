@@ -73,50 +73,28 @@ bool ForgingDetector::byCharact(Bitmap const& image, int bSize)
     logger("[MSG " << ++dbgmsg << "] Filtrando regioes espurias...");
     filterSpuriousRegions(simList, mainShift);
 
-    int width = image.getWidth();
-    int height = image.getHeight();
     /* passo 4: detectar adulteracao */
     logger("[MSG " << ++dbgmsg << "] Criando imagem com as areas similares...");
-    Bitmap detectImage(width, height);
+    Bitmap detectImage(image.getWidth(), image.getHeight());
     createImageWithSimilarAreas(detectImage, image, bSize, simList);
 
-    // operacao de abertura na imagem
+    logger("[MSG " << ++dbgmsg << "] Fazendo operacao de abertura na imagem...");
     detectImage = imageOpeningOperation(detectImage, bSize);
 
-    unsigned char red, green, blue, grey;
-    Bitmap forgedImage(width, height);
-    bool bForged = false;
-    // mergear com imagem original
-    for(int i = 0; i < width; i++)
-    {
-        for(int j = 0; j < height; j++)
-        {
-            detectImage.getPixel(i, j, grey, grey, grey);
-            if(grey > 0)
-            {
-                forgedImage.setPixel(i, j, 0, 255, 0);
-                bForged = true;
-            }
-            else
-            {
-                image.getPixel(i, j, red, green, blue);
-                forgedImage.setPixel(i, j, red, green, blue);
-            }
-        }
-    }
-
+    logger("[MSG " << ++dbgmsg << "] Verificando se imagem foi alterada...");
+    Bitmap forgedImage(image.getWidth(), image.getHeight());
     // salvar a imagem criada
-    if(bForged == true)
-    {
-        std::string path;
-        path.append(ImgUtils::imgTrueName(image.getPath()));
-        path.append(std::string("_detect.bmp"));
-        ImgUtils::saveImageAs(forgedImage, path);
+    if(!isImageForged(image, detectImage, forgedImage))
+        return false;
 
-        logger("[MSG " << ++dbgmsg << "] Imagem forjada gravada.");
-    }
+    logger("[MSG " << ++dbgmsg << "] Criando imagem forjada...");
+    std::string path(ImgUtils::imgTrueName(image.getPath()));
+    path.append(std::string("_detect.bmp"));
+    ImgUtils::saveImageAs(forgedImage, path);
 
-    return bForged;
+    logger("[MSG " << ++dbgmsg << "] Imagem forjada gravada.");
+
+    return true;
 }
 
 
@@ -469,5 +447,33 @@ Bitmap ForgingDetector::imageDilationOperation(Bitmap const& image, int bSize)
     }
 
     return dilated;
+}
+
+bool ForgingDetector::isImageForged(Bitmap const& image, Bitmap const& detectImage, Bitmap& mergedImage)
+{
+    int width = image.getWidth();
+    int height = image.getHeight();
+    unsigned char red, green, blue, grey;
+    bool bForged = false;
+
+    for(int i = 0; i < width; i++)
+    {
+        for(int j = 0; j < height; j++)
+        {
+            detectImage.getPixel(i, j, grey, grey, grey);
+            if(grey > 0)
+            {
+                mergedImage.setPixel(i, j, 0, 255, 0);
+                bForged = true;
+            }
+            else
+            {
+                image.getPixel(i, j, red, green, blue);
+                mergedImage.setPixel(i, j, red, green, blue);
+            }
+        }
+    }
+
+    return bForged;
 }
 
