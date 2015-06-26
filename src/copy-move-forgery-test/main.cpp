@@ -3,6 +3,7 @@
 
 int main(int argc, char **argv)
 {
+//  ::testing::GTEST_FLAG(filter) = "TimesEvalTest.timesEval"; // --gtest_filter=TimesEvalTest.timesEval
   ::testing::InitGoogleTest(&argc, argv);
   return RUN_ALL_TESTS();
 }

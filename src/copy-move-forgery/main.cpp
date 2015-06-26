@@ -47,38 +47,38 @@ void startSerialProcess(int argc, char *argv[])
 
         std::cout << "Done." << std::endl;
     }
-    else if(std::string(argv[1]) == GRAYSCALE)
-    {
-        ImgUtils::imgGrayScale(Bitmap(argv[2]), true);
-        std::cout << "Done." << std::endl;
-    }
-    else if(std::string(argv[1]) == EROSION)
-    {
-        Bitmap eroded = ForgingDetector::erosion(Bitmap(argv[2]), atoi(argv[3]));
-        std::string path;
-        path.append(ImgUtils::imgTrueName(argv[2]));
-        path.append(std::string("_eroded.bmp"));
-        ImgUtils::saveImageAs(eroded, path);
-        std::cout << "Done." << std::endl;
-    }
-    else if(std::string(argv[1]) == DILATION)
-    {
-        Bitmap dilated = ForgingDetector::dilation(Bitmap(argv[2]), atoi(argv[3]));
-        std::string path;
-        path.append(ImgUtils::imgTrueName(argv[2]));
-        path.append(std::string("_dilated.bmp"));
-        ImgUtils::saveImageAs(dilated, path);
-        std::cout << "Done." << std::endl;
-    }
-    else if(std::string(argv[1]) == OPENING)
-    {
-        Bitmap opened = ForgingDetector::opening(Bitmap(argv[2]), atoi(argv[3]));
-        std::string path;
-        path.append(ImgUtils::imgTrueName(argv[2]));
-        path.append(std::string("_opened.bmp"));
-        ImgUtils::saveImageAs(opened, path);
-        std::cout << "Done." << std::endl;
-    }
+//    else if(std::string(argv[1]) == GRAYSCALE)
+//    {
+//        ImgUtils::imgGrayScale(Bitmap(argv[2]), true);
+//        std::cout << "Done." << std::endl;
+//    }
+//    else if(std::string(argv[1]) == EROSION)
+//    {
+//        Bitmap eroded = ForgingDetector::erosion(Bitmap(argv[2]), atoi(argv[3]));
+//        std::string path;
+//        path.append(ImgUtils::imgTrueName(argv[2]));
+//        path.append(std::string("_eroded.bmp"));
+//        ImgUtils::saveImageAs(eroded, path);
+//        std::cout << "Done." << std::endl;
+//    }
+//    else if(std::string(argv[1]) == DILATION)
+//    {
+//        Bitmap dilated = ForgingDetector::dilation(Bitmap(argv[2]), atoi(argv[3]));
+//        std::string path;
+//        path.append(ImgUtils::imgTrueName(argv[2]));
+//        path.append(std::string("_dilated.bmp"));
+//        ImgUtils::saveImageAs(dilated, path);
+//        std::cout << "Done." << std::endl;
+//    }
+//    else if(std::string(argv[1]) == OPENING)
+//    {
+//        Bitmap opened = ForgingDetector::opening(Bitmap(argv[2]), atoi(argv[3]));
+//        std::string path;
+//        path.append(ImgUtils::imgTrueName(argv[2]));
+//        path.append(std::string("_opened.bmp"));
+//        ImgUtils::saveImageAs(opened, path);
+//        std::cout << "Done." << std::endl;
+//    }
 
     timeval endTime;
     gettimeofday(&endTime, NULL);
