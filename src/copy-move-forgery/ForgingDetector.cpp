@@ -50,8 +50,9 @@ bool ForgingDetector::byCharact(Bitmap const& image, int bSize)
 {
     /* passo 1: extrair as caracteristicas dos blocos da imagem */
     logger("[MSG " << ++dbgmsg << "] Criando vetores de caracteristicas...");
-    CharVectListOld* vList = charactVector(image, bSize);
-    if(vList == NULL)
+    ListCharVect vList;
+    charactVector(vList, image, bSize);
+    if(!vList.size())
     {
         std::cout << "Nao foi possivel criar o vetor de caracteristicas." << std::endl;
         return false;
@@ -139,9 +140,6 @@ bool ForgingDetector::byCharact(Bitmap const& image, int bSize)
 
         logger("[MSG " << ++dbgmsg << "] Imagem forjada gravada.");
     }
-    /***/
-
-    LinkedListCleaner::clear(vList);
 
     return bForged;
 }
@@ -171,15 +169,12 @@ bool ForgingDetector::byCharact(Bitmap const& image, int bSize)
  |______\|      |/______|
  */
 
-CharVectListOld* ForgingDetector::charactVector(Bitmap const& image, int bSize)
+void ForgingDetector::charactVector(ListCharVect& listChar, Bitmap const& image, int bSize)
 {
     int width = image.getWidth();
     int height = image.getHeight();
     if(width < bSize || height < bSize)
-        return NULL;
-
-    CharVectListOld* vList = NULL;
-    CharVectListOld* charVecList = NULL;
+        return;
 
     int bTotalX = width - bSize + 1;
     int bTotalY = height - bSize + 1;
@@ -192,27 +187,19 @@ CharVectListOld* ForgingDetector::charactVector(Bitmap const& image, int bSize)
         for(int by = 0; by < bTotalY; by++)
         {
             // criar vetor de caracteristicas
-            charVecList = getCharVectListForBlock(image, bx, by, bSize);
+            CharVect charVect(bx, by);
+            getCharVectListForBlock(charVect, image, bx, by, bSize);
 
             // adicionar o bloco lido ao conjunto de vetores de caracteristicas
-            vList = addVectLexOrder(vList, charVecList);
+            addVectLexOrder(listChar, charVect);
         }
     }
-
-    return vList;
 }
 
-CharVectListOld* ForgingDetector::getCharVectListForBlock(Bitmap const& image, int blkPosX, int blkPosY, int blkSize)
+void ForgingDetector::getCharVectListForBlock(CharVect& charVect, Bitmap const& image, int blkPosX, int blkPosY, int blkSize)
 {
-    int width = image.getWidth();
-    int height = image.getHeight();
-
-    if(width < blkPosX + blkSize || height < blkPosY + blkSize)
-        return NULL;
-
     unsigned char red, green, blue, grey;
     int half = (int) blkSize / 2;
-    CharVectListOld* charVecList = new CharVectListOld(blkPosX, blkPosY);
     double part[4][2] = { { 0, 0 }, { 0, 0 }, { 0, 0 }, { 0, 0 } };
 
     // percorrer pixels do bloco na imagem original
@@ -222,9 +209,9 @@ CharVectListOld* ForgingDetector::getCharVectListForBlock(Bitmap const& image, i
         {
             image.getPixel(x + blkPosX, y + blkPosY, red, green, blue);
 
-            charVecList->vect.c[0] += (int) red;
-            charVecList->vect.c[1] += (int) green;
-            charVecList->vect.c[2] += (int) blue;
+            charVect.c[0] += (int) red;
+            charVect.c[1] += (int) green;
+            charVect.c[2] += (int) blue;
 
             // converter o pixel para escala de cinza conforme canal y
             grey = toUnsignedChar(0.299 * (int) red + 0.587 * (int) green + 0.114 * (int) blue);
@@ -257,45 +244,27 @@ CharVectListOld* ForgingDetector::getCharVectListForBlock(Bitmap const& image, i
 
     // calcular media RGB
     for(int i = 0; i < 3; i++)
-        charVecList->vect.c[i] = (int) charVecList->vect.c[i] / (blkSize * blkSize);
+        charVect.c[i] = (int) charVect.c[i] / (blkSize * blkSize);
 
     // soma das partes part[tipobloco][regiao]
     for(int i = 0; i < 4; i++)
-        charVecList->vect.c[i + 3] = part[i][0] / (part[i][0] + part[i][1]);
-
-    return charVecList;
+        charVect.c[i + 3] = part[i][0] / (part[i][0] + part[i][1]);
 }
 
-/**
- * @func addVectLexOrder
- * @brief adiciona aa lista um vetor de caracteristicas em ordem lexicografica
- * @param start ponteiro para o inicio da lista
- * @param vetor vetor a ser adicionado
- * @return ponteiro inicial da lista
- */
-
-CharVectListOld* ForgingDetector::addVectLexOrder(CharVectListOld* vecOrdered, CharVectListOld* valToAdd)
+void ForgingDetector::addVectLexOrder(ListCharVect& vecOrdered, CharVect& valToAdd)
 {
-    CharVectListOld ** head_ref = &vecOrdered;
-    /* Adiciona antes da cabeca */
-    if(*head_ref == NULL || valToAdd->vect <= (*head_ref)->vect)
+    for(ListCharVect::iterator it = vecOrdered.begin(); it != vecOrdered.end(); it++)
     {
-        valToAdd->next = *head_ref;
-        *head_ref = valToAdd;
+        if(valToAdd  <= (*it))
+        {
+            vecOrdered.insert(it, valToAdd);
+            return;
+        }
     }
-    else
-    {
-        /* Adiciona entre o atual e o proximo */
-        CharVectListOld * current = *head_ref;
-        while(current->next != NULL && current->next->vect <= valToAdd->vect)
-            current = current->next;
-        valToAdd->next = current->next;
-        current->next = valToAdd;
-    }
-    return *head_ref;
+    vecOrdered.push_back(valToAdd);
 }
 
-void ForgingDetector::createSimilarBlockList(Bitmap const& image, int bSize, CharVectListOld* vList, ListSimilarBlocks & simList)
+void ForgingDetector::createSimilarBlockList(Bitmap const& image, int bSize, ListCharVect const& vList, ListSimilarBlocks & simList)
 {
     int width = image.getWidth();
     int height = image.getHeight();
@@ -307,30 +276,32 @@ void ForgingDetector::createSimilarBlockList(Bitmap const& image, int bSize, Cha
 
     // percorrer toda a lista de blocos; execucao em O(n)
     // somente sao comparados dois blocos consecutivos, pois ja estao ordenados
-    CharVectListOld* iterator = vList;
-    while(iterator != NULL && iterator->next != NULL)
+
+    CharVect prev;
+    for(ListCharVect::const_iterator it = vList.begin(); it != vList.end(); prev = *(it++))
     {
+        if(it == vList.begin())
+            continue;
+
         // calcular diferencas
         bool diffVector = true;
         for(int i = 0; i < CharVect::CHARS_SIZE && diffVector; i++)
         {
-            diff[i] = ABS((iterator->vect.c[i] - iterator->next->vect.c[i]));
+            diff[i] = ABS((prev.c[i] - it->c[i]));
             diffVector = diffVector && (diff[i] < vectorP[i]);
         }
 
         if((diffVector)
                 && (diff[0] + diff[1] + diff[2] < t1)
                 && (diff[3] + diff[4] + diff[5] + diff[6] < t2)
-                && ABS(getShift(iterator->vect.pos, iterator->next->vect.pos)) > vectOffsetSize)
+                && ABS(getShift(prev.pos, it->pos)) > vectOffsetSize)
         {
             // blocos b1 e b2 sao similares
             simList.push_back(
                 SimilarBlocks(
-                    iterator->vect.pos,
-                    iterator->next->vect.pos));
+                    prev.pos,
+                    it->pos));
         }
-
-        iterator = iterator->next;
     }
 }
 
