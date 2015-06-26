@@ -6,7 +6,7 @@ class TimesEvalTest : public ::testing::Test, public ForgingDetector
 
 TEST_F(TimesEvalTest, timesEval)
 {
-    std::cout << "\n\n\n############################## SERIAL TIMES ################################# \n" << std::endl;
+    std::cout << "\n\n############################## SERIAL TIMES ################################# \n" << std::endl;
 
     // charactVector_timeEval
     Timer charactVector_timeEval;
@@ -33,5 +33,5 @@ TEST_F(TimesEvalTest, timesEval)
     std::cout << "4 - filterSpuriousRegions_timesEval:  " << filterSpuriousRegions_timesEval.elapsedMicroseconds()
             << std::endl;
 
-    std::cout << "\n############################## SERIAL TIMES ################################# \n\n\n";
+    std::cout << "\n############################## SERIAL TIMES ################################# \n\n";
 }

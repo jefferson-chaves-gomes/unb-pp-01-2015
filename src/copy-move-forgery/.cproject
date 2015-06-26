@@ -41,6 +41,9 @@
 								<option id="gnu.c.compiler.option.include.paths.765185863" name="Include paths (-I)" superClass="gnu.c.compiler.option.include.paths" valueType="includePath">
 									<listOptionValue builtIn="false" value="/usr/local/Cellar/gcc49/4.9.2_1/lib/gcc/4.9/gcc/x86_64-apple-darwin14.1.0/4.9.2/include"/>
 								</option>
+								<option id="gnu.c.compiler.option.preprocessor.def.symbols.1139196882" name="Defined symbols (-D)" superClass="gnu.c.compiler.option.preprocessor.def.symbols" valueType="definedSymbols">
+									<listOptionValue builtIn="false" value="_DEBUG_"/>
+								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.c.compiler.input.1945944888" superClass="cdt.managedbuild.tool.gnu.c.compiler.input"/>
 							</tool>
 							<tool id="cdt.managedbuild.tool.gnu.c.linker.exe.debug.1867915239" name="GCC C Linker" superClass="cdt.managedbuild.tool.gnu.c.linker.exe.debug"/>

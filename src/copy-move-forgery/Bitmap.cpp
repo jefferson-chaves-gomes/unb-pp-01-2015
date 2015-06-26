@@ -6,7 +6,8 @@
 
 /* construtores */
 Bitmap::Bitmap()
-    : file_name_(""),
+    : valid_(false),
+    file_name_(""),
     data_(0),
     bytes_per_pixel_(3),
     length_(0),
