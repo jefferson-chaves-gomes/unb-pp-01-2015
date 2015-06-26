@@ -73,23 +73,23 @@ void CharVect::initChars()
 }
 
 /********************************************************************************/
-CharVectList::CharVectList() :
+CharVectListOld::CharVectListOld() :
         vect(), next(NULL)
 {
 }
 
-CharVectList::CharVectList(int x_, int y_) :
+CharVectListOld::CharVectListOld(int x_, int y_) :
         vect(x_, y_), next(NULL)
 {
 }
 
-CharVectList::CharVectList(CharVectList const& other)
+CharVectListOld::CharVectListOld(CharVectListOld const& other)
 {
     this->vect = other.vect;
     this->next = NULL;
 }
 
-CharVectList& CharVectList::operator =(CharVectList const& other)
+CharVectListOld& CharVectListOld::operator =(CharVectListOld const& other)
 {
     this->vect = other.vect;
     return *this;
