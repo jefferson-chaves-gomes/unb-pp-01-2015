@@ -80,18 +80,18 @@ void Bitmap::create_bitmap()
 
 Bitmap Bitmap::getBlock(Pos const& pos, int sizeBlk) const
 {
-    Bitmap res(sizeBlk, sizeBlk);
+    Bitmap block(sizeBlk, sizeBlk);
 
     for(int i=0; i<sizeBlk; i++)
     {
-        int posStart = ((pos.y + i) * height_ * bytes_per_pixel_ + pos.x * bytes_per_pixel_);
+        int posStart = ((pos.y + i) * row_increment_ + pos.x * bytes_per_pixel_);
         int posEnd = posStart + sizeBlk * bytes_per_pixel_;
 
         int blkPosStart(i * sizeBlk * bytes_per_pixel_);
-        std::copy(data_ + posStart, data_ + posEnd, res.data_ + blkPosStart);
+        std::copy(data_ + posStart, data_ + posEnd, block.data_ + blkPosStart);
     }
 
-    return res;
+    return block;
 }
 
 Bitmap& Bitmap::operator=(const Bitmap& image)
