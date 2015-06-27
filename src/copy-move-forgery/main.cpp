@@ -8,6 +8,13 @@
 #include "Timer.h"
 #include "main.h"
 
+#ifdef MPI_ENABLED
+#include <mpi/mpi.h>
+#include <MPISettings.h>
+#include <ForgingDetectorMPI.h>
+void startMPIProcess(int argc, char *argv[]);
+#endif
+
 int main(int argc, char *argv[])
 {
     if (argc < 2)
@@ -16,26 +23,24 @@ int main(int argc, char *argv[])
         exit(EXIT_SUCCESS);
     }
 
-#ifdef MPI_ENABLED
+    #ifdef MPI_ENABLED
     startMPIProcess(argc, argv);
-#else
+    #else
     startSerialProcess(argc, argv);
-#endif
-
-    return EXIT_SUCCESS;
+    #endif
 }
 
 #ifdef MPI_ENABLED
-void startMPIProcess(int argc, char *argv[])
+void startMPIProcess(int argc, char **argv)
 {
-    MPI::Init(argc, argv);
-    int PROC_SIZE(0);
-    int PROC_ID(0);
+    MPI_Init(&argc, &argv);
 
-    MPI_Comm_size(MPI_COMM_WORLD, &PROC_SIZE);
-    MPI_Comm_rank(MPI_COMM_WORLD, &PROC_ID);
+    if(MPISettings::PROC_ID()==0)
+        std::cout << "Initializing MPI processing..." << std::endl;
+    if(MPISettings::PROC_ID()==1)
+        std::cout << "Initializing MPI processing 1..." << std::endl;
 
-    if(PROC_ID==0)
+    if(MPISettings::PROC_ID()==0)
     {
         int bSize = BLOCK_SIZE;
         bool tampered = false;
@@ -56,10 +61,9 @@ void startMPIProcess(int argc, char *argv[])
         std::cout << serialTime.elapsedMicroseconds() << std::endl;
     }
 
-    MPI::Finalize();
+    MPI_Finalize();
 }
-#endif
-
+#else
 void startSerialProcess(int argc, char *argv[])
 {
     int bSize = BLOCK_SIZE;
@@ -80,6 +84,7 @@ void startSerialProcess(int argc, char *argv[])
     std::cout << "Serial time for file: " << argv[2] << std::endl;
     std::cout << serialTime.elapsedMicroseconds() << std::endl;
 }
+#endif
 
 void printUsage()
 {
