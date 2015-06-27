@@ -44,8 +44,7 @@ void startMPIProcess(int argc, char **argv)
         finalizeExecution(EXIT_FAILURE);
     }
 
-
-    if(MPISettings::PROC_ID()==0)
+    if(MPISettings::IS_PROC_ID_MASTER())
         std::cout << "Initializing MPI processing..." << std::endl;
 
     int bSize = BLOCK_SIZE;
@@ -67,9 +66,9 @@ void startMPIProcess(int argc, char **argv)
     if(MPISettings::IS_PROC_ID_MASTER())
     {
         if (tampered)
-            std::cout << "Tampering was detected in image '" << argv[2] << "'." << std::endl;
+            std::cout << "Tampering was detected in image '" << argv[1] << "'." << std::endl;
         else
-            std::cout << "Image '" << argv[2] << "' is assumed to be authentic." << std::endl;
+            std::cout << "Image '" << argv[1] << "' is assumed to be authentic." << std::endl;
     }
 
     finalizeExecution(EXIT_SUCCESS);
@@ -91,13 +90,13 @@ void startSerialProcess(int argc, char *argv[])
     tampered = ForgingDetector::byCharact(Bitmap(argv[2]), bSize);
 
     if (tampered)
-        std::cout << "Tampering was detected in image '" << argv[2] << "'." << std::endl;
+        std::cout << "Tampering was detected in image '" << argv[1] << "'." << std::endl;
     else
-        std::cout << "Image '" << argv[2] << "' is assumed to be authentic." << std::endl;
+        std::cout << "Image '" << argv[1] << "' is assumed to be authentic." << std::endl;
 
     std::cout << "Done." << std::endl;
 
-    std::cout << "Serial time for file: " << argv[2] << std::endl;
+    std::cout << "Serial time for file: " << argv[1] << std::endl;
     std::cout << serialTime.elapsedMicroseconds() << std::endl;
 }
 #endif
