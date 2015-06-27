@@ -243,12 +243,10 @@ TEST_F(ForgingDetectorTest, addVectLexOrder)
 
 TEST_F(ForgingDetectorTest, charactVectorFast)
 {
-    Bitmap bmp(std::string("../copy-move-forgery/resource/icone.bmp"));
-
-    CharVectListOld* vListOld = ForgingDetectorOld::charactVector(bmp, BLOCK_SIZE);
+    CharVectListOld* vListOld = ForgingDetectorOld::charactVector(BITMAP, BLOCK_SIZE);
 
     ListCharVect vListNew;
-    ForgingDetectorTest::charactVector(vListNew, bmp, BLOCK_SIZE);
+    ForgingDetectorTest::charactVector(vListNew, BITMAP, BLOCK_SIZE);
 
     assertEqualsCharVectListOld(vListOld, vListNew);
 

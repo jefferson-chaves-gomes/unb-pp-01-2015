@@ -8,7 +8,6 @@
 #include <iostream>
 #include <string>
 
-const int BLOCK_SIZE(16);
 const std::string IMG_PATH("../copy-move-forgery/resource/publico.bmp");
 const Bitmap BITMAP(IMG_PATH);
 

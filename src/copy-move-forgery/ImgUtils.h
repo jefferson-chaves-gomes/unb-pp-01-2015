@@ -4,6 +4,8 @@
 #include <string>
 #include "Bitmap.h"
 
+const int BLOCK_SIZE(16);
+
 class ImgUtils
 {
     public:

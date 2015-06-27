@@ -8,11 +8,10 @@ protected:
 
 TEST_F(BitmapTest, getBlock)
 {
-    Bitmap bitmap("../copy-move-forgery/resource/icone.bmp");
     int blockSize(50);
 
     Pos pos(0, 0);
-    Bitmap blk = bitmap.getBlock(pos, blockSize);
+    Bitmap blk = BITMAP.getBlock(pos, blockSize);
 
     unsigned char red, green, blue;
     unsigned char redBlk, greenBlk, blueBlk;
@@ -26,7 +25,7 @@ TEST_F(BitmapTest, getBlock)
         std::cout << "Testing line: " << i << std::endl;
         for(int j=0; j<blockSize; j++)
         {
-            bitmap.getPixel(pos.x+i, pos.y+i, red, green, blue);
+            BITMAP.getPixel(pos.x+i, pos.y+i, red, green, blue);
             blk.getPixel(i, j, redBlk, greenBlk, blueBlk);
 
             ASSERT_EQ(red, redBlk);
