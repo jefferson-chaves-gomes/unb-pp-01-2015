@@ -28,6 +28,7 @@
 								</option>
 								<option id="gnu.cpp.compiler.option.include.paths.2131566485" name="Include paths (-I)" superClass="gnu.cpp.compiler.option.include.paths" valueType="includePath">
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/copy-move-forgery}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/copy-move-forgery-mpi}&quot;"/>
 								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.cpp.compiler.input.1076276419" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.input"/>
 							</tool>
@@ -39,6 +40,7 @@
 								</option>
 								<option id="gnu.c.compiler.option.include.paths.1219970670" name="Include paths (-I)" superClass="gnu.c.compiler.option.include.paths" valueType="includePath">
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/copy-move-forgery}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/copy-move-forgery-mpi}&quot;"/>
 								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.c.compiler.input.25147467" superClass="cdt.managedbuild.tool.gnu.c.compiler.input"/>
 							</tool>
@@ -56,7 +58,7 @@
 					</folderInfo>
 					<sourceEntries>
 						<entry excluding="copy-move-forgery" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
-						<entry excluding="main.*" flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="copy-move-forgery"/>
+						<entry flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="copy-move-forgery"/>
 					</sourceEntries>
 				</configuration>
 			</storageModule>

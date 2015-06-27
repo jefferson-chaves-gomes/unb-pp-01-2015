@@ -8,6 +8,13 @@
 #include "Timer.h"
 #include "main.h"
 
+#ifdef MPI_ENABLED
+#include <mpi/mpi.h>
+#include <MPISettings.h>
+#include <ForgingDetectorMPI.h>
+void startMPIProcess(int argc, char *argv[]);
+#endif
+
 int main(int argc, char *argv[])
 {
     if (argc < 2)
@@ -16,9 +23,45 @@ int main(int argc, char *argv[])
         exit(EXIT_SUCCESS);
     }
 
+    #ifdef MPI_ENABLED
+    startMPIProcess(argc, argv);
+    #else
     startSerialProcess(argc, argv);
+    #endif
 }
 
+#ifdef MPI_ENABLED
+void startMPIProcess(int argc, char *argv[])
+{
+    MPI::Init(argc, argv);
+
+    if(MPISettings::PROC_ID()==0)
+        std::cout << "Initializing MPI processing..." << std::endl;
+
+    if(MPISettings::PROC_ID()==0)
+    {
+        int bSize = BLOCK_SIZE;
+        bool tampered = false;
+        if (argc == 4)
+            bSize = atoi(argv[3]);
+
+        Timer serialTime;
+        tampered = ForgingDetectorMPI::byCharact(Bitmap(argv[2]), bSize);
+
+        if (tampered)
+            std::cout << "Tampering was detected in image '" << argv[2] << "'." << std::endl;
+        else
+            std::cout << "Image '" << argv[2] << "' is assumed to be authentic." << std::endl;
+
+        std::cout << "Done." << std::endl;
+
+        std::cout << "Serial time for file: " << argv[2] << std::endl;
+        std::cout << serialTime.elapsedMicroseconds() << std::endl;
+    }
+
+    MPI::Finalize();
+}
+#else
 void startSerialProcess(int argc, char *argv[])
 {
     int bSize = BLOCK_SIZE;
@@ -39,6 +82,7 @@ void startSerialProcess(int argc, char *argv[])
     std::cout << "Serial time for file: " << argv[2] << std::endl;
     std::cout << serialTime.elapsedMicroseconds() << std::endl;
 }
+#endif
 
 void printUsage()
 {
