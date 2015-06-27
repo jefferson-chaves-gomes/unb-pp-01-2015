@@ -86,10 +86,11 @@ public:
     unsigned char* row(unsigned int row_index) const;
     std::string getPath() const;
     Bitmap getBlock(Pos const& pos, int sizeBlk) const;
+    Bitmap getLines(unsigned int initialLine, unsigned int length) const;
+    void load_bitmap(const std::string& _filename);
 
 private:
     void create_bitmap();
-    void load_bitmap();
     void reverse_channels();
     template<typename T>
     T clamp(const T& v, const T& lower_range, const T& upper_range);

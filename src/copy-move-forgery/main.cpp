@@ -49,19 +49,21 @@ void startMPIProcess(int argc, char **argv)
 
     int bSize = BLOCK_SIZE;
     std::string imagePath;
+    Bitmap image;
     if(MPISettings::IS_PROC_ID_MASTER())
     {
         bSize = atoi(argv[2]);
         imagePath = argv[1];
+        image.load_bitmap(imagePath);
     }
 
     MPI_Bcast(&bSize, 1, MPI_INT, MPISettings::PROC_MASTER, MPI_COMM_WORLD);
 
     bool tampered = false;
     if(MPISettings::IS_PROC_ID_MASTER())
-        tampered = ForgingDetector::byCharact(Bitmap(imagePath), bSize);
+        tampered = ForgingDetectorMPI::byCharact(Bitmap(imagePath), bSize);
     else
-        ForgingDetector::byCharact(Bitmap(), bSize);
+        ForgingDetectorMPI::byCharact(Bitmap(), bSize);
 
     if(MPISettings::IS_PROC_ID_MASTER())
     {

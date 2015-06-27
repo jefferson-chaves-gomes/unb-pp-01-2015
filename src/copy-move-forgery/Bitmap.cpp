@@ -29,7 +29,7 @@ Bitmap::Bitmap(const std::string& _filename)
     row_increment_(0),
     channel_mode_(bgr_mode)
 {
-    load_bitmap();
+    load_bitmap(file_name_);
 }
 
 /* cria imagem com as dimensoes informadas */
@@ -76,6 +76,22 @@ void Bitmap::create_bitmap()
 
     data_ = new unsigned char[length_];
     valid_ = true;
+}
+
+Bitmap Bitmap::getLines(unsigned int initialLine, unsigned int length) const
+{
+    if(initialLine > height_-1)
+        return Bitmap();
+    if(initialLine + length > height_-1)
+        length = height_ - initialLine;
+
+    int posStart = initialLine * width_ * bytes_per_pixel_;
+    int posEnd = posStart + length * width_ * bytes_per_pixel_;
+
+    Bitmap section(width_, length);
+    std::copy(data_ + posStart, data_ + posEnd, section.data_);
+
+    return section;
 }
 
 Bitmap Bitmap::getBlock(Pos const& pos, int sizeBlk) const
@@ -235,8 +251,10 @@ unsigned char* Bitmap::row(unsigned int row_index) const
 }
 
 /* carrega imagem existente em arquivo */
-void Bitmap::load_bitmap()
+void Bitmap::load_bitmap(const std::string& _filename)
 {
+    file_name_ = _filename;
+
     std::ifstream stream(file_name_.c_str(), std::ios::binary);
     if(!stream)
     {
