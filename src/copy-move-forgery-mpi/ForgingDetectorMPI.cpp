@@ -1,7 +1,7 @@
 #include "ForgingDetectorMPI.h"
 
-#include "functions.h"
-#include "ImgUtils.h"
+#include <functions.h>
+#include <ImgUtils.h>
 #include <cstdlib>
 #include <cmath>
 #include <sstream>

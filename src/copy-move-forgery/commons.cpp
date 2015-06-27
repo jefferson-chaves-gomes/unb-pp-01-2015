@@ -1,5 +1,63 @@
 #include "commons.h"
 
+#include <cmath>
+
+/**
+ * @func toUnsignedChar
+ * @brief converte um valor numerico para sua representacao como pixel de uma imagem
+ * @param value valor numerico
+ * @return valor do pixel (8 bits)
+ */
+unsigned char toUnsignedChar(double value)
+{
+    if(value > 255.0)
+        return 255;
+    else if(value < 0.0)
+        return 0;
+    else
+        return static_cast<unsigned char>(floor(value + 0.5));
+}
+
+/******************************************************************************/
+
+Pos::Pos() :
+        x(0), y(0)
+{
+}
+
+Pos::Pos(int x_, int y_) :
+        x(x_), y(y_)
+{
+}
+
+Pos::Pos(Pos const& other) :
+        x(other.x), y(other.y)
+{
+}
+
+Pos& Pos::operator=(Pos const& other)
+{
+    x = other.x;
+    y = other.y;
+    return *(this);
+}
+
+bool Pos::operator==(Pos const& other) const
+{
+    if(x != other.x)
+        return false;
+    if(y != other.y)
+        return false;
+    return true;
+}
+
+bool Pos::operator!=(Pos const& other) const
+{
+    return !((*this) == other);
+}
+
+/******************************************************************************/
+
 CharVect::CharVect() :
     pos()
 {
@@ -80,4 +138,48 @@ bool CharVect::operator <= (CharVect const& other) const
 void CharVect::initChars()
 {
     setChars(0,0,0,0,0,0,0);
+}
+
+/******************************************************************************/
+
+DeltaPos::DeltaPos() :
+    dx(0),
+    dy(0)
+{
+}
+
+DeltaPos::DeltaPos(Pos const& pos1, Pos const& pos2) :
+    dx(pos1.x-pos2.x),
+    dy(pos1.y-pos2.y)
+{
+}
+
+DeltaPos::DeltaPos(int dx_, int dy_) :
+    dx(dx_),
+    dy(dy_)
+{
+}
+
+DeltaPos& DeltaPos::operator=(DeltaPos const& other)
+{
+    dx = other.dx;
+    dy = other.dy;
+    return *(this);
+}
+
+bool DeltaPos::operator==(DeltaPos const& other) const
+{
+    if(dx != other.dx) return false;
+    if(dy != other.dy) return false;
+    return true;
+}
+
+bool DeltaPos::operator!=(DeltaPos const& other) const
+{
+    return !((*this) == other);
+}
+
+bool DeltaPos::operator<(DeltaPos const& other) const
+{
+    return (dx < other.dx) || ( (dx == other.dx)&&(dy < other.dy) );
 }

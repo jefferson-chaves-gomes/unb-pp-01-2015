@@ -1,6 +1,5 @@
 #include "ForgingDetector.h"
 
-#include "functions.h"
 #include "ImgUtils.h"
 #include <cstdlib>
 #include <cmath>

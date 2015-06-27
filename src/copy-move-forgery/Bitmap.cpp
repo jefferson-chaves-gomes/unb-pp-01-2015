@@ -1,6 +1,5 @@
 #include "Bitmap.h"
 
-#include "functions.h"
 #include <fstream>
 #include <iostream>
 
