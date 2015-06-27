@@ -5,11 +5,6 @@
 #include <list>
 #include "commons.h"
 
-#ifdef MPI_ENABLED
-int PROC_SIZE(0);
-int PROC_ID(0);
-#endif
-
 /* para os blocos similares */
 class SimilarBlocks
 {
