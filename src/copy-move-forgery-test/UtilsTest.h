@@ -8,15 +8,15 @@
 #include <iostream>
 #include <string>
 
-const int BLOCK_SIZE = 16;
+const int BLOCK_SIZE(16);
 const std::string IMG_PATH("../copy-move-forgery/resource/publico.bmp");
 const Bitmap BITMAP(IMG_PATH);
 
-class UtilsTest : public ::testing::Test, public ForgingDetector
+class UtilsTest
 {
 public:
 
-    void printCharVect(CharVect const& charVec)
+    static void printCharVect(CharVect const& charVec)
     {
         std::cout << "|";
         for(int i = 0; i < CharVect::CHARS_SIZE; i++)
@@ -26,7 +26,7 @@ public:
         std::cout << std::endl;
     }
 
-    void printCharVectList(ListCharVect& charVectList)
+    static void printCharVectList(ListCharVect& charVectList)
     {
         for(ListCharVect::iterator it = charVectList.begin(); it != charVectList.end(); it++)
         {
@@ -36,12 +36,12 @@ public:
         std::cout << "######################" << std::endl;
     }
 
-    void printDeltaPos(DeltaPos const& delta)
+    static void printDeltaPos(DeltaPos const& delta)
     {
         std::cout << "Delta: " << delta.dx << "|" << delta.dy << std::endl;
     }
 
-    void printSimilarBlocks(ListSimilarBlocks const& auxBlock, int limit = 0)
+    static void printSimilarBlocks(ListSimilarBlocks const& auxBlock, int limit = 0)
     {
         int count(0);
         for(ListSimilarBlocks::const_iterator it = auxBlock.begin(); it != auxBlock.end(); it++)
@@ -53,7 +53,7 @@ public:
         }
     }
 
-    void printSimilarBlocksOld(SimilarBlocksOld* auxBlock, int limit = 0)
+    static void printSimilarBlocksOld(SimilarBlocksOld* auxBlock, int limit = 0)
     {
         int count(0);
         while(auxBlock != NULL)

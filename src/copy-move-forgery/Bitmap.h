@@ -4,6 +4,42 @@
 #include <string>
 #include "utils.h"
 
+typedef struct bitmap_file_header
+{
+    unsigned short type;
+    unsigned int size;
+    unsigned short reserved1;
+    unsigned short reserved2;
+    unsigned int off_bits;
+
+    unsigned int struct_size()
+    {
+        return sizeof(type) + sizeof(size) + sizeof(reserved1) + sizeof(reserved2) + sizeof(off_bits);
+    }
+} BMPFileHeader;
+
+typedef struct bitmap_information_header
+{
+    unsigned int size;
+    unsigned int width;
+    unsigned int height;
+    unsigned short planes;
+    unsigned short bit_count;
+    unsigned int compression;
+    unsigned int size_image;
+    unsigned int x_pels_per_meter;
+    unsigned int y_pels_per_meter;
+    unsigned int clr_used;
+    unsigned int clr_important;
+
+    unsigned int struct_size()
+    {
+        return sizeof(size) + sizeof(width) + sizeof(height) + sizeof(planes) + sizeof(bit_count) + sizeof(compression)
+                + sizeof(size_image) + sizeof(x_pels_per_meter) + sizeof(y_pels_per_meter) + sizeof(clr_used)
+                + sizeof(clr_important);
+    }
+} BMPInfoHeader;
+
 /* Classe Bitmap: objeto que representa a imagem .bmp a ser manipulada */
 class Bitmap
 {
@@ -39,8 +75,7 @@ public:
     Bitmap(const Bitmap& image);
     ~Bitmap();
     Bitmap& operator=(const Bitmap& image);
-    void getPixel(const unsigned int x, const unsigned int y, unsigned char& red, unsigned char& green,
-            unsigned char& blue) const;
+    void getPixel(const unsigned int x, const unsigned int y, unsigned char& red, unsigned char& green, unsigned char& blue) const;
     void setPixel(const unsigned int x, const unsigned int y, const unsigned char red, const unsigned char green,
             const unsigned char blue);
     unsigned int getWidth() const;
@@ -50,6 +85,7 @@ public:
     const unsigned char* data();
     unsigned char* row(unsigned int row_index) const;
     std::string getPath() const;
+    Bitmap getBlock(Pos const& pos, int sizeBlk) const;
 
 private:
     void create_bitmap();
