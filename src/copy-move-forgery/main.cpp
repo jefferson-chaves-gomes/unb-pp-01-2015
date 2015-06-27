@@ -17,12 +17,6 @@ void startMPIProcess(int argc, char *argv[]);
 
 int main(int argc, char *argv[])
 {
-    if (argc < 2)
-    {
-        printUsage();
-        exit(EXIT_SUCCESS);
-    }
-
     #ifdef MPI_ENABLED
     startMPIProcess(argc, argv);
     #else
@@ -31,45 +25,67 @@ int main(int argc, char *argv[])
 }
 
 #ifdef MPI_ENABLED
+
+void finalizeExecution(int error)
+{
+    MPI_Finalize();
+    exit(EXIT_SUCCESS);
+}
+
 void startMPIProcess(int argc, char **argv)
 {
     MPI_Init(&argc, &argv);
+    Timer serialTime(true, __PRETTY_FUNCTION__, __LINE__, "Forging detector FINISHED!!!");
+
+    if (argc < 3)
+    {
+        if(MPISettings::IS_PROC_ID_MASTER())
+            printUsage();
+        finalizeExecution(EXIT_FAILURE);
+    }
+
 
     if(MPISettings::PROC_ID()==0)
         std::cout << "Initializing MPI processing..." << std::endl;
-    if(MPISettings::PROC_ID()==1)
-        std::cout << "Initializing MPI processing 1..." << std::endl;
 
-    if(MPISettings::PROC_ID()==0)
+    int bSize = BLOCK_SIZE;
+    std::string imagePath;
+    if(MPISettings::IS_PROC_ID_MASTER())
     {
-        int bSize = BLOCK_SIZE;
-        bool tampered = false;
-        if (argc == 4)
-            bSize = atoi(argv[3]);
+        bSize = atoi(argv[2]);
+        imagePath = argv[1];
+    }
 
-        Timer serialTime;
-        tampered = ForgingDetectorMPI::byCharact(Bitmap(argv[2]), bSize);
+    MPI_Bcast(&bSize, 1, MPI_INT, MPISettings::PROC_MASTER, MPI_COMM_WORLD);
 
+    bool tampered = false;
+    if(MPISettings::IS_PROC_ID_MASTER())
+        tampered = ForgingDetector::byCharact(Bitmap(imagePath), bSize);
+    else
+        ForgingDetector::byCharact(Bitmap(), bSize);
+
+    if(MPISettings::IS_PROC_ID_MASTER())
+    {
         if (tampered)
             std::cout << "Tampering was detected in image '" << argv[2] << "'." << std::endl;
         else
             std::cout << "Image '" << argv[2] << "' is assumed to be authentic." << std::endl;
-
-        std::cout << "Done." << std::endl;
-
-        std::cout << "Serial time for file: " << argv[2] << std::endl;
-        std::cout << serialTime.elapsedMicroseconds() << std::endl;
     }
 
-    MPI_Finalize();
+    finalizeExecution(EXIT_SUCCESS);
 }
 #else
 void startSerialProcess(int argc, char *argv[])
 {
+    if (argc < 3)
+    {
+        printUsage();
+        exit(EXIT_SUCCESS);
+    }
+
     int bSize = BLOCK_SIZE;
     bool tampered = false;
-    if (argc == 4)
-        bSize = atoi(argv[3]);
+    bSize = atoi(argv[2]);
 
     Timer serialTime;
     tampered = ForgingDetector::byCharact(Bitmap(argv[2]), bSize);

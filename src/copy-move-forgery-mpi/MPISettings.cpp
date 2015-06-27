@@ -25,3 +25,10 @@ int MPISettings::PROC_ID()
 {
     return instance().PROC_ID_;
 }
+
+bool MPISettings::IS_PROC_ID_MASTER()
+{
+    return instance().PROC_ID_ == PROC_MASTER;
+}
+
+
