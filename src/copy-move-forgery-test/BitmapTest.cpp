@@ -6,7 +6,7 @@ protected:
 
 };
 
-TEST_F(BitmapTest, getBlock)
+TEST_F(BitmapTest, getLines)
 {
     int lineStart = 100;
     int lengthLines = 50;
@@ -22,7 +22,6 @@ TEST_F(BitmapTest, getBlock)
 
     for(int x=0; x<blk.getWidth(); x++)
     {
-        std::cout << "Testing line: " << x << std::endl;
         for(int y=0; y<blk.getHeight(); y++)
         {
             BITMAP.getPixel(x, lineStart+y, red, green, blue);
