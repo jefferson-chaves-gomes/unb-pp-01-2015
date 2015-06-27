@@ -31,12 +31,14 @@ int main(int argc, char *argv[])
 }
 
 #ifdef MPI_ENABLED
-void startMPIProcess(int argc, char *argv[])
+void startMPIProcess(int argc, char **argv)
 {
-    MPI::Init(argc, argv);
+    MPI_Init(&argc, &argv);
 
     if(MPISettings::PROC_ID()==0)
         std::cout << "Initializing MPI processing..." << std::endl;
+    if(MPISettings::PROC_ID()==1)
+        std::cout << "Initializing MPI processing 1..." << std::endl;
 
     if(MPISettings::PROC_ID()==0)
     {
@@ -59,7 +61,7 @@ void startMPIProcess(int argc, char *argv[])
         std::cout << serialTime.elapsedMicroseconds() << std::endl;
     }
 
-    MPI::Finalize();
+    MPI_Finalize();
 }
 #else
 void startSerialProcess(int argc, char *argv[])
