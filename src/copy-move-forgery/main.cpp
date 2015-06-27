@@ -57,13 +57,8 @@ void startMPIProcess(int argc, char **argv)
         image.load_bitmap(imagePath);
     }
 
-    MPI_Bcast(&bSize, 1, MPI_INT, MPISettings::PROC_MASTER, MPI_COMM_WORLD);
-
-    bool tampered = false;
-    if(MPISettings::IS_PROC_ID_MASTER())
-        tampered = ForgingDetectorMPI::byCharact(Bitmap(imagePath), bSize);
-    else
-        ForgingDetectorMPI::byCharact(Bitmap(), bSize);
+    bool tampered =
+            ForgingDetectorMPI::byCharact(image, bSize);
 
     if(MPISettings::IS_PROC_ID_MASTER())
     {
