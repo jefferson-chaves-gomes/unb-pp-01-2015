@@ -4,4 +4,10 @@
 /build
 /system
 /src/copy-move-forgery/resource/*_detect.bmp
+/docs/artigo/*.aux
+/docs/artigo/*.log
+/docs/artigo/*.gz
+/docs/artigo/*.bak
+/docs/artigo/*.bbl
+/docs/artigo/*.blg
 *~

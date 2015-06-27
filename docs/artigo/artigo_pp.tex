@@ -1,0 +1,67 @@
+\documentclass[12pt]{article}
+
+\usepackage{sbc-template}
+\usepackage{float}
+
+\usepackage{graphicx,url}
+
+%\usepackage[brazil]{babel}
+\usepackage[latin1]{inputenc}
+
+\makeatletter
+\setlength{\@fptop}{0pt}
+\makeatother
+
+\sloppy
+
+\title{Paralelismo em algoritmos de detecção de adulterações em imagens digitais}
+
+\author{Vitor Filincowsky Ribeiro, Jefferson Chaves Gomes, Felipe Lopes de Souza}
+
+
+\address{Instituto de Ciências Exatas \\
+Departamento de Ciência da Computação - CIC \\
+Universidade de Brasília (UnB) - Brasília, DF - Brasil
+\email{vribeiro@cic.unb.br, \{jefferson.chaves, felipelopess\}@gmail.com}
+}
+
+\begin{document}
+
+\maketitle
+
+\section{Introdução}
+\label{intro}
+
+\section{Processamento de imagens digitais}
+
+\section{Processamento paralelo}
+\label{paral}
+
+\subsection{Medidas de desempenho}
+\label{perform}
+
+O \textit{speed-up} é uma medida de desempenho que é dada pela razão entre os tempos de execução do programa serializado e do programa paralelizado, conforme equação \ref{eq-spdup}.
+
+\begin{equation}
+\label{eq-spdup}
+S = \frac{t_{serial}}{t_{parallel}}
+\end{equation}
+
+A eficiência de um programa paralelizado é medida pela razão entre o \textit{speed-up} e a quantidade de núcleos do processador, conforme equação \ref{eq-eff}.
+
+\begin{equation}
+\label{eq-eff}
+E = \frac{S}{p} = \frac{t_{serial}}{p * t_{parallel}}
+\end{equation}
+
+\section{Aplicação desenvolvida}
+\label{desenv}
+
+\section{Análise dos resultados}
+\label{result}
+
+\section{Considerações finais}
+\label{final}
+
+
+\end{document}
