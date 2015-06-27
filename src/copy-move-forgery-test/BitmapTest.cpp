@@ -25,7 +25,7 @@ TEST_F(BitmapTest, getBlock)
         std::cout << "Testing line: " << i << std::endl;
         for(int j=0; j<blockSize; j++)
         {
-            BITMAP.getPixel(pos.x+i, pos.y+i, red, green, blue);
+            BITMAP.getPixel(pos.x+i, pos.y+j, red, green, blue);
             blk.getPixel(i, j, redBlk, greenBlk, blueBlk);
 
             ASSERT_EQ(red, redBlk);
