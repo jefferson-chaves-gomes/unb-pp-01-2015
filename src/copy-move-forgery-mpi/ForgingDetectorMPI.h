@@ -25,10 +25,10 @@ protected:
     {
     }
     /* metodos de deteccao */
-    static void charactVector(ListCharVect& listChar, Bitmap const& image, int imageWidth, int imageHeight, int bSize);
+    static void charactVector(ListCharVectPtr& listChar, Bitmap const& image, int imageWidth, int imageHeight, int bSize);
     static void getCharVectListForBlock(CharVect& charVect, Bitmap const& image, int blkPosX, int blkPosY, int blkSize);
-    static void addVectLexOrder(ListCharVect& orderedVector, CharVect& charVect);
-    static void createSimilarBlockList(Bitmap const& image, int bSize, ListCharVect const& vList, ListSimilarBlocks &simList);
+    static void addVectLexOrder(ListCharVectPtr& orderedVector, CharVect* charVect);
+    static void createSimilarBlockList(Bitmap const& image, int bSize, ListCharVectPtr const& vList, ListSimilarBlocks &simList);
     static void filterSpuriousRegions(ListSimilarBlocks& simList, DeltaPos const& mainShift);
 
     static bool isBlockSimilarSpurious(DeltaPos const& current, DeltaPos const& mainShift);

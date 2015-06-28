@@ -149,10 +149,11 @@ void ForgingDetector::charactVector(ListCharVect& listChar, Bitmap const& image,
             CharVect charVect(bx, by);
             getCharVectListForBlock(charVect, image, bx, by, bSize);
 
-            // adicionar o bloco lido ao conjunto de vetores de caracteristicas
-            addVectLexOrder(listChar, charVect);
+            listChar.push_back(charVect);
         }
     }
+
+    listChar.sort(CharVect::lessOrEqualsTo);
 }
 
 void ForgingDetector::charactVectorBySections(ListCharVect& listChar, Bitmap const& image, int bSize, unsigned int sections)
@@ -264,7 +265,7 @@ void ForgingDetector::addVectLexOrder(ListCharVect& vecOrdered, CharVect& valToA
 {
     for(ListCharVect::iterator it = vecOrdered.begin(); it != vecOrdered.end(); it++)
     {
-        if(valToAdd  <= (*it))
+        if(CharVect::lessOrEqualsTo(valToAdd, (*it)))
         {
             vecOrdered.insert(it, valToAdd);
             return;

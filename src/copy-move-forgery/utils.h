@@ -24,5 +24,6 @@ public:
 typedef std::list<SimilarBlocks>  ListSimilarBlocks;
 
 typedef std::list<CharVect> ListCharVect;
+typedef std::list<CharVect*> ListCharVectPtr;
 
 #endif

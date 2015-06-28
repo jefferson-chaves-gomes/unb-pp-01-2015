@@ -8,7 +8,7 @@
 #include <iostream>
 #include <string>
 
-const std::string IMG_PATH("../copy-move-forgery/resource/publico.bmp");
+const std::string IMG_PATH("../copy-move-forgery/resource/icone.bmp");
 const Bitmap BITMAP(IMG_PATH);
 
 const std::string IMG_PATH_SMALL("../copy-move-forgery/resource/small.bmp");

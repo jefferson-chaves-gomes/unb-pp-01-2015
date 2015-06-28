@@ -62,11 +62,12 @@ public:
     CharVect(CharVect const&);
     CharVect(int x_, int y_);
     CharVect& operator =(CharVect const& other);
-    bool operator <=(CharVect const& other) const;
     bool operator ==(CharVect const& other) const;
 
     void setChars(double c1, double c2, double c3, double c4, double c5, double c6, double c7);
 
+    static bool lessOrEqualsToPtr(CharVect const* obj1, CharVect const* obj2);
+    static bool lessOrEqualsTo(CharVect const& obj1, CharVect const& obj2);
 private:
     void initChars();
 };
