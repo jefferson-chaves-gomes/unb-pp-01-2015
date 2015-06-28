@@ -6,6 +6,7 @@
 void printUsage();
 void startSerialProcess(int, char*[]);
 void startOpenMPProcess(int, char*[]);
+void startMPIProcess(int, char*[]);
 void printResult(const bool, std::string const&);
 
 #endif
