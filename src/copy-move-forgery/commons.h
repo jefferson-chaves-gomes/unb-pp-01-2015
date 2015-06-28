@@ -16,6 +16,8 @@
 
 #define ABS(X) ((X < 0) ? -X : X)
 
+#define MASTER_THREAD       0
+
 class Pos
 {
 public:

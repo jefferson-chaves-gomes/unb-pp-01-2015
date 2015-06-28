@@ -42,14 +42,14 @@ const double vectorP[CharVect::CHARS_SIZE] = {
 const int MAX_SHIFT = 2;
 
 /**
- * @func forgeringByCharact
+ * @func isTampered
  * @brief algoritmo de deteccao por vetor de caracteristicas
  * @param image imagem verificada
  * @param multiregion informa se multiplas regioes devem ser pesquisadas
  * @param bSize dimensao do bloco
  * @return true, foi detectada adulteracao; false, se imagem eh original
  */
-bool ForgingDetector::byCharact(Bitmap const& image, int bSize)
+bool ForgingDetector::isTampered(Bitmap const& image, int bSize)
 {
     /* passo 1: extrair as caracteristicas dos blocos da imagem */
     logger("[MSG " << ++dbgmsg << "] Criando vetores de caracteristicas...");

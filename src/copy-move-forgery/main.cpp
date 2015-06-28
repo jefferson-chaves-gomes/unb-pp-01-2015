@@ -6,10 +6,14 @@
 #include <iostream>
 #include <stdlib.h>
 #include "Timer.h"
+#include <omp.h>
 
 #ifdef MPI_ENABLED
 #include <mpi.h>
 #endif
+
+// TEMP: Não consegui por na functions.h.... sei lah pq... da erro...
+void printResult(const bool, const std::string);
 
 int main(int argc, char *argv[]) {
 
@@ -29,13 +33,21 @@ int main(int argc, char *argv[]) {
 
 #endif
 
-    if (argc < 2
-            || (std::string(argv[1]) != CHARACT_VECTOR && std::string(argv[1]) != EROSION && std::string(argv[1]) != DILATION && std::string(argv[1]) != OPENING && std::string(argv[1]) != GRAYSCALE)) {
+    if (argc < 2 || std::string(argv[1]) != CHARACT_VECTOR) {
         printUsage();
         exit(EXIT_SUCCESS);
     }
 
-    startSerialProcess(argc, argv);
+    // Serial process
+//    Timer serialTime;
+//    startSerialProcess(argc, argv);
+//    std::cout << "Serial time for file: " << argv[2] << std::endl;
+//    std::cout << serialTime.elapsedMicroseconds() << std::endl;
+    // Parallel process
+    Timer openMpTime;
+    startOpenMPProcess(argc, argv);
+    std::cout << "OpenMP time for file: " << argv[2] << std::endl;
+    std::cout << openMpTime.elapsedMicroseconds() << std::endl;
 
 #ifdef MPI_ENABLED
 }
@@ -46,56 +58,45 @@ MPI::Finalize();
 }
 
 void startSerialProcess(int argc, char *argv[]) {
-    /* escolha de modo de operacao */
-    if (std::string(argv[1]) == CHARACT_VECTOR) {
-        int bSize = BLOCK_SIZE;
-        bool tampered = false;
-        if (argc == 4)
-            bSize = atoi(argv[3]);
+    int blockSize = BLOCK_SIZE;
+    if (argc == 4)
+        blockSize = atoi(argv[3]);
 
-        Timer serialTime;
-        tampered = ForgingDetector::byCharact(Bitmap(argv[2]), bSize);
+    bool tampered = ForgingDetector::isTampered(Bitmap(argv[2]), blockSize);
+    printResult(tampered, std::string(argv[2]));
+}
 
-        if (tampered)
-            std::cout << "Tampering was detected in image '" << argv[2] << "'." << std::endl;
-        else
-            std::cout << "Image '" << argv[2] << "' is assumed to be authentic." << std::endl;
+void startOpenMPProcess(int argc, char *argv[]) {
+    int blockSize = BLOCK_SIZE;
+    if (argc == 4)
+        blockSize = atoi(argv[3]);
 
-        std::cout << "Done." << std::endl;
-
-        std::cout << "Serial time for file: " << argv[2] << std::endl;
-        std::cout << serialTime.elapsedMicroseconds() << std::endl;
+    int coresCount = omp_get_num_procs();
+    omp_set_num_threads(coresCount);
+#pragma omp parallel
+    {
+        int threadId, threadsRegionCount, maxTreadsCount;
+        coresCount = omp_get_num_procs();
+        maxTreadsCount = omp_get_max_threads();
+        threadId = omp_get_thread_num();
+        threadsRegionCount = omp_get_num_threads();
+        if (threadId == MASTER_THREAD) {
+            printf("t%i : coresCount\t\t= %i\n", threadId, coresCount);
+            printf("t%i : maxTreadsCount\t= %i\n", threadId, maxTreadsCount);
+            printf("t%i : threadsRegionCount\t= %i\n\n", threadId, threadsRegionCount);
+        }
+        printf("t%i is present\n", threadId);
     }
-//    else if(std::string(argv[1]) == GRAYSCALE)
-//    {
-//        ImgUtils::imgGrayScale(Bitmap(argv[2]), true);
-//        std::cout << "Done." << std::endl;
-//    }
-//    else if(std::string(argv[1]) == EROSION)
-//    {
-//        Bitmap eroded = ForgingDetector::erosion(Bitmap(argv[2]), atoi(argv[3]));
-//        std::string path;
-//        path.append(ImgUtils::imgTrueName(argv[2]));
-//        path.append(std::string("_eroded.bmp"));
-//        ImgUtils::saveImageAs(eroded, path);
-//        std::cout << "Done." << std::endl;
-//    }
-//    else if(std::string(argv[1]) == DILATION)
-//    {
-//        Bitmap dilated = ForgingDetector::dilation(Bitmap(argv[2]), atoi(argv[3]));
-//        std::string path;
-//        path.append(ImgUtils::imgTrueName(argv[2]));
-//        path.append(std::string("_dilated.bmp"));
-//        ImgUtils::saveImageAs(dilated, path);
-//        std::cout << "Done." << std::endl;
-//    }
-//    else if(std::string(argv[1]) == OPENING)
-//    {
-//        Bitmap opened = ForgingDetector::opening(Bitmap(argv[2]), atoi(argv[3]));
-//        std::string path;
-//        path.append(ImgUtils::imgTrueName(argv[2]));
-//        path.append(std::string("_opened.bmp"));
-//        ImgUtils::saveImageAs(opened, path);
-//        std::cout << "Done." << std::endl;
-//    }
+    printf("\n");
+
+//    bool tampered = ForgingDetector::isTampered(Bitmap(argv[2]), blockSize);
+//    printResult(tampered, std::string(argv[2]));
+
+}
+
+void printResult(const bool tampered, const std::string fileName) {
+    if (tampered)
+        std::cout << "Tampering was detected in image '" << fileName << "'." << std::endl;
+    else
+        std::cout << "Image '" << fileName << "' is assumed to be authentic." << std::endl;
 }
