@@ -1,14 +1,16 @@
 #include "ForgingDetectorMPI.h"
 
-#include "functions.h"
+#include "commons.h"
 #include "ImgUtils.h"
+#include "Timer.h"
 #include <cstdlib>
 #include <cmath>
 #include <sstream>
 #include <fstream>
 #include <iostream>
 #include <map>
-#include "Timer.h"
+#include <mpi/mpi.h>
+#include "MPISettings.h"
 
 //#define _DEBUG_
 #ifdef _DEBUG_
@@ -51,6 +53,13 @@ const int MAX_SHIFT = 2;
  */
 bool ForgingDetectorMPI::byCharact(Bitmap const& image, int bSize)
 {
+    unsigned int width = image.getWidth();
+    unsigned int height = image.getHeight();
+
+    MPI_Bcast(&width, 1, MPI_INT, MPISettings::PROC_MASTER, MPI_COMM_WORLD);
+    MPI_Bcast(&height, 1, MPI_INT, MPISettings::PROC_MASTER, MPI_COMM_WORLD);
+    MPI_Bcast(&bSize, 1, MPI_INT, MPISettings::PROC_MASTER, MPI_COMM_WORLD);
+
     /* passo 1: extrair as caracteristicas dos blocos da imagem */
     logger("[MSG " << ++dbgmsg << "] Criando vetores de caracteristicas...");
     ListCharVect vList;

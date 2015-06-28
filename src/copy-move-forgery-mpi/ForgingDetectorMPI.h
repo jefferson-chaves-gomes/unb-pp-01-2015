@@ -1,8 +1,8 @@
-#ifndef ForgingDetectorMPIMPI_H_
-#define ForgingDetectorMPIMPI_H_
+#ifndef ForgingDetectorMPI_H_
+#define ForgingDetectorMPI_H_
 
-#include "utils.h"
-#include "Bitmap.h"
+#include <utils.h>
+#include <Bitmap.h>
 
 class ForgingDetectorMPI
 {

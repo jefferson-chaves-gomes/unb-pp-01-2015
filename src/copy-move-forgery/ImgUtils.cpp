@@ -1,6 +1,5 @@
 #include "ImgUtils.h"
 
-#include "functions.h"
 #include <sstream>
 #include <fstream>
 #include <iostream>

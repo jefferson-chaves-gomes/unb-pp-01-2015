@@ -1,43 +1,27 @@
-#include "functions.h"
 #include "ForgingDetector.h"
 #include "ForgingDetectorOld.h"
 #include "ImgUtils.h"
 #include <cstdlib>
 #include <iostream>
 #include <stdlib.h>
-#include "Timer.h"
 #include <omp.h>
+#include "Timer.h"
+#include "main.h"
 
 #ifdef MPI_ENABLED
-#include <mpi.h>
+#include <mpi/mpi.h>
+#include <MPISettings.h>
+#include <ForgingDetectorMPI.h>
+void startMPIProcess(int argc, char *argv[]);
 #endif
 
 // TEMP: Não consegui por na functions.h.... sei lah pq... da erro...
 void printResult(const bool, const std::string);
 
 int main(int argc, char *argv[]) {
-
 #ifdef MPI_ENABLED
-    MPI::Init(argc, argv);
-    int PROC_SIZE(0);
-    int PROC_ID(0);
-
-    MPI_Comm_size(MPI_COMM_WORLD, &PROC_SIZE);
-    MPI_Comm_rank(MPI_COMM_WORLD, &PROC_ID);
-
-    std::cout << "EXECUTOU MPI" << std::endl;
-
-    // to remove boolean
-    if(false && PROC_ID==0)
-    {
-
-#endif
-
-    if (argc < 2 || std::string(argv[1]) != CHARACT_VECTOR) {
-        printUsage();
-        exit(EXIT_SUCCESS);
-    }
-
+    startMPIProcess(argc, argv);
+#else
     // Serial process
 //    Timer serialTime;
 //    startSerialProcess(argc, argv);
@@ -48,16 +32,61 @@ int main(int argc, char *argv[]) {
     startOpenMPProcess(argc, argv);
     std::cout << "OpenMP time for file: " << argv[2] << std::endl;
     std::cout << openMpTime.elapsedMicroseconds() << std::endl;
+#endif
+}
 
 #ifdef MPI_ENABLED
-}
-MPI::Finalize();
-#endif
 
-    return EXIT_SUCCESS;
+void finalizeExecution(int error)
+{
+    MPI_Finalize();
+    exit(EXIT_SUCCESS);
 }
 
+void startMPIProcess(int argc, char **argv)
+{
+    MPI_Init(&argc, &argv);
+    Timer serialTime(true, __PRETTY_FUNCTION__, __LINE__, "Forging detector FINISHED!!!");
+
+    if (argc < 3)
+    {
+        if(MPISettings::IS_PROC_ID_MASTER())
+        printUsage();
+        finalizeExecution(EXIT_FAILURE);
+    }
+
+    if(MPISettings::IS_PROC_ID_MASTER())
+    std::cout << "Initializing MPI processing..." << std::endl;
+
+    int bSize = BLOCK_SIZE;
+    std::string imagePath;
+    Bitmap image;
+    if(MPISettings::IS_PROC_ID_MASTER())
+    {
+        bSize = atoi(argv[2]);
+        imagePath = argv[1];
+        image.load_bitmap(imagePath);
+    }
+
+    bool tampered = ForgingDetectorMPI::byCharact(image, bSize);
+
+    if(MPISettings::IS_PROC_ID_MASTER())
+    {
+        if (tampered)
+        std::cout << "Tampering was detected in image '" << argv[1] << "'." << std::endl;
+        else
+        std::cout << "Image '" << argv[1] << "' is assumed to be authentic." << std::endl;
+    }
+
+    finalizeExecution(EXIT_SUCCESS);
+}
+#else
 void startSerialProcess(int argc, char *argv[]) {
+    if (argc < 3) {
+        printUsage();
+        exit(EXIT_SUCCESS);
+    }
+
     int blockSize = BLOCK_SIZE;
     if (argc == 4)
         blockSize = atoi(argv[3]);
@@ -93,10 +122,16 @@ void startOpenMPProcess(int argc, char *argv[]) {
 //    printResult(tampered, std::string(argv[2]));
 
 }
+#endif
 
 void printResult(const bool tampered, const std::string fileName) {
     if (tampered)
         std::cout << "Tampering was detected in image '" << fileName << "'." << std::endl;
     else
         std::cout << "Image '" << fileName << "' is assumed to be authentic." << std::endl;
+}
+
+void printUsage() {
+    std::cout << "Usage: CustomBitmap.exe <img_file> <block_size...>" << std::endl;
+    std::cout << HELP << "\tshows usage manual." << std::endl;
 }

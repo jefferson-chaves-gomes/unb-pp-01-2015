@@ -3,7 +3,6 @@
 	<name>copy-move-forgery-mpi</name>
 	<comment></comment>
 	<projects>
-		<project>copy-move-forgery</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>
