@@ -1,10 +1,10 @@
-#ifndef FORGINGDETECTOR_H_
-#define FORGINGDETECTOR_H_
+#ifndef FORGINGDETECTOROMP_H_
+#define FORGINGDETECTOROMP_H_
 
 #include "utils.h"
 #include "Bitmap.h"
 
-class ForgingDetector
+class ForgingDetectorOMP
 {
 
 #ifdef _DEBUG_
@@ -18,14 +18,13 @@ public:
     static Bitmap imageErosionOperation(Bitmap const& image, int bSize);
 
 protected:
-    ForgingDetector()
+    ForgingDetectorOMP()
     {
     }
-    ~ForgingDetector()
+    ~ForgingDetectorOMP()
     {
     }
     /* metodos de deteccao */
-    static void charactVectorBySections(ListCharVect& listChar, Bitmap const& image, int bSize, unsigned int sections);
     static void charactVector(ListCharVect& listChar, Bitmap const& image, int bSize);
     static void getCharVectListForBlock(CharVect& charVect, Bitmap const& image, int blkPosX, int blkPosY, int blkSize);
     static void addVectLexOrder(ListCharVect& orderedVector, CharVect& charVect);

@@ -1,30 +1,40 @@
-
-#include "ForgingDetector.h"
-#include "ForgingDetectorOld.h"
-#include "ImgUtils.h"
 #include <cstdlib>
 #include <iostream>
 #include <stdlib.h>
+#include "ForgingDetector.h"
+#include "ForgingDetectorOld.h"
+#include "ImgUtils.h"
 #include "Timer.h"
 #include "main.h"
 
-#ifdef MPI_ENABLED
+#if defined(MPI_ENABLED)
 #include <mpi/mpi.h>
 #include <MPISettings.h>
 #include <ForgingDetectorMPI.h>
-void startMPIProcess(int argc, char *argv[]);
+#elif defined(OMP_ENABLED)
+#include <omp.h>
+#include <ForgingDetectorOMP.h>
 #endif
 
-int main(int argc, char *argv[])
-{
-    #ifdef MPI_ENABLED
+int main(int argc, char *argv[]) {
+#if defined(MPI_ENABLED)
     startMPIProcess(argc, argv);
-    #else
-    startSerialProcess(argc, argv);
-    #endif
+#elif defined(OMP_ENABLED)
+    // Parallel process
+    Timer openMpTime;
+    startOpenMPProcess(argc, argv);
+    std::cout << "OpenMP time for file: " << argv[2] << std::endl;
+    std::cout << openMpTime.elapsedMicroseconds() << std::endl;
+#else
+    // Serial process
+//    Timer serialTime;
+//    startSerialProcess(argc, argv);
+//    std::cout << "Serial time for file: " << argv[2] << std::endl;
+//    std::cout << serialTime.elapsedMicroseconds() << std::endl;
+#endif
 }
 
-#ifdef MPI_ENABLED
+#if defined(MPI_ENABLED)
 
 void finalizeExecution(int error)
 {
@@ -57,46 +67,68 @@ void startMPIProcess(int argc, char **argv)
         image.load_bitmap(imagePath);
     }
 
-    bool tampered =
-            ForgingDetectorMPI::byCharact(image, bSize);
+    bool tampered = ForgingDetectorMPI::byCharact(image, bSize);
 
     if(MPISettings::IS_PROC_ID_MASTER())
-    {
-        if (tampered)
-            std::cout << "Tampering was detected in image '" << argv[1] << "'." << std::endl;
-        else
-            std::cout << "Image '" << argv[1] << "' is assumed to be authentic." << std::endl;
-    }
+        printResult(tampered, std::string(argv[1]));
 
     finalizeExecution(EXIT_SUCCESS);
 }
-#else
-void startSerialProcess(int argc, char *argv[])
+#elif defined(OMP_ENABLED)
+void startOpenMPProcess(int argc, char *argv[])
 {
-    if (argc < 3)
+    if (argc < 3) {
+        printUsage();
+        exit(EXIT_SUCCESS);
+    }
+    int coresCount = omp_get_num_procs();
+    omp_set_num_threads(coresCount);
+#pragma omp parallel
     {
+        int threadId, threadsRegionCount, maxTreadsCount;
+        coresCount = omp_get_num_procs();
+        maxTreadsCount = omp_get_max_threads();
+        threadId = omp_get_thread_num();
+        threadsRegionCount = omp_get_num_threads();
+        if (threadId == MASTER_THREAD) {
+            printf("t%i : coresCount\t\t= %i\n", threadId, coresCount);
+            printf("t%i : maxTreadsCount\t= %i\n", threadId, maxTreadsCount);
+            printf("t%i : threadsRegionCount\t= %i\n\n", threadId, threadsRegionCount);
+        }
+        printf("t%i is present\n", threadId);
+    }
+    printf("\n");
+
+    int blockSize = BLOCK_SIZE;
+    if (argc == 4)
+        blockSize = atoi(argv[3]);
+    bool tampered = ForgingDetectorOMP::isTampered(Bitmap(argv[2]), blockSize);
+    printResult(tampered, argv[2]);
+
+}
+#else
+void startSerialProcess(int argc, char *argv[]) {
+    if (argc < 3) {
         printUsage();
         exit(EXIT_SUCCESS);
     }
 
-    int bSize = BLOCK_SIZE;
-    bool tampered = false;
-    bSize = atoi(argv[2]);
+    int blockSize = BLOCK_SIZE;
+    if (argc == 4)
+        blockSize = atoi(argv[3]);
 
-    Timer serialTime;
-    tampered = ForgingDetector::byCharact(Bitmap(argv[2]), bSize);
-
-    if (tampered)
-        std::cout << "Tampering was detected in image '" << argv[1] << "'." << std::endl;
-    else
-        std::cout << "Image '" << argv[1] << "' is assumed to be authentic." << std::endl;
-
-    std::cout << "Done." << std::endl;
-
-    std::cout << "Serial time for file: " << argv[1] << std::endl;
-    std::cout << serialTime.elapsedMicroseconds() << std::endl;
+    bool tampered = ForgingDetector::isTampered(Bitmap(argv[2]), blockSize);
+    printResult(tampered, std::string(argv[2]));
 }
 #endif
+
+void printResult(const bool tampered, std::string const& fileName)
+{
+    if (tampered)
+        std::cout << "Tampering was detected in image '" << fileName << "'." << std::endl;
+    else
+        std::cout << "Image '" << fileName << "' is assumed to be authentic." << std::endl;
+}
 
 void printUsage()
 {

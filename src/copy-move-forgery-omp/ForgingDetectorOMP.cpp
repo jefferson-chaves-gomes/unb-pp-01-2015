@@ -1,5 +1,4 @@
-#include "ForgingDetector.h"
-
+#include <ForgingDetectorOMP.h>
 #include "ImgUtils.h"
 #include <cstdlib>
 #include <cmath>
@@ -22,7 +21,7 @@
 #endif
 
 #ifdef _DEBUG_
-int ForgingDetector::dbgmsg(0);
+int ForgingDetectorOMP::dbgmsg(0);
 const bool PRINT_TIME = true;
 #else
 const bool PRINT_TIME = false;
@@ -48,7 +47,7 @@ const int MAX_SHIFT = 2;
  * @param bSize dimensao do bloco
  * @return true, foi detectada adulteracao; false, se imagem eh original
  */
-bool ForgingDetector::isTampered(Bitmap const& image, int bSize)
+bool ForgingDetectorOMP::isTampered(Bitmap const& image, int bSize)
 {
     /* passo 1: extrair as caracteristicas dos blocos da imagem */
     logger("[MSG " << ++dbgmsg << "] Criando vetores de caracteristicas...");
@@ -125,11 +124,9 @@ bool ForgingDetector::isTampered(Bitmap const& image, int bSize)
  |______\|      |/______|
  */
 
-void ForgingDetector::charactVector(ListCharVect& listChar, Bitmap const& image, int bSize)
+void ForgingDetectorOMP::charactVector(ListCharVect& listChar, Bitmap const& image, int bSize)
 {
     Timer time(PRINT_TIME, __PRETTY_FUNCTION__, __LINE__);
-
-    listChar.clear();
     int width = image.getWidth();
     int height = image.getHeight();
     if(width < bSize || height < bSize)
@@ -155,57 +152,7 @@ void ForgingDetector::charactVector(ListCharVect& listChar, Bitmap const& image,
     }
 }
 
-void ForgingDetector::charactVectorBySections(ListCharVect& listChar, Bitmap const& image, int bSize, unsigned int sections)
-{
-    Timer time(PRINT_TIME, __PRETTY_FUNCTION__, __LINE__);
-
-    listChar.clear();
-    if(image.getWidth() < bSize || image.getHeight() < bSize)
-        return;
-
-    const int scope = (image.getHeight() - bSize) + 1;
-
-    if(sections == 0)
-        sections = 1;
-    if(sections > scope)
-        sections = scope;
-
-    int sizeLast = (scope) % sections;
-    int size = (scope) / sections;
-
-    int bTotalXOrign = image.getWidth() - bSize + 1;
-    int bTotalYOrign = image.getHeight() - bSize + 1;
-
-    logger("A imagem possui " << bTotalXOrign * bTotalYOrign << " blocos.");
-
-    for(int i=0; i<sections; i++)
-    {
-        Bitmap section;
-        if(sizeLast!=0 && i == sections-1)
-            section = image.getLines(size*i, size+sizeLast-1+bSize);
-        else
-            section = image.getLines(size*i, size-1+bSize);
-
-        int bTotalX = section.getWidth() - bSize + 1;
-        int bTotalY = section.getHeight() - bSize + 1;
-
-        // itera em todos os blocos
-        for(int bx = 0; bx < bTotalX; bx++)
-        {
-            for(int by = 0; by < bTotalY; by++)
-            {
-                // criar vetor de caracteristicas
-                CharVect charVect(bx, by + size*i);
-                getCharVectListForBlock(charVect, section, bx, by, bSize);
-
-                // adicionar o bloco lido ao conjunto de vetores de caracteristicas
-                addVectLexOrder(listChar, charVect);
-            }
-        }
-    }
-}
-
-void ForgingDetector::getCharVectListForBlock(CharVect& charVect, Bitmap const& image, int blkPosX, int blkPosY, int blkSize)
+void ForgingDetectorOMP::getCharVectListForBlock(CharVect& charVect, Bitmap const& image, int blkPosX, int blkPosY, int blkSize)
 {
     unsigned char red, green, blue, grey;
     int half = (int) blkSize / 2;
@@ -260,7 +207,7 @@ void ForgingDetector::getCharVectListForBlock(CharVect& charVect, Bitmap const& 
         charVect.c[i + 3] = part[i][0] / (part[i][0] + part[i][1]);
 }
 
-void ForgingDetector::addVectLexOrder(ListCharVect& vecOrdered, CharVect& valToAdd)
+void ForgingDetectorOMP::addVectLexOrder(ListCharVect& vecOrdered, CharVect& valToAdd)
 {
     for(ListCharVect::iterator it = vecOrdered.begin(); it != vecOrdered.end(); it++)
     {
@@ -273,7 +220,7 @@ void ForgingDetector::addVectLexOrder(ListCharVect& vecOrdered, CharVect& valToA
     vecOrdered.push_back(valToAdd);
 }
 
-void ForgingDetector::createSimilarBlockList(Bitmap const& image, int bSize, ListCharVect const& vList, ListSimilarBlocks & simList)
+void ForgingDetectorOMP::createSimilarBlockList(Bitmap const& image, int bSize, ListCharVect const& vList, ListSimilarBlocks & simList)
 {
     Timer time(PRINT_TIME, __PRETTY_FUNCTION__, __LINE__);
     int width = image.getWidth();
@@ -315,12 +262,12 @@ void ForgingDetector::createSimilarBlockList(Bitmap const& image, int bSize, Lis
     }
 }
 
-bool ForgingDetector::isBlockSimilarSpurious(DeltaPos const& current, DeltaPos const& mainShift)
+bool ForgingDetectorOMP::isBlockSimilarSpurious(DeltaPos const& current, DeltaPos const& mainShift)
 {
     return (ABS((current.dx - mainShift.dx)) > MAX_SHIFT || ABS((current.dy - mainShift.dy)) > MAX_SHIFT);
 }
 
-void ForgingDetector::filterSpuriousRegions(ListSimilarBlocks& simList, DeltaPos const& mainShift)
+void ForgingDetectorOMP::filterSpuriousRegions(ListSimilarBlocks& simList, DeltaPos const& mainShift)
 {
     Timer time(PRINT_TIME, __PRETTY_FUNCTION__, __LINE__);
     for (ListSimilarBlocks::iterator it = simList.begin(); it != simList.end();)
@@ -341,7 +288,7 @@ void ForgingDetector::filterSpuriousRegions(ListSimilarBlocks& simList, DeltaPos
  * @param y2 coordenada y do bloco 2
  * @return comprimento
  */
-int ForgingDetector::getShift(Pos const& pos1, Pos const& pos2)
+int ForgingDetectorOMP::getShift(Pos const& pos1, Pos const& pos2)
 {
     int h = pos1.x - pos2.x;
     int v = pos1.y - pos2.y;
@@ -357,7 +304,7 @@ int ForgingDetector::getShift(Pos const& pos1, Pos const& pos2)
  * @return bloco que representa o principal shift
  */
 
-DeltaPos ForgingDetector::getMainShiftVector(ListSimilarBlocks const& blocks)
+DeltaPos ForgingDetectorOMP::getMainShiftVector(ListSimilarBlocks const& blocks)
 {
     Timer time(PRINT_TIME, __PRETTY_FUNCTION__, __LINE__);
     int count(0);
@@ -378,7 +325,7 @@ DeltaPos ForgingDetector::getMainShiftVector(ListSimilarBlocks const& blocks)
     return main;
 }
 
-void ForgingDetector::createImageWithSimilarAreas(Bitmap& detectImage, Bitmap const& image, int bSize, ListSimilarBlocks const& simList)
+void ForgingDetectorOMP::createImageWithSimilarAreas(Bitmap& detectImage, Bitmap const& image, int bSize, ListSimilarBlocks const& simList)
 {
     Timer time(PRINT_TIME, __PRETTY_FUNCTION__, __LINE__);
     int width = image.getWidth();
@@ -415,7 +362,7 @@ void ForgingDetector::createImageWithSimilarAreas(Bitmap& detectImage, Bitmap co
  * @param bSize dimensao do elemento estruturante, que eh um quadrado
  * @return imagem tratada
  */
-Bitmap ForgingDetector::imageOpeningOperation(Bitmap const& image, int bSize)
+Bitmap ForgingDetectorOMP::imageOpeningOperation(Bitmap const& image, int bSize)
 {
     Timer time(PRINT_TIME, __PRETTY_FUNCTION__, __LINE__);
     /* operacao de erosao + dilatacao */
@@ -431,7 +378,7 @@ Bitmap ForgingDetector::imageOpeningOperation(Bitmap const& image, int bSize)
  * @param bSize dimensao do elemento estruturante, que eh um quadrado
  * @return imagem erodida
  */
-Bitmap ForgingDetector::imageErosionOperation(Bitmap const& image, int bSize)
+Bitmap ForgingDetectorOMP::imageErosionOperation(Bitmap const& image, int bSize)
 {
     Bitmap eroded(image);
     int width = image.getWidth();
@@ -476,7 +423,7 @@ Bitmap ForgingDetector::imageErosionOperation(Bitmap const& image, int bSize)
  * @param bSize dimensao do elemento estruturante, que eh um quadrado
  * @return imagem dilatada
  */
-Bitmap ForgingDetector::imageDilationOperation(Bitmap const& image, int bSize)
+Bitmap ForgingDetectorOMP::imageDilationOperation(Bitmap const& image, int bSize)
 {
     Bitmap dilated(image);
 
@@ -509,7 +456,7 @@ Bitmap ForgingDetector::imageDilationOperation(Bitmap const& image, int bSize)
     return dilated;
 }
 
-bool ForgingDetector::isImageForged(Bitmap const& image, Bitmap const& detectImage, Bitmap& mergedImage)
+bool ForgingDetectorOMP::isImageForged(Bitmap const& image, Bitmap const& detectImage, Bitmap& mergedImage)
 {
     Timer time(PRINT_TIME, __PRETTY_FUNCTION__, __LINE__);
     int width = image.getWidth();

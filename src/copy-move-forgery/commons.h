@@ -8,6 +8,7 @@
 
 #define BLOCKSHIFT          1
 #define BASE_L              50
+#define MASTER_THREAD       0
 
 #define ABS(X) ((X < 0) ? -X : X)
 
