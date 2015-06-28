@@ -3,9 +3,10 @@
 
 #include <string>
 
+void validateArgs(const int);
 void printUsage();
 void startSerialProcess(int, char*[]);
-void startOpenMPProcess(int, char*[]);
+void startOmpProcess(int, char*[]);
 void printResult(const bool, std::string const&);
 
 #endif

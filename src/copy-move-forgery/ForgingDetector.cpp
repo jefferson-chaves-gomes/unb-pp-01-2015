@@ -57,7 +57,7 @@ bool ForgingDetector::isTampered(Bitmap const& image, int bSize)
     if(!vList.size())
     {
         std::cout << "Nao foi possivel criar o vetor de caracteristicas." << std::endl;
-        return false;
+        exit(EXIT_SUCCESS);
     }
 
     /* passo 2: buscar blocos similares */

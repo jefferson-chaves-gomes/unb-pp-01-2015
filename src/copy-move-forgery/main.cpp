@@ -16,21 +16,26 @@
 #include <ForgingDetectorOMP.h>
 #endif
 
-int main(int argc, char *argv[]) {
+int main(int argc, char *argv[])
+{
 #if defined(MPI_ENABLED)
+    // MPI Parallel process
+    Timer mpiTime;
     startMPIProcess(argc, argv);
+    std::cout << "OpenMP time for file: " << argv[2] << std::endl;
+    std::cout << mpiTime.elapsedMicroseconds() << std::endl;
 #elif defined(OMP_ENABLED)
-    // Parallel process
+    // OMP Parallel process
     Timer openMpTime;
-    startOpenMPProcess(argc, argv);
+    startOmpProcess(argc, argv);
     std::cout << "OpenMP time for file: " << argv[2] << std::endl;
     std::cout << openMpTime.elapsedMicroseconds() << std::endl;
 #else
     // Serial process
-//    Timer serialTime;
-//    startSerialProcess(argc, argv);
-//    std::cout << "Serial time for file: " << argv[2] << std::endl;
-//    std::cout << serialTime.elapsedMicroseconds() << std::endl;
+    Timer serialTime;
+    startSerialProcess(argc, argv);
+    std::cout << "Serial time for file: " << argv[2] << std::endl;
+    std::cout << serialTime.elapsedMicroseconds() << std::endl;
 #endif
 }
 
@@ -50,8 +55,8 @@ void startMPIProcess(int argc, char **argv)
     if (argc < 3)
     {
         if(MPISettings::IS_PROC_ID_MASTER())
-            printUsage();
-        finalizeExecution(EXIT_FAILURE);
+        printUsage();
+            finalizeExecution(EXIT_FAILURE);
     }
 
     if(MPISettings::IS_PROC_ID_MASTER())
@@ -75,44 +80,20 @@ void startMPIProcess(int argc, char **argv)
     finalizeExecution(EXIT_SUCCESS);
 }
 #elif defined(OMP_ENABLED)
-void startOpenMPProcess(int argc, char *argv[])
+void startOmpProcess(int argc, char *argv[])
 {
-    if (argc < 3) {
-        printUsage();
-        exit(EXIT_SUCCESS);
-    }
-    int coresCount = omp_get_num_procs();
-    omp_set_num_threads(coresCount);
-#pragma omp parallel
-    {
-        int threadId, threadsRegionCount, maxTreadsCount;
-        coresCount = omp_get_num_procs();
-        maxTreadsCount = omp_get_max_threads();
-        threadId = omp_get_thread_num();
-        threadsRegionCount = omp_get_num_threads();
-        if (threadId == MASTER_THREAD) {
-            printf("t%i : coresCount\t\t= %i\n", threadId, coresCount);
-            printf("t%i : maxTreadsCount\t= %i\n", threadId, maxTreadsCount);
-            printf("t%i : threadsRegionCount\t= %i\n\n", threadId, threadsRegionCount);
-        }
-        printf("t%i is present\n", threadId);
-    }
-    printf("\n");
-
+    validateArgs(argc);
     int blockSize = BLOCK_SIZE;
-    if (argc == 4)
+    if(argc == 4)
         blockSize = atoi(argv[3]);
     bool tampered = ForgingDetectorOMP::isTampered(Bitmap(argv[2]), blockSize);
     printResult(tampered, argv[2]);
 
 }
 #else
-void startSerialProcess(int argc, char *argv[]) {
-    if (argc < 3) {
-        printUsage();
-        exit(EXIT_SUCCESS);
-    }
-
+void startSerialProcess(int argc, char *argv[])
+{
+    validateArgs(argc);
     int blockSize = BLOCK_SIZE;
     if (argc == 4)
         blockSize = atoi(argv[3]);
@@ -122,9 +103,19 @@ void startSerialProcess(int argc, char *argv[]) {
 }
 #endif
 
+void validateArgs(const int argc)
+{
+    if(argc < 3)
+    {
+        printUsage();
+        exit(EXIT_SUCCESS);
+    }
+}
+
+
 void printResult(const bool tampered, std::string const& fileName)
 {
-    if (tampered)
+    if(tampered)
         std::cout << "Tampering was detected in image '" << fileName << "'." << std::endl;
     else
         std::cout << "Image '" << fileName << "' is assumed to be authentic." << std::endl;
