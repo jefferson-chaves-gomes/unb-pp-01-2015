@@ -249,6 +249,8 @@ void ForgingDetectorMPI::charactVector(ListCharVect& listChar, Bitmap const& ima
         }
     }
 
+    MPI_Barrier(MPI_COMM_WORLD);
+
 
 
 
