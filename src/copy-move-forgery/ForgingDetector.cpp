@@ -128,6 +128,8 @@ bool ForgingDetector::isTampered(Bitmap const& image, int bSize)
 void ForgingDetector::charactVector(ListCharVect& listChar, Bitmap const& image, int bSize)
 {
     Timer time(PRINT_TIME, __PRETTY_FUNCTION__, __LINE__);
+
+    listChar.clear();
     int width = image.getWidth();
     int height = image.getHeight();
     if(width < bSize || height < bSize)
@@ -149,6 +151,56 @@ void ForgingDetector::charactVector(ListCharVect& listChar, Bitmap const& image,
 
             // adicionar o bloco lido ao conjunto de vetores de caracteristicas
             addVectLexOrder(listChar, charVect);
+        }
+    }
+}
+
+void ForgingDetector::charactVectorBySections(ListCharVect& listChar, Bitmap const& image, int bSize, unsigned int sections)
+{
+    Timer time(PRINT_TIME, __PRETTY_FUNCTION__, __LINE__);
+
+    listChar.clear();
+    if(image.getWidth() < bSize || image.getHeight() < bSize)
+        return;
+
+    const int scope = (image.getHeight() - bSize) + 1;
+
+    if(sections == 0)
+        sections = 1;
+    if(sections > scope)
+        sections = scope;
+
+    int sizeLast = (scope) % sections;
+    int size = (scope) / sections;
+
+    int bTotalXOrign = image.getWidth() - bSize + 1;
+    int bTotalYOrign = image.getHeight() - bSize + 1;
+
+    logger("A imagem possui " << bTotalXOrign * bTotalYOrign << " blocos.");
+
+    for(int i=0; i<sections; i++)
+    {
+        Bitmap section;
+        if(sizeLast!=0 && i == sections-1)
+            section = image.getLines(size*i, size+sizeLast-1+bSize);
+        else
+            section = image.getLines(size*i, size-1+bSize);
+
+        int bTotalX = section.getWidth() - bSize + 1;
+        int bTotalY = section.getHeight() - bSize + 1;
+
+        // itera em todos os blocos
+        for(int bx = 0; bx < bTotalX; bx++)
+        {
+            for(int by = 0; by < bTotalY; by++)
+            {
+                // criar vetor de caracteristicas
+                CharVect charVect(bx, by + size*i);
+                getCharVectListForBlock(charVect, section, bx, by, bSize);
+
+                // adicionar o bloco lido ao conjunto de vetores de caracteristicas
+                addVectLexOrder(listChar, charVect);
+            }
         }
     }
 }

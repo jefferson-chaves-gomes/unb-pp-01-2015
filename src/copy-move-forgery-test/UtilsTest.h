@@ -11,6 +11,9 @@
 const std::string IMG_PATH("../copy-move-forgery/resource/publico.bmp");
 const Bitmap BITMAP(IMG_PATH);
 
+const std::string IMG_PATH_SMALL("../copy-move-forgery/resource/small.bmp");
+const Bitmap BITMAP_SMALL(IMG_PATH_SMALL);
+
 class UtilsTest
 {
 public:
@@ -29,10 +32,9 @@ public:
     {
         for(ListCharVect::iterator it = charVectList.begin(); it != charVectList.end(); it++)
         {
-            std::cout << "######################" << std::endl;
+            std::cout << "Pos: " << it->pos.x << "," << it->pos.y << " # ";
             printCharVect(*it);
         }
-        std::cout << "######################" << std::endl;
     }
 
     static void printDeltaPos(DeltaPos const& delta)

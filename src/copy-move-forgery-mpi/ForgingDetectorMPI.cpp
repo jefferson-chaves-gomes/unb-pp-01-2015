@@ -63,12 +63,15 @@ bool ForgingDetectorMPI::byCharact(Bitmap const& image, int bSize)
     /* passo 1: extrair as caracteristicas dos blocos da imagem */
     logger("[MSG " << ++dbgmsg << "] Criando vetores de caracteristicas...");
     ListCharVect vList;
-    charactVector(vList, image, bSize);
+    charactVector(vList, image, width, height, bSize);
     if(!vList.size())
     {
         std::cout << "Nao foi possivel criar o vetor de caracteristicas." << std::endl;
         return false;
     }
+
+    if(!MPISettings::IS_PROC_ID_MASTER())
+        return false;
 
     /* passo 2: buscar blocos similares */
     logger("[MSG " << ++dbgmsg << "] Buscando blocos similares...");
@@ -110,7 +113,6 @@ bool ForgingDetectorMPI::byCharact(Bitmap const& image, int bSize)
     return true;
 }
 
-
 /**
  * @func charactVector
  * @brief percorre a imagem em blocos e gera vetor de caracteristicas
@@ -135,18 +137,71 @@ bool ForgingDetectorMPI::byCharact(Bitmap const& image, int bSize)
  |______\|      |/______|
  */
 
-void ForgingDetectorMPI::charactVector(ListCharVect& listChar, Bitmap const& image, int bSize)
+void ForgingDetectorMPI::charactVector(ListCharVect& listChar, Bitmap const& image, int imageWidth, int imageHeight, int bSize)
 {
-    Timer time(PRINT_TIME, __PRETTY_FUNCTION__, __LINE__);
-    int width = image.getWidth();
-    int height = image.getHeight();
-    if(width < bSize || height < bSize)
+    listChar.clear();
+
+    if(imageWidth < bSize || imageHeight < bSize)
         return;
 
-    int bTotalX = width - bSize + 1;
-    int bTotalY = height - bSize + 1;
+    if(MPISettings::IS_PROC_ID_MASTER())
+    {
+        int bTotalXOrign = image.getWidth() - bSize + 1;
+        int bTotalYOrign = image.getHeight() - bSize + 1;
 
-    logger("A imagem possui " << bTotalX * bTotalY << " blocos.");
+        logger("A imagem possui " << bTotalXOrign * bTotalYOrign << " blocos.");
+    }
+
+    int sections = MPISettings::PROC_SIZE();
+
+    const int scope = (image.getHeight() - bSize) + 1;
+
+    if(sections > scope)
+        sections = scope;
+
+    int sizeLast = (scope) % sections;
+    int size = (scope) / sections;
+
+    int sectionWidth = imageWidth;
+    int sectionLenght = size-1+bSize;
+
+    Bitmap *section;
+    if(MPISettings::IS_PROC_ID_MASTER())
+    {
+        section = new Bitmap(sectionWidth, sectionLenght);
+        memcpy(section->data_, image.data_, section->length_);
+
+        int posStart = 0;
+        int lengthToSend = 0;
+        for(int i=1; i<MPISettings::PROC_SIZE(); i++)
+        {
+            if(sizeLast!=0 && i == sections-1)
+                sectionLenght = sectionLenght + sizeLast;
+
+            posStart = size*i * sectionWidth * image.bytes_per_pixel_;
+            lengthToSend = sectionLenght * sectionWidth * image.bytes_per_pixel_;
+
+            MPI_Send(&sectionLenght, 1, MPI_INT, i, 0, MPI_COMM_WORLD);
+            MPI_Send((image.data_+posStart), lengthToSend, MPI_UNSIGNED_CHAR, i, 0, MPI_COMM_WORLD);
+        }
+    }
+    else
+    {
+        MPI_Recv(&sectionLenght, 1, MPI_INT, 0, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+        section = new Bitmap(sectionWidth, sectionLenght);
+        MPI_Recv(section->data_, section->length_, MPI_UNSIGNED_CHAR, 0, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+    }
+
+//    std::stringstream ss;
+//    ss << "image_" << MPISettings::PROC_ID() << ".bmp";
+//    std::string path(ImgUtils::imgTrueName("./"));
+//    path.append(ss.str());
+//    ImgUtils::saveImageAs(*section, path);
+
+
+
+    int bTotalX = section->getWidth() - bSize + 1;
+    int bTotalY = section->getHeight() - bSize + 1;
 
     // itera em todos os blocos
     for(int bx = 0; bx < bTotalX; bx++)
@@ -154,13 +209,108 @@ void ForgingDetectorMPI::charactVector(ListCharVect& listChar, Bitmap const& ima
         for(int by = 0; by < bTotalY; by++)
         {
             // criar vetor de caracteristicas
-            CharVect charVect(bx, by);
-            getCharVectListForBlock(charVect, image, bx, by, bSize);
+            CharVect charVect(bx, by + size*MPISettings::PROC_ID());
+            getCharVectListForBlock(charVect, *section, bx, by, bSize);
 
             // adicionar o bloco lido ao conjunto de vetores de caracteristicas
             addVectLexOrder(listChar, charVect);
         }
     }
+
+
+    int vecSize = 0;
+    if(MPISettings::IS_PROC_ID_MASTER())
+    {
+        for(int i=1; i<MPISettings::PROC_SIZE(); i++)
+        {
+            MPI_Recv(&vecSize, 1, MPI_INT, i, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+
+            CharVect charVect(0, 0);
+            for(; vecSize > 0; vecSize--)
+            {
+                MPI_Recv(charVect.c, CharVect::CHARS_SIZE, MPI_DOUBLE, i, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+                MPI_Recv(&charVect.pos.x, 1, MPI_INT, i, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+                MPI_Recv(&charVect.pos.y, 1, MPI_INT, i, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+            }
+
+            addVectLexOrder(listChar, charVect);
+        }
+    }
+    else
+    {
+        vecSize = listChar.size();
+        MPI_Send(&vecSize, 1, MPI_INT, 0, 0, MPI_COMM_WORLD);
+
+        for(ListCharVect::iterator it = listChar.begin(); it!=listChar.end(); it++)
+        {
+            MPI_Send(it->c, CharVect::CHARS_SIZE, MPI_DOUBLE, 0, 0, MPI_COMM_WORLD);
+            MPI_Send(&it->pos.x, 1, MPI_INT, 0, 0, MPI_COMM_WORLD);
+            MPI_Send(&it->pos.y, 1, MPI_INT, 0, 0, MPI_COMM_WORLD);
+        }
+    }
+
+    MPI_Barrier(MPI_COMM_WORLD);
+
+
+
+
+
+
+
+//    sleep(5);
+//
+//    exit(0);
+
+
+//
+//
+//    Timer time(PRINT_TIME, __PRETTY_FUNCTION__, __LINE__);
+//
+//    listChar.clear();
+//    if(image.getWidth() < bSize || image.getHeight() < bSize)
+//        return;
+//
+//    const int scope = (image.getHeight() - bSize) + 1;
+//
+//    if(sections == 0)
+//        sections = 1;
+//    if(sections > scope)
+//        sections = scope;
+//
+//    int sizeLast = (scope) % sections;
+//    int size = (scope) / sections;
+//
+//    int bTotalXOrign = image.getWidth() - bSize + 1;
+//    int bTotalYOrign = image.getHeight() - bSize + 1;
+//
+//    logger("A imagem possui " << bTotalXOrign * bTotalYOrign << " blocos.");
+//
+//    for(int i=0; i<sections; i++)
+//    {
+//        Bitmap section;
+//        if(sizeLast!=0 && i == sections-1)
+//            section = image.getLines(size*i, size+sizeLast-1+bSize);
+//        else
+//            section = image.getLines(size*i, size-1+bSize);
+//
+//        int bTotalX = section.getWidth() - bSize + 1;
+//        int bTotalY = section.getHeight() - bSize + 1;
+//
+//        // itera em todos os blocos
+//        for(int bx = 0; bx < bTotalX; bx++)
+//        {
+//            for(int by = 0; by < bTotalY; by++)
+//            {
+//                // criar vetor de caracteristicas
+//                CharVect charVect(bx, by + size*i);
+//                getCharVectListForBlock(charVect, section, bx, by, bSize);
+//
+//                // adicionar o bloco lido ao conjunto de vetores de caracteristicas
+//                addVectLexOrder(listChar, charVect);
+//            }
+//        }
+//    }
+
 }
 
 void ForgingDetectorMPI::getCharVectListForBlock(CharVect& charVect, Bitmap const& image, int blkPosX, int blkPosY, int blkSize)

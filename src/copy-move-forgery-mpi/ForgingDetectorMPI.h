@@ -25,7 +25,7 @@ protected:
     {
     }
     /* metodos de deteccao */
-    static void charactVector(ListCharVect& listChar, Bitmap const& image, int bSize);
+    static void charactVector(ListCharVect& listChar, Bitmap const& image, int imageWidth, int imageHeight, int bSize);
     static void getCharVectListForBlock(CharVect& charVect, Bitmap const& image, int blkPosX, int blkPosY, int blkSize);
     static void addVectLexOrder(ListCharVect& orderedVector, CharVect& charVect);
     static void createSimilarBlockList(Bitmap const& image, int bSize, ListCharVect const& vList, ListSimilarBlocks &simList);

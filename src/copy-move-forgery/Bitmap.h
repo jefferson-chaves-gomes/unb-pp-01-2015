@@ -60,15 +60,15 @@ public:
 private:
     bool valid_;
     std::string file_name_;
-    unsigned char* data_;
-    unsigned int bytes_per_pixel_;
-    unsigned int length_;
     unsigned int width_;
     unsigned int height_;
     unsigned int row_increment_;
     channel_mode channel_mode_;
 
 public:
+    unsigned int bytes_per_pixel_;
+    unsigned char* data_;
+    unsigned int length_;
     Bitmap();
     Bitmap(const std::string& _filename);
     Bitmap(const unsigned int width, const unsigned int height);

@@ -115,6 +115,7 @@ Bitmap& Bitmap::operator=(const Bitmap& image)
     if(this != &image)
     {
         file_name_ = image.file_name_;
+        length_ = image.length_;
         bytes_per_pixel_ = image.bytes_per_pixel_;
         width_ = image.width_;
         height_ = image.height_;
