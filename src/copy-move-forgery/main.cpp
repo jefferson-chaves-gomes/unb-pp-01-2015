@@ -1,10 +1,10 @@
-#include "ForgingDetector.h"
-#include "ForgingDetectorOld.h"
-#include "ImgUtils.h"
 #include <cstdlib>
 #include <iostream>
 #include <stdlib.h>
 #include <omp.h>
+#include "ForgingDetector.h"
+#include "ForgingDetectorOld.h"
+#include "ImgUtils.h"
 #include "Timer.h"
 #include "main.h"
 
@@ -14,9 +14,6 @@
 #include <ForgingDetectorMPI.h>
 void startMPIProcess(int argc, char *argv[]);
 #endif
-
-// TEMP: Não consegui por na functions.h.... sei lah pq... da erro...
-void printResult(const bool, const std::string);
 
 int main(int argc, char *argv[]) {
 #ifdef MPI_ENABLED
@@ -51,12 +48,12 @@ void startMPIProcess(int argc, char **argv)
     if (argc < 3)
     {
         if(MPISettings::IS_PROC_ID_MASTER())
-        printUsage();
+            printUsage();
         finalizeExecution(EXIT_FAILURE);
     }
 
     if(MPISettings::IS_PROC_ID_MASTER())
-    std::cout << "Initializing MPI processing..." << std::endl;
+        std::cout << "Initializing MPI processing..." << std::endl;
 
     int bSize = BLOCK_SIZE;
     std::string imagePath;
@@ -71,12 +68,7 @@ void startMPIProcess(int argc, char **argv)
     bool tampered = ForgingDetectorMPI::byCharact(image, bSize);
 
     if(MPISettings::IS_PROC_ID_MASTER())
-    {
-        if (tampered)
-        std::cout << "Tampering was detected in image '" << argv[1] << "'." << std::endl;
-        else
-        std::cout << "Image '" << argv[1] << "' is assumed to be authentic." << std::endl;
-    }
+        printResult(tampered, std::string(argv[1]));
 
     finalizeExecution(EXIT_SUCCESS);
 }

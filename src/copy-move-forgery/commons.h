@@ -12,6 +12,8 @@
 
 #define ABS(X) ((X < 0) ? -X : X)
 
+unsigned char toUnsignedChar(double value);
+
 class Pos
 {
 public:
