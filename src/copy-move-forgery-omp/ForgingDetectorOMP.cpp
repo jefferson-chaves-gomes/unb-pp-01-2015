@@ -1,11 +1,12 @@
-#include <ForgingDetectorOMP.h>
-#include "ImgUtils.h"
 #include <cstdlib>
 #include <cmath>
 #include <sstream>
 #include <fstream>
 #include <iostream>
 #include <map>
+#include <omp.h>
+#include <ForgingDetectorOMP.h>
+#include "ImgUtils.h"
 #include "Timer.h"
 
 //#define _DEBUG_
@@ -29,14 +30,13 @@ const bool PRINT_TIME = false;
 
 /* parametros pre-definidos */
 const double t1 = 2.8, t2 = 0.02;      // t1 e t2
-const double vectorP[CharVect::CHARS_SIZE] = {
-        11.8,       // P(1)
-        11.8,       // P(2)
-        11.8,       // P(3)
-        0.0125,     // P(4)
-        0.0125,     // P(5)
-        0.0125,     // P(6)
-        0.0125};    // P(7)
+const double vectorP[CharVect::CHARS_SIZE] = { 11.8,       // P(1)
+11.8,       // P(2)
+11.8,       // P(3)
+0.0125,     // P(4)
+0.0125,     // P(5)
+0.0125,     // P(6)
+0.0125 };    // P(7)
 const int MAX_SHIFT = 2;
 
 /**
@@ -56,7 +56,7 @@ bool ForgingDetectorOMP::isTampered(Bitmap const& image, int bSize)
     if(!vList.size())
     {
         std::cout << "Nao foi possivel criar o vetor de caracteristicas." << std::endl;
-        return false;
+        exit(EXIT_SUCCESS);
     }
 
     /* passo 2: buscar blocos similares */
@@ -99,7 +99,6 @@ bool ForgingDetectorOMP::isTampered(Bitmap const& image, int bSize)
     return true;
 }
 
-
 /**
  * @func charactVector
  * @brief percorre a imagem em blocos e gera vetor de caracteristicas
@@ -137,9 +136,11 @@ void ForgingDetectorOMP::charactVector(ListCharVect& listChar, Bitmap const& ima
 
     logger("A imagem possui " << bTotalX * bTotalY << " blocos.");
 
-    // itera em todos os blocos
+    omp_set_num_threads(omp_get_num_procs());
+#pragma omp parallel
     for(int bx = 0; bx < bTotalX; bx++)
     {
+#pragma omp for schedule(dynamic)
         for(int by = 0; by < bTotalY; by++)
         {
             // criar vetor de caracteristicas
@@ -152,7 +153,8 @@ void ForgingDetectorOMP::charactVector(ListCharVect& listChar, Bitmap const& ima
     }
 }
 
-void ForgingDetectorOMP::getCharVectListForBlock(CharVect& charVect, Bitmap const& image, int blkPosX, int blkPosY, int blkSize)
+void ForgingDetectorOMP::getCharVectListForBlock(CharVect& charVect, Bitmap const& image, int blkPosX, int blkPosY,
+        int blkSize)
 {
     unsigned char red, green, blue, grey;
     int half = (int) blkSize / 2;
@@ -197,7 +199,6 @@ void ForgingDetectorOMP::getCharVectListForBlock(CharVect& charVect, Bitmap cons
                 part[3][1] += grey;
         }
     }
-
     // calcular media RGB
     for(int i = 0; i < 3; i++)
         charVect.c[i] = (int) charVect.c[i] / (blkSize * blkSize);
@@ -211,7 +212,7 @@ void ForgingDetectorOMP::addVectLexOrder(ListCharVect& vecOrdered, CharVect& val
 {
     for(ListCharVect::iterator it = vecOrdered.begin(); it != vecOrdered.end(); it++)
     {
-        if(valToAdd  <= (*it))
+        if(valToAdd <= (*it))
         {
             vecOrdered.insert(it, valToAdd);
             return;
@@ -220,7 +221,8 @@ void ForgingDetectorOMP::addVectLexOrder(ListCharVect& vecOrdered, CharVect& val
     vecOrdered.push_back(valToAdd);
 }
 
-void ForgingDetectorOMP::createSimilarBlockList(Bitmap const& image, int bSize, ListCharVect const& vList, ListSimilarBlocks & simList)
+void ForgingDetectorOMP::createSimilarBlockList(Bitmap const& image, int bSize, ListCharVect const& vList,
+        ListSimilarBlocks & simList)
 {
     Timer time(PRINT_TIME, __PRETTY_FUNCTION__, __LINE__);
     int width = image.getWidth();
@@ -248,16 +250,11 @@ void ForgingDetectorOMP::createSimilarBlockList(Bitmap const& image, int bSize, 
             diffVector = diffVector && (diff[i] < vectorP[i]);
         }
 
-        if((diffVector)
-                && (diff[0] + diff[1] + diff[2] < t1)
-                && (diff[3] + diff[4] + diff[5] + diff[6] < t2)
+        if((diffVector) && (diff[0] + diff[1] + diff[2] < t1) && (diff[3] + diff[4] + diff[5] + diff[6] < t2)
                 && ABS(getShift(prev.pos, it->pos)) > vectOffsetSize)
         {
             // blocos b1 e b2 sao similares
-            simList.push_back(
-                SimilarBlocks(
-                    prev.pos,
-                    it->pos));
+            simList.push_back(SimilarBlocks(prev.pos, it->pos));
         }
     }
 }
@@ -270,12 +267,12 @@ bool ForgingDetectorOMP::isBlockSimilarSpurious(DeltaPos const& current, DeltaPo
 void ForgingDetectorOMP::filterSpuriousRegions(ListSimilarBlocks& simList, DeltaPos const& mainShift)
 {
     Timer time(PRINT_TIME, __PRETTY_FUNCTION__, __LINE__);
-    for (ListSimilarBlocks::iterator it = simList.begin(); it != simList.end();)
+    for(ListSimilarBlocks::iterator it = simList.begin(); it != simList.end();)
     {
-    	if(isBlockSimilarSpurious(it->delta, mainShift))
-    		it = simList.erase(it);
-    	else
-    		it++;
+        if(isBlockSimilarSpurious(it->delta, mainShift))
+            it = simList.erase(it);
+        else
+            it++;
     }
 }
 
@@ -308,11 +305,11 @@ DeltaPos ForgingDetectorOMP::getMainShiftVector(ListSimilarBlocks const& blocks)
 {
     Timer time(PRINT_TIME, __PRETTY_FUNCTION__, __LINE__);
     int count(0);
-    DeltaPos main(0,0);
+    DeltaPos main(0, 0);
     std::map<DeltaPos, int> histograms;
     /* criar histograma de deltas */
 
-    for(ListSimilarBlocks::const_iterator it = blocks.begin(); it!=blocks.end(); it++)
+    for(ListSimilarBlocks::const_iterator it = blocks.begin(); it != blocks.end(); it++)
     {
         int& freq(histograms[it->delta]);
         if(++freq > count)
@@ -325,7 +322,8 @@ DeltaPos ForgingDetectorOMP::getMainShiftVector(ListSimilarBlocks const& blocks)
     return main;
 }
 
-void ForgingDetectorOMP::createImageWithSimilarAreas(Bitmap& detectImage, Bitmap const& image, int bSize, ListSimilarBlocks const& simList)
+void ForgingDetectorOMP::createImageWithSimilarAreas(Bitmap& detectImage, Bitmap const& image, int bSize,
+        ListSimilarBlocks const& simList)
 {
     Timer time(PRINT_TIME, __PRETTY_FUNCTION__, __LINE__);
     int width = image.getWidth();
@@ -337,7 +335,7 @@ void ForgingDetectorOMP::createImageWithSimilarAreas(Bitmap& detectImage, Bitmap
             detectImage.setPixel(i, j, 0, 0, 0);
     }
 
-    for(ListSimilarBlocks::const_iterator it = simList.begin(); it!=simList.end(); it++)
+    for(ListSimilarBlocks::const_iterator it = simList.begin(); it != simList.end(); it++)
     {
         int b1x = it->b1.x;
         int b1y = it->b1.y;
@@ -348,8 +346,8 @@ void ForgingDetectorOMP::createImageWithSimilarAreas(Bitmap& detectImage, Bitmap
         {
             for(int j = 0; j < bSize; j++)
             {
-                detectImage.setPixel(i+b1x, j+b1y, 255, 255, 255);
-                detectImage.setPixel(i+b2x, j+b2y, 255, 255, 255);
+                detectImage.setPixel(i + b1x, j + b1y, 255, 255, 255);
+                detectImage.setPixel(i + b2x, j + b2y, 255, 255, 255);
             }
         }
     }
