@@ -64,14 +64,15 @@ bool ForgingDetectorMPI::byCharact(Bitmap const& image, int bSize)
     logger("[MSG " << ++dbgmsg << "] Criando vetores de caracteristicas...");
     ListCharVectPtr vList;
     charactVector(vList, image, width, height, bSize);
+
+    if(!MPISettings::IS_PROC_ID_MASTER())
+        return false;
+
     if(!vList.size())
     {
         std::cout << "Nao foi possivel criar o vetor de caracteristicas." << std::endl;
         return false;
     }
-
-    if(!MPISettings::IS_PROC_ID_MASTER())
-        return false;
 
     /* passo 2: buscar blocos similares */
     logger("[MSG " << ++dbgmsg << "] Buscando blocos similares...");
@@ -217,13 +218,10 @@ void ForgingDetectorMPI::charactVector(ListCharVectPtr& listChar, Bitmap const& 
         }
     }
 
-    delete section;
-
-    std::cout << MPISettings::PROC_ID() << " chegou na barreira com " << listChar.size() << std::endl;
+//    delete section;
 
     MPI_Barrier(MPI_COMM_WORLD);
 
-    std::cout << MPISettings::PROC_ID() << " recebendo/enviando vector" << std::endl;
     int vecSize = 0;
     if(MPISettings::IS_PROC_ID_MASTER())
     {
@@ -242,8 +240,6 @@ void ForgingDetectorMPI::charactVector(ListCharVectPtr& listChar, Bitmap const& 
                 listChar.push_back(charVect);
             }
         }
-
-        std::cout << MPISettings::PROC_ID() << " recebeu todos os valores" << std::endl;
     }
     else
     {
@@ -260,14 +256,28 @@ void ForgingDetectorMPI::charactVector(ListCharVectPtr& listChar, Bitmap const& 
         }
 
         listChar.clear();
-
-        std::cout << MPISettings::PROC_ID() << " enviou todos os valores" << std::endl;
     }
 
     if(MPISettings::IS_PROC_ID_MASTER())
-        listChar.sort(CharVect::lessOrEqualsToPtr);
+    {
+        int count(0);
+//        for(ListCharVectPtr::iterator it = listChar.begin(); it!=listChar.end(); it++)
+//        {
+//            std::cout << "# " << count ++ << " @ "<< (*it)->pos.x << "," << (*it)->pos.y <<
+//                    (*it)->c[0] << " => " <<
+//                    (*it)->c[1] << "|" <<
+//                    (*it)->c[2] << "|" <<
+//                    (*it)->c[3] << "|" <<
+//                    (*it)->c[4] << "|" <<
+//                    (*it)->c[5] << "|" <<
+//                    (*it)->c[6] << "|" << std::endl;
+//        }
 
-    std::cout << MPISettings::PROC_ID() << " chegou na barreira 2 size" << listChar.size() << std::endl;
+        std::cout << MPISettings::PROC_ID() << " chegou na barreira com " << listChar.size() << std::endl;
+        listChar.sort(CharVect::lessOrEqualsToPtr);
+    }
+
+//    std::cout << MPISettings::PROC_ID() << " chegou na barreira 2 size " << listChar.size() << std::endl;
 
     MPI_Barrier(MPI_COMM_WORLD);
 }

@@ -121,23 +121,23 @@ bool CharVect::operator == (CharVect const& other) const
 
 bool CharVect::lessOrEqualsToPtr(CharVect const* obj1, CharVect const* obj2)
 {
-    return CharVect::lessOrEqualsTo(*obj1, *obj2);
-}
-
-bool CharVect::lessOrEqualsTo(CharVect const& obj1, CharVect const& obj2)
-{
     for(int i = 0; i < CharVect::CHARS_SIZE; i++)
     {
-        if(obj1.c[i] == obj2.c[i])
+        if(obj1->c[i] == obj2->c[i])
             continue;
 
-        if(obj1.c[i] < obj2.c[i])
+        if(obj1->c[i] < obj2->c[i])
             return true;
         else
             return false;
     }
 
     return true;
+}
+
+bool CharVect::lessOrEqualsTo(CharVect const& obj1, CharVect const& obj2)
+{
+    return CharVect::lessOrEqualsToPtr(&obj1, &obj2);
 }
 
 void CharVect::initChars()
