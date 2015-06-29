@@ -49,23 +49,26 @@ const int MAX_SHIFT = 2;
  */
 bool ForgingDetectorOMP::isTampered(Bitmap const& image, int bSize)
 {
-    /* passo 1: extrair as caracteristicas dos blocos da imagem */
+    // passo 0: definindo a quantidade threads que serão usadas no processamento
+    int threadsCount = omp_get_num_procs();
+    if(omp_get_max_threads() > threadsCount)
+    {
+        threadsCount = omp_get_max_threads();
+    }
+    omp_set_num_threads(threadsCount);
+    logger("[MSG " << ++dbgmsg << "] Iniciando processamento paralelo com OpenMP com " << threadsCount << " threads...");
+
+    // passo 1: extrair as caracteristicas dos blocos da imagem
     logger("[MSG " << ++dbgmsg << "] Criando vetores de caracteristicas...");
     ListCharVect vList;
     charactVector(vList, image, bSize);
-    if(!vList.size())
-    {
-        std::cout << "Nao foi possivel criar o vetor de caracteristicas." << std::endl;
-        exit(EXIT_SUCCESS);
-    }
 
-    /* passo 2: buscar blocos similares */
+    // passo 2: buscar blocos similares
     logger("[MSG " << ++dbgmsg << "] Buscando blocos similares...");
     ListSimilarBlocks simList;
     createSimilarBlockList(image, bSize, vList, simList);
 
-    /* passo 3: */
-    // Se nao ha blocos similares, a imagem nao foi adulterada por copy-move
+    // passo 3: Se nao ha blocos similares, a imagem nao foi adulterada por copy-move
     if(!simList.size())
         return false;
 
@@ -104,7 +107,7 @@ bool ForgingDetectorOMP::isTampered(Bitmap const& image, int bSize)
  * @brief percorre a imagem em blocos e gera vetor de caracteristicas
  * @param image imagem verificada
  * @param bSize dimensao do bloco
- * @return vetor de caracteristicas
+ * @return void
 
  Tipos de bloco:
 
@@ -136,20 +139,26 @@ void ForgingDetectorOMP::charactVector(ListCharVect& listChar, Bitmap const& ima
 
     logger("A imagem possui " << bTotalX * bTotalY << " blocos.");
 
-    omp_set_num_threads(omp_get_num_procs());
 #pragma omp parallel
-    for(int bx = 0; bx < bTotalX; bx++)
     {
-#pragma omp for schedule(dynamic)
-        for(int by = 0; by < bTotalY; by++)
+        for(int bx = 0; bx < bTotalX; bx++)
         {
-            // criar vetor de caracteristicas
-            CharVect charVect(bx, by);
-            getCharVectListForBlock(charVect, image, bx, by, bSize);
+#pragma omp for schedule(dynamic)
+            for(int by = 0; by < bTotalY; by++)
+            {
+                // criar vetor de caracteristicas
+                CharVect charVect(bx, by);
+                getCharVectListForBlock(charVect, image, bx, by, bSize);
 
-            // adicionar o bloco lido ao conjunto de vetores de caracteristicas
-            addVectLexOrder(listChar, charVect);
+                // adicionar o bloco lido ao conjunto de vetores de caracteristicas
+                addVectLexOrder(listChar, charVect);
+            }
         }
+    }
+    if(!listChar.size())
+    {
+        std::cout << "Nao foi possivel criar o vetor de caracteristicas." << std::endl;
+        exit(EXIT_SUCCESS);
     }
 }
 
@@ -161,50 +170,59 @@ void ForgingDetectorOMP::getCharVectListForBlock(CharVect& charVect, Bitmap cons
     double part[4][2] = { { 0, 0 }, { 0, 0 }, { 0, 0 }, { 0, 0 } };
 
     // percorrer pixels do bloco na imagem original
+//#pragma omp for schedule(dynamic)
     for(int x = 0; x < blkSize; x++)
     {
         for(int y = 0; y < blkSize; y++)
         {
-            image.getPixel(x + blkPosX, y + blkPosY, red, green, blue);
+            {
+//#pragma omp critical
+                {
+                    image.getPixel(x + blkPosX, y + blkPosY, red, green, blue);
+                    charVect.c[0] += (int) red;
+                    charVect.c[1] += (int) green;
+                    charVect.c[2] += (int) blue;
 
-            charVect.c[0] += (int) red;
-            charVect.c[1] += (int) green;
-            charVect.c[2] += (int) blue;
+                    // converter o pixel para escala de cinza conforme canal y
+                    grey = toUnsignedChar(0.299 * (int) red + 0.587 * (int) green + 0.114 * (int) blue);
 
-            // converter o pixel para escala de cinza conforme canal y
-            grey = toUnsignedChar(0.299 * (int) red + 0.587 * (int) green + 0.114 * (int) blue);
+                    // para bloco tipo 1 | - |
+                    if(y < half)
+                        part[0][0] += grey;
+                    else
+                        part[0][1] += grey;
 
-            // para bloco tipo 1 | - |
-            if(y < half)
-                part[0][0] += grey;
-            else
-                part[0][1] += grey;
+                    // para bloco tipo 2 | | |
+                    if(x < half)
+                        part[1][0] += grey;
+                    else
+                        part[1][1] += grey;
 
-            // para bloco tipo 2 | | |
-            if(x < half)
-                part[1][0] += grey;
-            else
-                part[1][1] += grey;
+                    // para bloco tipo 3 | \ |
+                    if(x > y)
+                        part[2][0] += grey;
+                    else
+                        part[2][1] += grey;
 
-            // para bloco tipo 3 | \ |
-            if(x > y)
-                part[2][0] += grey;
-            else
-                part[2][1] += grey;
-
-            // para bloco tipo 4 | / |
-            if(x + y < blkSize)
-                part[3][0] += grey;
-            else
-                part[3][1] += grey;
+                    // para bloco tipo 4 | / |
+                    if(x + y < blkSize)
+                        part[3][0] += grey;
+                    else
+                        part[3][1] += grey;
+                }
+            }
         }
     }
     // calcular media RGB
-    for(int i = 0; i < 3; i++)
+    int iterationsCount = 3;
+#pragma omp parallel for schedule(dynamic) num_threads(iterationsCount)
+    for(int i = 0; i < iterationsCount; i++)
         charVect.c[i] = (int) charVect.c[i] / (blkSize * blkSize);
 
     // soma das partes part[tipobloco][regiao]
-    for(int i = 0; i < 4; i++)
+    iterationsCount = 4;
+#pragma omp parallel for schedule(dynamic) num_threads(iterationsCount)
+    for(int i = 0; i < iterationsCount; i++)
         charVect.c[i + 3] = part[i][0] / (part[i][0] + part[i][1]);
 }
 
@@ -212,6 +230,7 @@ void ForgingDetectorOMP::addVectLexOrder(ListCharVect& vecOrdered, CharVect& val
 {
     for(ListCharVect::iterator it = vecOrdered.begin(); it != vecOrdered.end(); it++)
     {
+//        if(CharVect::lessOrEqualsTo(valToAdd, (*it)))
         if(valToAdd <= (*it))
         {
             vecOrdered.insert(it, valToAdd);
