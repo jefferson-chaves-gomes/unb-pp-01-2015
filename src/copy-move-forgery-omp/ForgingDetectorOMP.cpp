@@ -185,21 +185,17 @@ void ForgingDetectorOMP::charactVector(ListCharVectPtr& listChar, Bitmap const& 
 
     Timer blockTimer;
 
-#pragma omp parallel
+#pragma omp parallel default(none) shared(bTotalX, bTotalY, listChar, image, bSize)
+    for(int bx = 0; bx < bTotalX; bx++)
     {
-        for(int bx = 0; bx < bTotalX; bx++)
-        {
 #pragma omp for schedule(dynamic)
-            for(int by = 0; by < bTotalY; by++)
-            {
-                // criar vetor de caracteristicas
-                CharVect *charVect = new CharVect(bx, by);
-                getCharVectListForBlock(*charVect, image, bx, by, bSize);
-
-                // adicionar o bloco lido ao conjunto de vetores de caracteristicas
-//                addVectLexOrder(listChar, charVect);
-                listChar.push_back(charVect);
-            }
+        for(int by = 0; by < bTotalY; by++)
+        {
+            // criar vetor de caracteristicas
+            CharVect *charVect = new CharVect(bx, by);
+            getCharVectListForBlock(*charVect, image, bx, by, bSize);
+#pragma omp critical
+            listChar.push_back(charVect);
         }
     }
 
@@ -229,7 +225,6 @@ void ForgingDetectorOMP::getCharVectListForBlock(CharVect& charVect, Bitmap cons
         for(int y = 0; y < blkSize; y++)
         {
             {
-#pragma omp critical
                 {
                     image.getPixel(x + blkPosX, y + blkPosY, red, green, blue);
                     charVect.c[0] += (int) red;
