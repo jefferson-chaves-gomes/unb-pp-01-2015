@@ -95,11 +95,11 @@ void startSerialProcess(int argc, char *argv[])
 {
     validateArgs(argc);
     int blockSize = BLOCK_SIZE;
-    if (argc == 4)
-        blockSize = atoi(argv[3]);
+    if (argc == 3)
+        blockSize = atoi(argv[2]);
 
-    bool tampered = ForgingDetector::isTampered(Bitmap(argv[2]), blockSize);
-    printResult(tampered, std::string(argv[2]));
+    bool tampered = ForgingDetector::isTampered(Bitmap(argv[1]), blockSize);
+    printResult(tampered, std::string(argv[1]));
 }
 #endif
 
