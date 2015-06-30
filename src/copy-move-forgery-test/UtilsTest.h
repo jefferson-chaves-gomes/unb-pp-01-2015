@@ -11,6 +11,10 @@
 const std::string IMG_PATH("../copy-move-forgery/resource/publico.bmp");
 const Bitmap BITMAP(IMG_PATH);
 
+
+const std::string IMG_PATH_NORMAL("../copy-move-forgery/resource/icone.bmp");
+const Bitmap BITMAP_NORMAL(IMG_PATH_NORMAL);
+
 const std::string IMG_PATH_SMALL("../copy-move-forgery/resource/small.bmp");
 const Bitmap BITMAP_SMALL(IMG_PATH_SMALL);
 

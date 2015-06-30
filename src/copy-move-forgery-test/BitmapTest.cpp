@@ -33,3 +33,27 @@ TEST_F(BitmapTest, getLines)
         }
     }
 }
+
+TEST_F(BitmapTest, savingImage)
+{
+    unsigned char red, green, blue, redBlk, greenBlk, blueBlk;
+
+    std::string path(ImgUtils::imgTrueName(BITMAP_NORMAL.getPath()));
+    path.append(std::string("_temp.bmp"));
+    ImgUtils::saveImageAs(BITMAP_NORMAL, path);
+
+    Bitmap temp(path);
+
+    for(int x=0; x<BITMAP_NORMAL.getWidth(); x++)
+    {
+        for(int y=0; y<BITMAP_NORMAL.getHeight(); y++)
+        {
+            BITMAP_NORMAL.getPixel(x, y, red, green, blue);
+            temp.getPixel(x, y, redBlk, greenBlk, blueBlk);
+
+            ASSERT_EQ(red, redBlk);
+            ASSERT_EQ(green, greenBlk);
+            ASSERT_EQ(blue, blueBlk);
+        }
+    }
+}
