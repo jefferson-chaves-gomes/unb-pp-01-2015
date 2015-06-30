@@ -183,10 +183,7 @@ void ForgingDetectorOMP::charactVector(ListCharVectPtr& listChar, Bitmap const& 
 
     logger("A imagem possui " << bTotalX * bTotalY << " blocos.");
 
-
-
     Timer blockTimer;
-
 
 #pragma omp parallel
     {
@@ -206,11 +203,7 @@ void ForgingDetectorOMP::charactVector(ListCharVectPtr& listChar, Bitmap const& 
         }
     }
 
-
-
     std::cout << "BLOCK time: " << blockTimer.elapsedMicroseconds() << std::endl;
-
-
 
     if(!listChar.size())
     {
@@ -218,10 +211,8 @@ void ForgingDetectorOMP::charactVector(ListCharVectPtr& listChar, Bitmap const& 
         exit(EXIT_SUCCESS);
     }
 
-
-
     Timer sortTimer;
-    listChar.sort();
+    listChar.sort(CharVect::lessOrEqualsToPtr);
     std::cout << "SORT time: " << sortTimer.elapsedMicroseconds() << std::endl;
 }
 

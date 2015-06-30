@@ -198,6 +198,7 @@ void ForgingDetectorMPI::charactVector(ListCharVectPtr& listChar, Bitmap const& 
 
     int bTotalX = section->getWidth() - bSize + 1;
     int bTotalY = section->getHeight() - bSize + 1;
+    int PROC_ID = MPISettings::PROC_ID();
 
     // itera em todos os blocos
     for(int bx = 0; bx < bTotalX; bx++)
@@ -205,7 +206,7 @@ void ForgingDetectorMPI::charactVector(ListCharVectPtr& listChar, Bitmap const& 
         for(int by = 0; by < bTotalY; by++)
         {
             // criar vetor de caracteristicas
-            CharVect * charVect = new CharVect(bx, by + size*MPISettings::PROC_ID());
+            CharVect * charVect = new CharVect(bx, by + size*PROC_ID);
 
             getCharVectListForBlock(*charVect, *section, bx, by, bSize);
 
