@@ -84,10 +84,10 @@ void startOmpProcess(int argc, char *argv[])
 {
     validateArgs(argc);
     int blockSize = BLOCK_SIZE;
-    if(argc == 4)
-        blockSize = atoi(argv[3]);
-    bool tampered = ForgingDetectorOMP::isTampered(Bitmap(argv[2]), blockSize);
-    printResult(tampered, argv[2]);
+    if(argc == 3)
+        blockSize = atoi(argv[2]);
+    bool tampered = ForgingDetectorOMP::isTampered(Bitmap(argv[1]), blockSize);
+    printResult(tampered, argv[1]);
 
 }
 #else
