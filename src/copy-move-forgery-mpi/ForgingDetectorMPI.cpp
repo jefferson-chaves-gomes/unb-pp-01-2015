@@ -97,7 +97,7 @@ bool ForgingDetectorMPI::byCharact(Bitmap const& image, int bSize)
     createImageWithSimilarAreas(detectImage, image, bSize, simList);
 
     logger("[MSG " << ++dbgmsg << "] Fazendo operacao de abertura na imagem...");
-//    detectImage = imageOpeningOperation(detectImage, bSize);
+    detectImage = imageOpeningOperation(detectImage, bSize);
 
     logger("[MSG " << ++dbgmsg << "] Verificando se imagem foi alterada...");
     Bitmap forgedImage(image.getWidth(), image.getHeight());
@@ -504,7 +504,7 @@ Bitmap ForgingDetectorMPI::imageErosionOperation(Bitmap const& image, int bSize)
         {
             image.getPixel(i, j, value, value, value);
             // pixel branco; aplicar elemento estruturante
-            if(value != 0)
+            if(value == 0)
                 continue;
 
             // verificar se a origem se encontra na regiao

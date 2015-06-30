@@ -580,7 +580,7 @@ Bitmap ForgingDetectorOMP::imageErosionOperation(Bitmap const& image, int bSize)
         {
             image.getPixel(i, j, value, value, value);
             // pixel branco; aplicar elemento estruturante
-            if(value != 0)
+            if(value == 0)
                 continue;
 
             // verificar se a origem se encontra na regiao
