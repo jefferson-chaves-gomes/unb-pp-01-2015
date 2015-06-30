@@ -30,13 +30,14 @@ const bool PRINT_TIME = false;
 
 /* parametros pre-definidos */
 const double t1 = 2.8, t2 = 0.02;      // t1 e t2
-const double vectorP[CharVect::CHARS_SIZE] = { 11.8,       // P(1)
+const double vectorP[CharVect::CHARS_SIZE] = {
+11.8,       // P(1)
 11.8,       // P(2)
 11.8,       // P(3)
 0.0125,     // P(4)
 0.0125,     // P(5)
 0.0125,     // P(6)
-0.0125 };    // P(7)
+0.0125 };   // P(7)
 const int MAX_SHIFT = 2;
 
 /**
@@ -60,7 +61,7 @@ bool ForgingDetectorOMP::isTampered(Bitmap const& image, int bSize)
 
     // passo 1: extrair as caracteristicas dos blocos da imagem
     logger("[MSG " << ++dbgmsg << "] Criando vetores de caracteristicas...");
-    ListCharVect vList;
+    ListCharVectPtr vList;
     charactVector(vList, image, bSize);
 
     // passo 2: buscar blocos similares
@@ -131,6 +132,8 @@ void ForgingDetectorOMP::charactVector(ListCharVect& listChar, Bitmap const& ima
     Timer time(PRINT_TIME, __PRETTY_FUNCTION__, __LINE__);
     int width = image.getWidth();
     int height = image.getHeight();
+
+    // bloco deve estar dentro dos limites da imagem
     if(width < bSize || height < bSize)
         return;
 
@@ -162,6 +165,66 @@ void ForgingDetectorOMP::charactVector(ListCharVect& listChar, Bitmap const& ima
     }
 }
 
+void ForgingDetectorOMP::charactVector(ListCharVectPtr& listChar, Bitmap const& image, int bSize)
+{
+    Timer time(PRINT_TIME, __PRETTY_FUNCTION__, __LINE__);
+
+    listChar.clear();
+
+    int width = image.getWidth();
+    int height = image.getHeight();
+
+    // bloco deve estar dentro dos limites da imagem
+    if(width < bSize || height < bSize)
+        return;
+
+    int bTotalX = width - bSize + 1;
+    int bTotalY = height - bSize + 1;
+
+    logger("A imagem possui " << bTotalX * bTotalY << " blocos.");
+
+
+
+    Timer blockTimer;
+
+
+#pragma omp parallel
+    {
+        for(int bx = 0; bx < bTotalX; bx++)
+        {
+#pragma omp for schedule(dynamic)
+            for(int by = 0; by < bTotalY; by++)
+            {
+                // criar vetor de caracteristicas
+                CharVect *charVect = new CharVect(bx, by);
+                getCharVectListForBlock(*charVect, image, bx, by, bSize);
+
+                // adicionar o bloco lido ao conjunto de vetores de caracteristicas
+//                addVectLexOrder(listChar, charVect);
+                listChar.push_back(charVect);
+            }
+        }
+    }
+
+
+
+    std::cout << "BLOCK time: " << blockTimer.elapsedMicroseconds() << std::endl;
+
+
+
+    if(!listChar.size())
+    {
+        std::cout << "Nao foi possivel criar o vetor de caracteristicas." << std::endl;
+        exit(EXIT_SUCCESS);
+    }
+
+
+
+    Timer sortTimer;
+    listChar.sort();
+    std::cout << "SORT time: " << sortTimer.elapsedMicroseconds() << std::endl;
+}
+
 void ForgingDetectorOMP::getCharVectListForBlock(CharVect& charVect, Bitmap const& image, int blkPosX, int blkPosY,
         int blkSize)
 {
@@ -170,13 +233,12 @@ void ForgingDetectorOMP::getCharVectListForBlock(CharVect& charVect, Bitmap cons
     double part[4][2] = { { 0, 0 }, { 0, 0 }, { 0, 0 }, { 0, 0 } };
 
     // percorrer pixels do bloco na imagem original
-//#pragma omp for schedule(dynamic)
     for(int x = 0; x < blkSize; x++)
     {
         for(int y = 0; y < blkSize; y++)
         {
             {
-//#pragma omp critical
+#pragma omp critical
                 {
                     image.getPixel(x + blkPosX, y + blkPosY, red, green, blue);
                     charVect.c[0] += (int) red;
@@ -215,13 +277,13 @@ void ForgingDetectorOMP::getCharVectListForBlock(CharVect& charVect, Bitmap cons
     }
     // calcular media RGB
     int iterationsCount = 3;
-#pragma omp parallel for schedule(dynamic) num_threads(iterationsCount)
+#pragma omp parallel for schedule(static) num_threads(iterationsCount)
     for(int i = 0; i < iterationsCount; i++)
         charVect.c[i] = (int) charVect.c[i] / (blkSize * blkSize);
 
     // soma das partes part[tipobloco][regiao]
     iterationsCount = 4;
-#pragma omp parallel for schedule(dynamic) num_threads(iterationsCount)
+#pragma omp parallel for schedule(static) num_threads(iterationsCount)
     for(int i = 0; i < iterationsCount; i++)
         charVect.c[i + 3] = part[i][0] / (part[i][0] + part[i][1]);
 }
@@ -230,8 +292,21 @@ void ForgingDetectorOMP::addVectLexOrder(ListCharVect& vecOrdered, CharVect& val
 {
     for(ListCharVect::iterator it = vecOrdered.begin(); it != vecOrdered.end(); it++)
     {
-//        if(CharVect::lessOrEqualsTo(valToAdd, (*it)))
-        if(valToAdd <= (*it))
+//        if(valToAdd <= (*it))
+        if(CharVect::lessOrEqualsTo(valToAdd, (*it)))
+        {
+            vecOrdered.insert(it, valToAdd);
+            return;
+        }
+    }
+    vecOrdered.push_back(valToAdd);
+}
+
+void ForgingDetectorOMP::addVectLexOrder(ListCharVectPtr& vecOrdered, CharVect* valToAdd)
+{
+    for(ListCharVectPtr::iterator it = vecOrdered.begin(); it != vecOrdered.end(); it++)
+    {
+        if(valToAdd  <= (*it))
         {
             vecOrdered.insert(it, valToAdd);
             return;
@@ -274,6 +349,44 @@ void ForgingDetectorOMP::createSimilarBlockList(Bitmap const& image, int bSize, 
         {
             // blocos b1 e b2 sao similares
             simList.push_back(SimilarBlocks(prev.pos, it->pos));
+        }
+    }
+}
+
+void ForgingDetectorOMP::createSimilarBlockList(Bitmap const& image, int bSize, ListCharVectPtr const& vList,
+        ListSimilarBlocks & simList)
+{
+    Timer time(PRINT_TIME, __PRETTY_FUNCTION__, __LINE__);
+    int width = image.getWidth();
+    int height = image.getHeight();
+    double diff[CharVect::CHARS_SIZE] = { 0, 0, 0, 0, 0, 0, 0 };
+
+    int vectOffsetSize(BASE_L);
+    if(bSize + BASE_L >= width || bSize + BASE_L >= height)
+        vectOffsetSize = bSize;
+
+    // percorrer toda a lista de blocos; execucao em O(n)
+    // somente sao comparados dois blocos consecutivos, pois ja estao ordenados
+
+    CharVect* prev;
+    for(ListCharVectPtr::const_iterator it = vList.begin(); it != vList.end(); prev = *(it++))
+    {
+        if(it == vList.begin())
+            continue;
+
+        // calcular diferencas
+        bool diffVector = true;
+        for(int i = 0; i < CharVect::CHARS_SIZE && diffVector; i++)
+        {
+            diff[i] = ABS((prev->c[i] - (*it)->c[i]));
+            diffVector = diffVector && (diff[i] < vectorP[i]);
+        }
+
+        if((diffVector) && (diff[0] + diff[1] + diff[2] < t1) && (diff[3] + diff[4] + diff[5] + diff[6] < t2)
+                && ABS(getShift(prev->pos, (*it)->pos)) > vectOffsetSize)
+        {
+            // blocos b1 e b2 sao similares
+            simList.push_back(SimilarBlocks(prev->pos, (*it)->pos));
         }
     }
 }
