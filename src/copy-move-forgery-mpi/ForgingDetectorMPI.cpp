@@ -1,4 +1,5 @@
 #include "ForgingDetectorMPI.h"
+#include "ForgingDetector.h"
 
 #include "commons.h"
 #include "ImgUtils.h"
@@ -96,7 +97,7 @@ bool ForgingDetectorMPI::byCharact(Bitmap const& image, int bSize)
     createImageWithSimilarAreas(detectImage, image, bSize, simList);
 
     logger("[MSG " << ++dbgmsg << "] Fazendo operacao de abertura na imagem...");
-    detectImage = imageOpeningOperation(detectImage, bSize);
+//    detectImage = imageOpeningOperation(detectImage, bSize);
 
     logger("[MSG " << ++dbgmsg << "] Verificando se imagem foi alterada...");
     Bitmap forgedImage(image.getWidth(), image.getHeight());
@@ -148,15 +149,15 @@ void ForgingDetectorMPI::charactVector(ListCharVectPtr& listChar, Bitmap const& 
 
     if(MPISettings::IS_PROC_ID_MASTER())
     {
-        int bTotalXOrign = image.getWidth() - bSize + 1;
-        int bTotalYOrign = image.getHeight() - bSize + 1;
+        int bTotalXOrign = imageWidth - bSize + 1;
+        int bTotalYOrign = imageHeight - bSize + 1;
 
         logger("A imagem possui " << bTotalXOrign * bTotalYOrign << " blocos.");
     }
 
     int sections = MPISettings::PROC_SIZE();
 
-    const int scope = (image.getHeight() - bSize) + 1;
+    const int scope = (imageHeight - bSize) + 1;
 
     if(sections > scope)
         sections = scope;
@@ -195,12 +196,6 @@ void ForgingDetectorMPI::charactVector(ListCharVectPtr& listChar, Bitmap const& 
         MPI_Recv(section->data_, section->length_, MPI_UNSIGNED_CHAR, 0, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
     }
 
-//    std::stringstream ss;
-//    ss << "image_" << MPISettings::PROC_ID() << ".bmp";
-//    std::string path(ImgUtils::imgTrueName("./"));
-//    path.append(ss.str());
-//    ImgUtils::saveImageAs(*section, path);
-
     int bTotalX = section->getWidth() - bSize + 1;
     int bTotalY = section->getHeight() - bSize + 1;
 
@@ -211,6 +206,7 @@ void ForgingDetectorMPI::charactVector(ListCharVectPtr& listChar, Bitmap const& 
         {
             // criar vetor de caracteristicas
             CharVect * charVect = new CharVect(bx, by + size*MPISettings::PROC_ID());
+
             getCharVectListForBlock(*charVect, *section, bx, by, bSize);
 
             // adicionar o bloco lido ao conjunto de vetores de caracteristicas
@@ -218,7 +214,7 @@ void ForgingDetectorMPI::charactVector(ListCharVectPtr& listChar, Bitmap const& 
         }
     }
 
-//    delete section;
+    delete section;
 
     MPI_Barrier(MPI_COMM_WORLD);
 
@@ -259,25 +255,7 @@ void ForgingDetectorMPI::charactVector(ListCharVectPtr& listChar, Bitmap const& 
     }
 
     if(MPISettings::IS_PROC_ID_MASTER())
-    {
-        int count(0);
-//        for(ListCharVectPtr::iterator it = listChar.begin(); it!=listChar.end(); it++)
-//        {
-//            std::cout << "# " << count ++ << " @ "<< (*it)->pos.x << "," << (*it)->pos.y <<
-//                    (*it)->c[0] << " => " <<
-//                    (*it)->c[1] << "|" <<
-//                    (*it)->c[2] << "|" <<
-//                    (*it)->c[3] << "|" <<
-//                    (*it)->c[4] << "|" <<
-//                    (*it)->c[5] << "|" <<
-//                    (*it)->c[6] << "|" << std::endl;
-//        }
-
-        std::cout << MPISettings::PROC_ID() << " chegou na barreira com " << listChar.size() << std::endl;
         listChar.sort(CharVect::lessOrEqualsToPtr);
-    }
-
-//    std::cout << MPISettings::PROC_ID() << " chegou na barreira 2 size " << listChar.size() << std::endl;
 
     MPI_Barrier(MPI_COMM_WORLD);
 }

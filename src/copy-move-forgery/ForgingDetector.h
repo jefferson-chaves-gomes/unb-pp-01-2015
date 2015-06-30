@@ -17,6 +17,7 @@ public:
     static Bitmap imageDilationOperation(Bitmap const& image, int bSize);
     static Bitmap imageErosionOperation(Bitmap const& image, int bSize);
 
+    static void charactVector(ListCharVect& listChar, Bitmap const& image, int bSize);
 protected:
     ForgingDetector()
     {
@@ -26,7 +27,6 @@ protected:
     }
     /* metodos de deteccao */
     static void charactVectorBySections(ListCharVect& listChar, Bitmap const& image, int bSize, unsigned int sections);
-    static void charactVector(ListCharVect& listChar, Bitmap const& image, int bSize);
     static void getCharVectListForBlock(CharVect& charVect, Bitmap const& image, int blkPosX, int blkPosY, int blkSize);
     static void addVectLexOrder(ListCharVect& orderedVector, CharVect& charVect);
     static void createSimilarBlockList(Bitmap const& image, int bSize, ListCharVect const& vList, ListSimilarBlocks &simList);
