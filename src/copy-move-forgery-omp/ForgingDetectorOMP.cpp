@@ -142,7 +142,7 @@ void ForgingDetectorOMP::charactVector(ListCharVect& listChar, Bitmap const& ima
 
     logger("A imagem possui " << bTotalX * bTotalY << " blocos.");
 
-#pragma omp parallel
+#pragma omp parallel default(none) shared(bTotalX, bTotalY, listChar, image, bSize)
     {
         for(int bx = 0; bx < bTotalX; bx++)
         {
@@ -154,6 +154,7 @@ void ForgingDetectorOMP::charactVector(ListCharVect& listChar, Bitmap const& ima
                 getCharVectListForBlock(charVect, image, bx, by, bSize);
 
                 // adicionar o bloco lido ao conjunto de vetores de caracteristicas
+#pragma omp critical
                 addVectLexOrder(listChar, charVect);
             }
         }
@@ -224,41 +225,37 @@ void ForgingDetectorOMP::getCharVectListForBlock(CharVect& charVect, Bitmap cons
     {
         for(int y = 0; y < blkSize; y++)
         {
-            {
-                {
-                    image.getPixel(x + blkPosX, y + blkPosY, red, green, blue);
-                    charVect.c[0] += (int) red;
-                    charVect.c[1] += (int) green;
-                    charVect.c[2] += (int) blue;
+            image.getPixel(x + blkPosX, y + blkPosY, red, green, blue);
+            charVect.c[0] += (int) red;
+            charVect.c[1] += (int) green;
+            charVect.c[2] += (int) blue;
 
-                    // converter o pixel para escala de cinza conforme canal y
-                    grey = toUnsignedChar(0.299 * (int) red + 0.587 * (int) green + 0.114 * (int) blue);
+            // converter o pixel para escala de cinza conforme canal y
+            grey = toUnsignedChar(0.299 * (int) red + 0.587 * (int) green + 0.114 * (int) blue);
 
-                    // para bloco tipo 1 | - |
-                    if(y < half)
-                        part[0][0] += grey;
-                    else
-                        part[0][1] += grey;
+            // para bloco tipo 1 | - |
+            if(y < half)
+                part[0][0] += grey;
+            else
+                part[0][1] += grey;
 
-                    // para bloco tipo 2 | | |
-                    if(x < half)
-                        part[1][0] += grey;
-                    else
-                        part[1][1] += grey;
+            // para bloco tipo 2 | | |
+            if(x < half)
+                part[1][0] += grey;
+            else
+                part[1][1] += grey;
 
-                    // para bloco tipo 3 | \ |
-                    if(x > y)
-                        part[2][0] += grey;
-                    else
-                        part[2][1] += grey;
+            // para bloco tipo 3 | \ |
+            if(x > y)
+                part[2][0] += grey;
+            else
+                part[2][1] += grey;
 
-                    // para bloco tipo 4 | / |
-                    if(x + y < blkSize)
-                        part[3][0] += grey;
-                    else
-                        part[3][1] += grey;
-                }
-            }
+            // para bloco tipo 4 | / |
+            if(x + y < blkSize)
+                part[3][0] += grey;
+            else
+                part[3][1] += grey;
         }
     }
     // calcular media RGB
