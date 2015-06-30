@@ -271,6 +271,75 @@ void ForgingDetectorOMP::getCharVectListForBlock(CharVect& charVect, Bitmap cons
         charVect.c[i + 3] = part[i][0] / (part[i][0] + part[i][1]);
 }
 
+//void ForgingDetectorOMP::getCharVectListForBlock(CharVect& charVect, Bitmap const& image, int blkPosX, int blkPosY,
+//        int blkSize)
+//{
+//    unsigned char red, green, blue, grey;
+//    int half = (int) blkSize / 2;
+//
+//    // percorrer pixels do bloco na imagem original
+//    double sumRed(0), sumGreen(0), sumBlue(0);
+//    double part00(0), part01(0);
+//    double part10(0), part11(0);
+//    double part20(0), part21(0);
+//    double part30(0), part31(0);
+//
+////#pragma omp parallel private(red, green, blue, grey) shared(sumRed, sumGreen, sumBlue, image, half, blkPosX, blkSize, blkPosY, charVect)
+//    for(int x = 0; x < blkSize; x++)
+//    {
+////#pragma omp for reduction(+ : sumRed), reduction(+ : sumGreen), reduction(+ : sumBlue),\
+////        reduction(+ : part00), reduction(+ : part01), \
+////        reduction(+ : part10), reduction(+ : part11), \
+////        reduction(+ : part20), reduction(+ : part21), \
+////        reduction(+ : part30), reduction(+ : part31)
+//
+//        for(int y = 0; y < blkSize; y++)
+//        {
+//            image.getPixel(x + blkPosX, y + blkPosY, red, green, blue);
+//            sumRed += (int) red;
+//            sumGreen += (int) green;
+//            sumBlue += (int) blue;
+//            // converter o pixel para escala de cinza conforme canal y
+//            grey = toUnsignedChar(0.299 * (int) red + 0.587 * (int) green + 0.114 * (int) blue);
+//
+//            // para bloco tipo 1 | - |
+//            if(y < half)
+//                part00 += grey;
+//            else
+//                part01 += grey;
+//
+//            // para bloco tipo 2 | | |
+//            if(x < half)
+//                part10 += grey;
+//            else
+//                part11 += grey;
+//
+//            // para bloco tipo 3 | \ |
+//            if(x > y)
+//                part20 += grey;
+//            else
+//                part21 += grey;
+//
+//            // para bloco tipo 4 | / |
+//            if(x + y < blkSize)
+//                part30 += grey;
+//            else
+//                part31 += grey;
+//        }
+//    }
+//    // calcular media RGB
+//    int totalBlkSize = (blkSize * blkSize);
+//    charVect.c[0] = (int) sumRed / totalBlkSize;
+//    charVect.c[1] = (int) sumGreen / totalBlkSize;
+//    charVect.c[2] = (int) sumBlue / totalBlkSize;
+//
+//    // soma das partes part[tipobloco][regiao]
+//    charVect.c[3] = part00 / (part00 + part01);
+//    charVect.c[4] = part10 / (part10 + part11);
+//    charVect.c[4] = part20 / (part20 + part21);
+//    charVect.c[4] = part30 / (part30 + part31);
+//}
+
 void ForgingDetectorOMP::addVectLexOrder(ListCharVect& vecOrdered, CharVect& valToAdd)
 {
     for(ListCharVect::iterator it = vecOrdered.begin(); it != vecOrdered.end(); it++)
@@ -508,7 +577,7 @@ Bitmap ForgingDetectorOMP::imageErosionOperation(Bitmap const& image, int bSize)
         {
             image.getPixel(i, j, value, value, value);
             // pixel branco; aplicar elemento estruturante
-            if(value != 0)
+            if(value == 0)
                 continue;
 
             // verificar se a origem se encontra na regiao
