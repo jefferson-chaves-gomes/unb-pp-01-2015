@@ -162,6 +162,9 @@ void ForgingDetectorMPI::charactVector(ListCharVectPtr& listChar, Bitmap const& 
     if(sections > scope)
         sections = scope;
 
+    if(MPISettings::PROC_ID() >= sections)
+        return;
+
     int sizeLast = (scope) % sections;
     int size = (scope) / sections;
 
@@ -177,7 +180,7 @@ void ForgingDetectorMPI::charactVector(ListCharVectPtr& listChar, Bitmap const& 
 
         int posStart = 0;
         int lengthToSend = 0;
-        for(int i=1; i<MPISettings::PROC_SIZE(); i++)
+        for(int i=1; i<sections; i++)
         {
             if(sizeLast!=0 && i == sections-1)
                 sectionLenght = sectionLenght + sizeLast;
