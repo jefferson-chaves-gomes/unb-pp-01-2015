@@ -66,14 +66,14 @@ bool ForgingDetectorMPI::byCharact(Bitmap const& image, int bSize)
     ListCharVectPtr vList;
     charactVector(vList, image, width, height, bSize);
 
-    if(!MPISettings::IS_PROC_ID_MASTER())
-        return false;
-
-    if(!vList.size())
+    if(!vList.size() && MPISettings::IS_PROC_ID_MASTER())
     {
         std::cout << "Nao foi possivel criar o vetor de caracteristicas." << std::endl;
         return false;
     }
+
+    if(!MPISettings::IS_PROC_ID_MASTER())
+        return false;
 
     /* passo 2: buscar blocos similares */
     logger("[MSG " << ++dbgmsg << "] Buscando blocos similares...");
@@ -343,19 +343,6 @@ void ForgingDetectorMPI::getCharVectListForBlock(CharVect& charVect, Bitmap cons
     // soma das partes part[tipobloco][regiao]
     for(int i = 0; i < 4; i++)
         charVect.c[i + 3] = part[i][0] / (part[i][0] + part[i][1]);
-}
-
-void ForgingDetectorMPI::addVectLexOrder(ListCharVectPtr& vecOrdered, CharVect* valToAdd)
-{
-    for(ListCharVectPtr::iterator it = vecOrdered.begin(); it != vecOrdered.end(); it++)
-    {
-        if(valToAdd  <= (*it))
-        {
-            vecOrdered.insert(it, valToAdd);
-            return;
-        }
-    }
-    vecOrdered.push_back(valToAdd);
 }
 
 void ForgingDetectorMPI::createSimilarBlockList(Bitmap const& image, int bSize, ListCharVectPtr const& vList, ListSimilarBlocks & simList)
