@@ -80,6 +80,7 @@ bool ForgingDetectorMPI::byCharact(Bitmap const& image, int bSize)
     ListSimilarBlocks simList;
     createSimilarBlockList(image, bSize, vList, simList, getVectOffsetSize(width, height, bSize));
 
+
     /* passo 3: */
     // Se nao ha blocos similares, a imagem nao foi adulterada por copy-move
     if(!simList.size())
@@ -227,6 +228,10 @@ void ForgingDetectorMPI::charactVector(ListCharVectPtr& listChar, Bitmap const& 
     int procToSend(-1);
     int vecSize = 0;
 
+    CharVect * charVect;
+    ListCharVectPtr::iterator
+        itToMerge = listChar.begin();
+
     // Realiza uma redução dos vetores ordenados
     int PROC_SIZE = MPISettings::PROC_SIZE();
     for(int i=1; i<PROC_SIZE; i*=2)
@@ -248,17 +253,10 @@ void ForgingDetectorMPI::charactVector(ListCharVectPtr& listChar, Bitmap const& 
 
                 procToReceive = (j + i) % PROC_SIZE;
 
-                CharVect * charVect;
-                ListCharVectPtr::iterator
-                    itToMerge = listChar.begin();
-
                 MPI_Recv(&vecSize, 1, MPI_INT, procToReceive, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
                 for(; vecSize > 0; vecSize--)
                 {
-                    charVect = new CharVect(0,0);
-                    MPI_Recv(charVect->c, CharVect::CHARS_SIZE, MPI_DOUBLE, procToReceive, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-                    MPI_Recv(&charVect->pos.x, 1, MPI_INT, procToReceive, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-                    MPI_Recv(&charVect->pos.y, 1, MPI_INT, procToReceive, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+                    charVect = receiveCharVectFromProcess(procToReceive);
 
                     // Realiza o merge de elementos de dois processos ja ordenados
                     while(itToMerge!=listChar.end()
@@ -279,11 +277,7 @@ void ForgingDetectorMPI::charactVector(ListCharVectPtr& listChar, Bitmap const& 
                 vecSize = listChar.size();
                 MPI_Send(&vecSize, 1, MPI_INT, procToSend, 0, MPI_COMM_WORLD);
                 for(ListCharVectPtr::iterator it = listChar.begin(); it!=listChar.end(); it++)
-                {
-                    MPI_Send(&(*it)->c, CharVect::CHARS_SIZE, MPI_DOUBLE, procToSend, 0, MPI_COMM_WORLD);
-                    MPI_Send(&(*it)->pos.x, 1, MPI_INT, procToSend, 0, MPI_COMM_WORLD);
-                    MPI_Send(&(*it)->pos.y, 1, MPI_INT, procToSend, 0, MPI_COMM_WORLD);
-                }
+                    sendCharVectToProcess(*it, procToSend);
 
                 // Evitar perder tempo deletendo os objetos dentro do envio de elementos
                 for(ListCharVectPtr::iterator it = listChar.begin(); it!=listChar.end(); it++)
@@ -349,6 +343,24 @@ void ForgingDetectorMPI::getCharVectListForBlock(CharVect& charVect, Bitmap cons
         charVect.c[i + 3] = part[i][0] / (part[i][0] + part[i][1]);
 }
 
+CharVect* ForgingDetectorMPI::receiveCharVectFromProcess(int procToReceive)
+{
+    CharVect * charVect = new CharVect(0,0);
+
+    MPI_Recv(charVect->c, CharVect::CHARS_SIZE, MPI_DOUBLE, procToReceive, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+    MPI_Recv(&charVect->pos.x, 1, MPI_INT, procToReceive, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+    MPI_Recv(&charVect->pos.y, 1, MPI_INT, procToReceive, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+
+    return charVect;
+}
+
+CharVect* ForgingDetectorMPI::sendCharVectToProcess(CharVect* charVect, int procToSend)
+{
+    MPI_Send(&charVect->c, CharVect::CHARS_SIZE, MPI_DOUBLE, procToSend, 0, MPI_COMM_WORLD);
+    MPI_Send(&charVect->pos.x, 1, MPI_INT, procToSend, 0, MPI_COMM_WORLD);
+    MPI_Send(&charVect->pos.y, 1, MPI_INT, procToSend, 0, MPI_COMM_WORLD);
+}
+
 int ForgingDetectorMPI::getVectOffsetSize(int imageWidth, int imageHeight, int bSize)
 {
     int vectOffsetSize(BASE_L);
@@ -383,7 +395,7 @@ void ForgingDetectorMPI::createSimilarBlockList(
 //
 //    int sizeLast = (scope) % sections;
 //    int size = (scope) / sections;
-//    int sectionLenght = size-1+bSize;
+//    int sectionLenght = size-1+2;
 //
 //    // inicia a transferencia de secoes da imagem
 //    if(MPISettings::IS_PROC_ID_MASTER())
@@ -391,35 +403,24 @@ void ForgingDetectorMPI::createSimilarBlockList(
 //        // Processo 0 fica com o resto da lista
 //        for(int i=1; i<sections; i++)
 //        {
-//            sectionLenght = size-1+bSize;
+//            sectionLenght = size-1+2;
 //            int sizeSent(0);
-//            std::cout << "Enviando..." << std::endl;
 //            MPI_Send(&sectionLenght, 1, MPI_INT, i, 0, MPI_COMM_WORLD);
 //            for(; itBegin!=itEnd && sectionLenght > 0; itBegin++, sectionLenght--)
 //            {
-//                std::cout << "Vect..." << std::endl;
-//                MPI_Send(&(*itBegin)->c, CharVect::CHARS_SIZE, MPI_DOUBLE, i, 0, MPI_COMM_WORLD);
-//                MPI_Send(&(*itBegin)->pos.x, 1, MPI_INT, i, 0, MPI_COMM_WORLD);
-//                MPI_Send(&(*itBegin)->pos.y, 1, MPI_INT, i, 0, MPI_COMM_WORLD);
-//
+//                sendCharVectToProcess(*itBegin, i);
 //                delete *itBegin;
 //                itBegin = vList.erase(itBegin);
 //            }
-//            std::cout << "Enviado!!!" << std::endl;
 //        }
 //    }
 //    else
 //    {
 //        CharVect * charVect;
-//
 //        MPI_Recv(&sectionLenght, 1, MPI_INT, 0, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 //        for(; sectionLenght > 0; sectionLenght--)
 //        {
-//            charVect = new CharVect(0,0);
-//            MPI_Recv(charVect->c, CharVect::CHARS_SIZE, MPI_DOUBLE, 0, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-//            MPI_Recv(&charVect->pos.x, 1, MPI_INT, 0, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-//            MPI_Recv(&charVect->pos.y, 1, MPI_INT, 0, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-//
+//            charVect = receiveCharVectFromProcess(MPISettings::PROC_ID());
 //            vList.push_back(charVect);
 //        }
 //    }
