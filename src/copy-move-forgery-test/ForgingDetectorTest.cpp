@@ -1,4 +1,6 @@
 #include "UtilsTest.h"
+#include <time.h>       /* time */
+#include <commons.h>
 
 class ForgingDetectorTest : public ::testing::Test, public ForgingDetector
 {
@@ -9,6 +11,7 @@ protected:
     // Primeiro lugar que ele entra no teste dessa classe
     static void SetUpTestCase()
     {
+        srand (time(NULL));
         std::cout << "Generating vector of chars..." << std::endl;
         ForgingDetector::charactVector(vList, BITMAP, BLOCK_SIZE);
         std::cout << "Vector of chars generated!!!" << std::endl;
@@ -72,6 +75,17 @@ protected:
         }
     }
 
+    void assertLexicalOrderCharVectList(ListCharVectPtr const& vecOrdered)
+    {
+        CharVect * prev;
+        for(ListCharVectPtr::const_iterator it = vecOrdered.begin(); it != vecOrdered.end(); prev = *(it++))
+        {
+            if(it == vecOrdered.begin())
+                continue;
+            ASSERT_TRUE(CharVect::lessOrEqualsToPtr(prev, *(it)));
+        }
+    }
+
     void assertEqualsCharVectList(ListCharVect const& vectLeft, ListCharVect const& vectRight)
     {
 //        int count(0);
@@ -86,6 +100,23 @@ protected:
             ASSERT_EQ(leftValue->pos, rightValue->pos);
             for(int i = 0; i < CharVect::CHARS_SIZE; i++)
                 ASSERT_EQ(leftValue->c[i], rightValue->c[i]);
+        }
+    }
+
+    void assertEqualsCharVectList(ListCharVectPtr const& vectLeft, ListCharVectPtr const& vectRight)
+    {
+//        int count(0);
+
+        for(ListCharVectPtr::const_iterator leftValue = vectLeft.begin(), rightValue = vectRight.begin();
+                leftValue != vectLeft.end() || rightValue != vectRight.end();
+                leftValue++, rightValue++)
+        {
+            ASSERT_TRUE(leftValue != vectLeft.end());
+            ASSERT_TRUE(rightValue != vectRight.end());
+
+            ASSERT_EQ((*leftValue)->pos, (*rightValue)->pos);
+            for(int i = 0; i < CharVect::CHARS_SIZE; i++)
+                ASSERT_EQ((*leftValue)->c[i], (*rightValue)->c[i]);
         }
     }
 
@@ -163,6 +194,64 @@ protected:
 };
 
 ListCharVect ForgingDetectorTest::vList;
+
+TEST_F(ForgingDetectorTest, mergeSortedLists)
+{
+    ListCharVectPtr listToMerge;
+    ListCharVectPtr listTemp;
+    ListCharVectPtr listWithAll;
+
+    CharVect * charVec;
+
+    for(int i=0; i < 20; i++)
+    {
+        charVec = new CharVect();
+        charVec->setChars(
+                rand() % 255,
+                rand() % 255,
+                rand() % 255,
+                rand() % 255,
+                rand() % 255,
+                rand() % 255,
+                rand() % 255);
+        listToMerge.push_back(charVec);
+        listWithAll.push_back(charVec);
+
+        charVec = new CharVect();
+        charVec->setChars(
+                rand() % 255,
+                rand() % 255,
+                rand() % 255,
+                rand() % 255,
+                rand() % 255,
+                rand() % 255,
+                rand() % 255);
+        listTemp.push_back(charVec);
+        listWithAll.push_back(charVec);
+    }
+
+    listToMerge.sort(CharVect::lessOrEqualsToPtr);
+    listTemp.sort(CharVect::lessOrEqualsToPtr);
+    listWithAll.sort(CharVect::lessOrEqualsToPtr);
+
+    assertLexicalOrderCharVectList(listToMerge);
+    assertLexicalOrderCharVectList(listTemp);
+    assertLexicalOrderCharVectList(listWithAll);
+
+    ListCharVectPtr::iterator
+        itToMerge = listToMerge.begin(),
+        itTemp = listTemp.begin();
+
+    for(; itTemp != listTemp.end(); itTemp++)
+    {
+        while(itToMerge!=listToMerge.end()
+                && CharVect::lessOrEqualsToPtr(*itToMerge, *itTemp ))
+            itToMerge++;
+        listToMerge.insert(itToMerge, *itTemp);
+    }
+
+    assertEqualsCharVectList(listToMerge, listWithAll);
+}
 
 TEST_F(ForgingDetectorTest, operator_less_or_equals_to)
 {
