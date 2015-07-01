@@ -72,14 +72,13 @@ bool ForgingDetectorMPI::byCharact(Bitmap const& image, int bSize)
         return false;
     }
 
-    if(!MPISettings::IS_PROC_ID_MASTER())
-        return false;
+//    if(!MPISettings::IS_PROC_ID_MASTER())
+//        return false;
 
     /* passo 2: buscar blocos similares */
     logger("[MSG " << ++dbgmsg << "] Buscando blocos similares...");
     ListSimilarBlocks simList;
     createSimilarBlockList(image, bSize, vList, simList, getVectOffsetSize(width, height, bSize));
-
 
     /* passo 3: */
     // Se nao ha blocos similares, a imagem nao foi adulterada por copy-move
@@ -288,6 +287,98 @@ void ForgingDetectorMPI::charactVector(ListCharVectPtr& listChar, Bitmap const& 
     }
 }
 
+void ForgingDetectorMPI::createSimilarBlockList(
+        Bitmap const& image,
+        int bSize,
+        ListCharVectPtr & vList,
+        ListSimilarBlocks & simList,
+        int vectOffsetSize)
+{
+    Timer time(PRINT_TIME, __PRETTY_FUNCTION__, __LINE__);
+    double diff[CharVect::CHARS_SIZE] = { 0, 0, 0, 0, 0, 0, 0 };
+
+    ListCharVectPtr::iterator itBegin = vList.begin();
+    ListCharVectPtr::iterator itEnd = vList.end();
+
+    // Divisao de lista de caracteristicas em secoes
+    int sections = MPISettings::PROC_SIZE();
+
+    const int scope = vList .size()-1;
+
+    if(sections > scope)
+        sections = scope;
+
+    if(MPISettings::PROC_ID() >= sections)
+        return;
+//
+//    int sizeLast = (scope) % sections;
+//    int size = (scope) / sections;
+//    int sectionLenght = size-1+2;
+//
+//    // inicia a transferencia de secoes da imagem
+//    if(MPISettings::IS_PROC_ID_MASTER())
+//    {
+//        // Processo 0 fica com o resto da lista
+//        for(int i=1; i<sections; i++)
+//        {
+//            sectionLenght = size-1+2;
+//            int sizeSent(0);
+//            MPI_Send(&sectionLenght, 1, MPI_INT, i, 0, MPI_COMM_WORLD);
+//            for(; itBegin!=itEnd && sectionLenght > 0; itBegin++, sectionLenght--)
+//            {
+//                sendCharVectToProcess(*itBegin, i);
+//                delete *itBegin;
+//                itBegin = vList.erase(itBegin);
+//            }
+//        }
+//    }
+//    else
+//    {
+//        CharVect * charVect;
+//        MPI_Recv(&sectionLenght, 1, MPI_INT, 0, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+//        for(; sectionLenght > 0; sectionLenght--)
+//        {
+//            charVect = receiveCharVectFromProcess(MPISettings::PROC_ID());
+//            vList.push_back(charVect);
+//        }
+//    }
+//
+//    std::cout << MPISettings::PROC_ID() << " ficou com " << vList.size() << std::endl;
+//
+//    MPI_Barrier(MPI_COMM_WORLD);
+//    exit(0);
+
+    // percorrer toda a lista de blocos; execucao em O(n)
+    // somente sao comparados dois blocos consecutivos, pois ja estao ordenados
+
+    CharVect* prev;
+    for(; itBegin != vList.end(); prev = *(itBegin++))
+    {
+        if(itBegin == vList.begin())
+            continue;
+
+        // calcular diferencas
+        bool diffVector = true;
+        for(int i = 0; i < CharVect::CHARS_SIZE && diffVector; i++)
+        {
+            diff[i] = ABS((prev->c[i] - (*itBegin)->c[i]));
+            diffVector = diffVector && (diff[i] < vectorP[i]);
+        }
+
+        if((diffVector)
+                && (diff[0] + diff[1] + diff[2] < t1)
+                && (diff[3] + diff[4] + diff[5] + diff[6] < t2)
+                && ABS(getShift(prev->pos, (*itBegin)->pos)) > vectOffsetSize)
+        {
+            // blocos b1 e b2 sao similares
+            simList.push_back(
+                SimilarBlocks(
+                    prev->pos,
+                    (*itBegin)->pos));
+        }
+    }
+}
+
 void ForgingDetectorMPI::getCharVectListForBlock(CharVect& charVect, Bitmap const& image, int blkPosX, int blkPosY, int blkSize)
 {
     unsigned char red, green, blue, grey;
@@ -367,98 +458,6 @@ int ForgingDetectorMPI::getVectOffsetSize(int imageWidth, int imageHeight, int b
     if(bSize + BASE_L >= imageWidth || bSize + BASE_L >= imageHeight)
         vectOffsetSize = bSize;
     return vectOffsetSize;
-}
-
-void ForgingDetectorMPI::createSimilarBlockList(
-        Bitmap const& image,
-        int bSize,
-        ListCharVectPtr & vList,
-        ListSimilarBlocks & simList,
-        int vectOffsetSize)
-{
-    Timer time(PRINT_TIME, __PRETTY_FUNCTION__, __LINE__);
-    double diff[CharVect::CHARS_SIZE] = { 0, 0, 0, 0, 0, 0, 0 };
-
-    ListCharVectPtr::iterator itBegin = vList.begin();
-    ListCharVectPtr::iterator itEnd = vList.end();
-
-//    // Divisao de lista de caracteristicas em secoes
-//    int sections = MPISettings::PROC_SIZE();
-//
-//    const int scope = (vList .size()- 2) + 1;
-//
-//    if(sections > scope)
-//        sections = scope;
-//
-//    if(MPISettings::PROC_ID() >= sections)
-//        return;
-//
-//    int sizeLast = (scope) % sections;
-//    int size = (scope) / sections;
-//    int sectionLenght = size-1+2;
-//
-//    // inicia a transferencia de secoes da imagem
-//    if(MPISettings::IS_PROC_ID_MASTER())
-//    {
-//        // Processo 0 fica com o resto da lista
-//        for(int i=1; i<sections; i++)
-//        {
-//            sectionLenght = size-1+2;
-//            int sizeSent(0);
-//            MPI_Send(&sectionLenght, 1, MPI_INT, i, 0, MPI_COMM_WORLD);
-//            for(; itBegin!=itEnd && sectionLenght > 0; itBegin++, sectionLenght--)
-//            {
-//                sendCharVectToProcess(*itBegin, i);
-//                delete *itBegin;
-//                itBegin = vList.erase(itBegin);
-//            }
-//        }
-//    }
-//    else
-//    {
-//        CharVect * charVect;
-//        MPI_Recv(&sectionLenght, 1, MPI_INT, 0, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-//        for(; sectionLenght > 0; sectionLenght--)
-//        {
-//            charVect = receiveCharVectFromProcess(MPISettings::PROC_ID());
-//            vList.push_back(charVect);
-//        }
-//    }
-//
-//    std::cout << MPISettings::PROC_ID() << " ficou com " << vList.size() << std::endl;
-//
-//    MPI_Barrier(MPI_COMM_WORLD);
-//    exit(0);
-
-    // percorrer toda a lista de blocos; execucao em O(n)
-    // somente sao comparados dois blocos consecutivos, pois ja estao ordenados
-
-    CharVect* prev;
-    for(; itBegin != vList.end(); prev = *(itBegin++))
-    {
-        if(itBegin == vList.begin())
-            continue;
-
-        // calcular diferencas
-        bool diffVector = true;
-        for(int i = 0; i < CharVect::CHARS_SIZE && diffVector; i++)
-        {
-            diff[i] = ABS((prev->c[i] - (*itBegin)->c[i]));
-            diffVector = diffVector && (diff[i] < vectorP[i]);
-        }
-
-        if((diffVector)
-                && (diff[0] + diff[1] + diff[2] < t1)
-                && (diff[3] + diff[4] + diff[5] + diff[6] < t2)
-                && ABS(getShift(prev->pos, (*itBegin)->pos)) > vectOffsetSize)
-        {
-            // blocos b1 e b2 sao similares
-            simList.push_back(
-                SimilarBlocks(
-                    prev->pos,
-                    (*itBegin)->pos));
-        }
-    }
 }
 
 bool ForgingDetectorMPI::isBlockSimilarSpurious(DeltaPos const& current, DeltaPos const& mainShift)

@@ -30,6 +30,8 @@
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/copy-move-forgery}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/copy-move-forgery-mpi}&quot;"/>
 								</option>
+								<option id="gnu.cpp.compiler.option.warnings.allwarn.1105288969" name="All warnings (-Wall)" superClass="gnu.cpp.compiler.option.warnings.allwarn" value="false" valueType="boolean"/>
+								<option id="gnu.cpp.compiler.option.warnings.toerrors.719327558" name="Warnings as errors (-Werror)" superClass="gnu.cpp.compiler.option.warnings.toerrors" value="false" valueType="boolean"/>
 								<inputType id="cdt.managedbuild.tool.gnu.cpp.compiler.input.1076276419" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.input"/>
 							</tool>
 							<tool command="mpicc" id="cdt.managedbuild.tool.gnu.c.compiler.exe.debug.1039711427" name="GCC C Compiler" superClass="cdt.managedbuild.tool.gnu.c.compiler.exe.debug">
