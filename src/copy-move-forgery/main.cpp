@@ -90,27 +90,6 @@ void startOmpProcess(int argc, char *argv[])
     printResult(tampered, argv[1]);
 
 }
-#else
-void startSerialProcess(int argc, char *argv[])
-{
-    validateArgs(argc);
-    int blockSize = BLOCK_SIZE;
-    if (argc == 3)
-        blockSize = atoi(argv[2]);
-
-    bool tampered = ForgingDetector::isTampered(Bitmap(argv[1]), blockSize);
-    printResult(tampered, std::string(argv[1]));
-}
-#endif
-
-void validateArgs(const int argc)
-{
-    if(argc < 2)
-    {
-        printUsage();
-        exit(EXIT_SUCCESS);
-    }
-}
 
 void readOmpArgs(int argc, char *argv[], int& blockSize, int& ompNumThreads, int& ompSchedule)
 {
@@ -142,6 +121,28 @@ void readOmpArgs(int argc, char *argv[], int& blockSize, int& ompNumThreads, int
             break;
         default:
             break;
+    }
+}
+
+#else
+void startSerialProcess(int argc, char *argv[])
+{
+    validateArgs(argc);
+    int blockSize = BLOCK_SIZE;
+    if (argc == 3)
+        blockSize = atoi(argv[2]);
+
+    bool tampered = ForgingDetector::isTampered(Bitmap(argv[1]), blockSize);
+    printResult(tampered, std::string(argv[1]));
+}
+#endif
+
+void validateArgs(const int argc)
+{
+    if(argc < 2)
+    {
+        printUsage();
+        exit(EXIT_SUCCESS);
     }
 }
 
