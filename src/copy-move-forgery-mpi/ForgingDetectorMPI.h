@@ -27,8 +27,9 @@ protected:
     /* metodos de deteccao */
     static void charactVector(ListCharVectPtr& listChar, Bitmap const& image, int imageWidth, int imageHeight, int bSize);
     static void getCharVectListForBlock(CharVect& charVect, Bitmap const& image, int blkPosX, int blkPosY, int blkSize);
-    static void createSimilarBlockList(Bitmap const& image, int bSize, ListCharVectPtr const& vList, ListSimilarBlocks &simList);
+    static void createSimilarBlockList(Bitmap const& image, int bSize, ListCharVectPtr & vList, ListSimilarBlocks &simList, int vectOffsetSize);
     static void filterSpuriousRegions(ListSimilarBlocks& simList, DeltaPos const& mainShift);
+    static int getVectOffsetSize(int imageWidth, int imageHeight, int bSize);
 
     static bool isBlockSimilarSpurious(DeltaPos const& current, DeltaPos const& mainShift);
     static int getShift(Pos const& pos1, Pos const& pos2);
