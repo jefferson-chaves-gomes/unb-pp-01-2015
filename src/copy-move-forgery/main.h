@@ -5,6 +5,7 @@
 
 void validateArgs(const int);
 void printUsage();
+void readOmpArgs(int, char*[], int&, int&, int&);
 void startSerialProcess(int, char*[]);
 void startOmpProcess(int, char*[]);
 void startMPIProcess(int, char*[]);

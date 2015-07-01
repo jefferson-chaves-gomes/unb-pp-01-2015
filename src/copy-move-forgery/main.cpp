@@ -22,19 +22,19 @@ int main(int argc, char *argv[])
     // MPI Parallel process
     Timer mpiTime;
     startMPIProcess(argc, argv);
-    std::cout << "OpenMP time for file: " << argv[2] << std::endl;
+    std::cout << "MPI time for file: " << argv[1] << std::endl;
     std::cout << mpiTime.elapsedMicroseconds() << std::endl;
 #elif defined(OMP_ENABLED)
     // OMP Parallel process
     Timer openMpTime;
     startOmpProcess(argc, argv);
-    std::cout << "OpenMP time for file: " << argv[2] << std::endl;
+    std::cout << "OpenMP time for file: " << argv[1] << std::endl;
     std::cout << openMpTime.elapsedMicroseconds() << std::endl;
 #else
     // Serial process
     Timer serialTime;
     startSerialProcess(argc, argv);
-    std::cout << "Serial time for file: " << argv[2] << std::endl;
+    std::cout << "Serial time for file: " << argv[1] << std::endl;
     std::cout << serialTime.elapsedMicroseconds() << std::endl;
 #endif
 }
@@ -83,10 +83,10 @@ void startMPIProcess(int argc, char **argv)
 void startOmpProcess(int argc, char *argv[])
 {
     validateArgs(argc);
-    int blockSize = BLOCK_SIZE;
-    if(argc == 3)
-        blockSize = atoi(argv[2]);
-    bool tampered = ForgingDetectorOMP::isTampered(Bitmap(argv[1]), blockSize);
+    int blockSize, ompNumThreads, ompSchedOrdinal;
+    readOmpArgs(argc, argv, blockSize, ompNumThreads, ompSchedOrdinal);
+    omp_sched_t ompSchedule = static_cast<omp_sched_t>(ompSchedOrdinal);;
+    bool tampered = ForgingDetectorOMP::isTampered(Bitmap(argv[1]), blockSize, ompNumThreads, ompSchedule);
     printResult(tampered, argv[1]);
 
 }
@@ -105,13 +105,45 @@ void startSerialProcess(int argc, char *argv[])
 
 void validateArgs(const int argc)
 {
-    if(argc < 3)
+    if(argc < 2)
     {
         printUsage();
         exit(EXIT_SUCCESS);
     }
 }
 
+void readOmpArgs(int argc, char *argv[], int& blockSize, int& ompNumThreads, int& ompSchedule)
+{
+    blockSize = BLOCK_SIZE;
+    ompNumThreads = omp_get_num_procs();
+    ompSchedule = static_cast<int>(omp_sched_dynamic);
+    std::string scheduler;
+    switch(argc)
+    {
+        case 3:
+            blockSize = atoi(argv[2]);
+            break;
+        case 4:
+            blockSize = atoi(argv[2]);
+            ompNumThreads = atoi(argv[3]);
+            break;
+        case 5:
+            blockSize = atoi(argv[2]);
+            ompNumThreads = atoi(argv[3]);
+            scheduler = argv[4];
+            if(scheduler == "dynamic")
+                ompSchedule = static_cast<int>(omp_sched_dynamic);
+            else if(scheduler == "static")
+                ompSchedule = static_cast<int>(omp_sched_static);
+            else if(scheduler == "guided")
+                ompSchedule = static_cast<int>(omp_sched_guided);
+            else if(scheduler == "auto")
+                ompSchedule = static_cast<int>(omp_sched_auto);
+            break;
+        default:
+            break;
+    }
+}
 
 void printResult(const bool tampered, std::string const& fileName)
 {
@@ -123,6 +155,19 @@ void printResult(const bool tampered, std::string const& fileName)
 
 void printUsage()
 {
-    std::cout << "Usage: CustomBitmap.exe <img_file> <block_size...>" << std::endl;
+
+#if defined(MPI_ENABLED)
+    std::cout << "Usage: copy-move-forgery-mpi ";
+#elif defined(OMP_ENABLED)
+    std::cout << "Usage: copy-move-forgery-omp ";
+#else
+    std::cout << "Usage: copy-move-forgery ";
+#endif
+    std::cout << "<img_file> <block_size (default: 16)> ";
+#if defined(OMP_ENABLED)
+    std::cout
+            << "<omp_num_thread (default: cores count)> <omp_schedule [dynamic|static|guided|auto] (default: dynamic)>";
+#endif
+    std::cout << std::endl;
     std::cout << HELP << "\tshows usage manual." << std::endl;
 }

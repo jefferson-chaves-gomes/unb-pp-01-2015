@@ -12,7 +12,7 @@ class ForgingDetectorOMP
 #endif
 
 public:
-    static bool isTampered(Bitmap const& image, int bSize = 16);
+    static bool isTampered(Bitmap const& image, int bSize, int, omp_sched_t);
     static Bitmap imageOpeningOperation(Bitmap const& image, int bSize);
     static Bitmap imageDilationOperation(Bitmap const& image, int bSize);
     static Bitmap imageErosionOperation(Bitmap const& image, int bSize);

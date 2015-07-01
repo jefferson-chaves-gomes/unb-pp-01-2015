@@ -9,6 +9,8 @@
 #include "ImgUtils.h"
 #include "Timer.h"
 
+#define DEFAULT_OMP_CHUNK   0
+
 //#define _DEBUG_
 #ifdef _DEBUG_
 #define logger(token) \
@@ -48,16 +50,16 @@ const int MAX_SHIFT = 2;
  * @param bSize dimensao do bloco
  * @return true, foi detectada adulteracao; false, se imagem eh original
  */
-bool ForgingDetectorOMP::isTampered(Bitmap const& image, int bSize)
+bool ForgingDetectorOMP::isTampered(Bitmap const& image, int bSize, int ompNumThreads, omp_sched_t ompSchedule)
 {
-    // passo 0: definindo a quantidade threads que serão usadas no processamento
-    int threadsCount = omp_get_num_procs();
-    if(omp_get_max_threads() > threadsCount)
-    {
-        threadsCount = omp_get_max_threads();
-    }
-    omp_set_num_threads(threadsCount);
-    logger("[MSG " << ++dbgmsg << "] Iniciando processamento paralelo com OpenMP com " << threadsCount << " threads...");
+    // passo 0: definindo a quantidade threads que serão usadas no processamento bem como o tipo de escalonamento
+
+    logger("DEBUG - env ompNumThreads:    " << ompNumThreads);
+    logger("DEBUG - env ompSchedule:      " << ompSchedule);
+
+    omp_set_num_threads(ompNumThreads);
+    omp_set_schedule(ompSchedule, DEFAULT_OMP_CHUNK);
+    logger("[MSG " << ++dbgmsg << "] Iniciando processamento paralelo com OpenMP com " << ompNumThreads << " threads...");
 
     // passo 1: extrair as caracteristicas dos blocos da imagem
     logger("[MSG " << ++dbgmsg << "] Criando vetores de caracteristicas...");
@@ -150,7 +152,7 @@ void ForgingDetectorOMP::charactVector(ListCharVectPtr& listChar, Bitmap const& 
 #pragma omp parallel default(none) shared(bTotalX, bTotalY, listChar, image, bSize)
     for(int bx = 0; bx < bTotalX; bx++)
     {
-#pragma omp for schedule(dynamic)
+#pragma omp for schedule(runtime)
         for(int by = 0; by < bTotalY; by++)
         {
             // criar vetor de caracteristicas
@@ -162,7 +164,6 @@ void ForgingDetectorOMP::charactVector(ListCharVectPtr& listChar, Bitmap const& 
             }
         }
     }
-
     logger("== TIME to getCharVectListForBlock: " << blockTimer.elapsedMicroseconds());
 
     if(!listChar.size())
@@ -223,13 +224,13 @@ void ForgingDetectorOMP::getCharVectListForBlock(CharVect& charVect, Bitmap cons
     }
     // calcular media RGB
     int iterationsCount = 3;
-#pragma omp parallel for schedule(static) num_threads(iterationsCount)
+#pragma omp parallel for schedule(static) default(none) shared(charVect, blkSize, iterationsCount) num_threads(iterationsCount)
     for(int i = 0; i < iterationsCount; i++)
         charVect.c[i] = (int) charVect.c[i] / (blkSize * blkSize);
 
     // soma das partes part[tipobloco][regiao]
     iterationsCount = 4;
-#pragma omp parallel for schedule(static) num_threads(iterationsCount)
+#pragma omp parallel for schedule(static) default(none) shared(charVect, part, iterationsCount) num_threads(iterationsCount)
     for(int i = 0; i < iterationsCount; i++)
         charVect.c[i + 3] = part[i][0] / (part[i][0] + part[i][1]);
 }
