@@ -387,8 +387,12 @@ void ForgingDetectorOMP::createImageWithSimilarAreas(Bitmap& detectImage, Bitmap
             detectImage.setPixel(i, j, 0, 0, 0);
     }
 
+//#pragma omp parallel
+//#pragma omp single
     for(ListSimilarBlocks::const_iterator it = simList.begin(); it != simList.end(); it++)
     {
+//#pragma omp task default(none) shared(detectImage, bSize) firstprivate(it)
+        {
         int b1x = it->b1.x;
         int b1y = it->b1.y;
         int b2x = it->b2.x;
@@ -401,6 +405,7 @@ void ForgingDetectorOMP::createImageWithSimilarAreas(Bitmap& detectImage, Bitmap
                 detectImage.setPixel(i + b1x, j + b1y, 255, 255, 255);
                 detectImage.setPixel(i + b2x, j + b2y, 255, 255, 255);
             }
+        }
         }
     }
 }
