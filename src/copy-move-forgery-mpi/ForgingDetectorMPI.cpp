@@ -300,53 +300,57 @@ void ForgingDetectorMPI::createSimilarBlockList(
     ListCharVectPtr::iterator itBegin = vList.begin();
     ListCharVectPtr::iterator itEnd = vList.end();
 
-    // Divisao de lista de caracteristicas em secoes
-    int sections = MPISettings::PROC_SIZE();
+    int sectionLenght = 0;
 
-    const int scope = vList .size()-1;
+    // inicia a transferencia de secoes de caracteristicas
+    if(MPISettings::IS_PROC_ID_MASTER())
+    {
+        // Divisao de lista de caracteristicas em secoes
+        int sections = MPISettings::PROC_SIZE();
 
-    if(sections > scope)
-        sections = scope;
+        const int scope = vList .size()-1;
 
-    if(MPISettings::PROC_ID() >= sections)
-        return;
-//
-//    int sizeLast = (scope) % sections;
-//    int size = (scope) / sections;
-//    int sectionLenght = size-1+2;
-//
-//    // inicia a transferencia de secoes da imagem
-//    if(MPISettings::IS_PROC_ID_MASTER())
-//    {
-//        // Processo 0 fica com o resto da lista
-//        for(int i=1; i<sections; i++)
-//        {
-//            sectionLenght = size-1+2;
-//            int sizeSent(0);
-//            MPI_Send(&sectionLenght, 1, MPI_INT, i, 0, MPI_COMM_WORLD);
-//            for(; itBegin!=itEnd && sectionLenght > 0; itBegin++, sectionLenght--)
-//            {
-//                sendCharVectToProcess(*itBegin, i);
-//                delete *itBegin;
-//                itBegin = vList.erase(itBegin);
-//            }
-//        }
-//    }
-//    else
-//    {
-//        CharVect * charVect;
-//        MPI_Recv(&sectionLenght, 1, MPI_INT, 0, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-//        for(; sectionLenght > 0; sectionLenght--)
-//        {
-//            charVect = receiveCharVectFromProcess(MPISettings::PROC_ID());
-//            vList.push_back(charVect);
-//        }
-//    }
-//
-//    std::cout << MPISettings::PROC_ID() << " ficou com " << vList.size() << std::endl;
-//
-//    MPI_Barrier(MPI_COMM_WORLD);
-//    exit(0);
+        if(sections > scope)
+            sections = scope;
+
+        int size = (scope) / sections;
+        int sizeLast = size + ((scope) % sections);
+        sectionLenght = size+1;
+
+        // Processo 0 fica com o resto da lista
+        for(int i=1; i<MPISettings::PROC_SIZE() ; i++)
+        {
+            if(i >= sections)
+            {
+                sectionLenght = 0;
+                MPI_Send(&sectionLenght, 1, MPI_INT, i, 0, MPI_COMM_WORLD);
+                continue;
+            }
+
+            sectionLenght = size+1;
+            MPI_Send(&sectionLenght, 1, MPI_INT, i, 0, MPI_COMM_WORLD);
+            for(; itBegin!=itEnd && sectionLenght > 1; itBegin++, sectionLenght--)
+            {
+                sendCharVectToProcess(*itBegin, i);
+                delete *itBegin;
+                itBegin = vList.erase(itBegin);
+                itBegin--;
+            }
+            sendCharVectToProcess(*itBegin, i);
+        }
+    }
+    else
+    {
+        CharVect * charVect;
+        MPI_Recv(&sectionLenght, 1, MPI_INT, MPISettings::PROC_MASTER, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+
+        for(; sectionLenght > 0; sectionLenght--)
+        {
+            charVect = receiveCharVectFromProcess(MPISettings::PROC_MASTER);
+            vList.push_back(charVect);
+        }
+
+    }
 
     // percorrer toda a lista de blocos; execucao em O(n)
     // somente sao comparados dois blocos consecutivos, pois ja estao ordenados
@@ -445,7 +449,7 @@ CharVect* ForgingDetectorMPI::receiveCharVectFromProcess(int procToReceive)
     return charVect;
 }
 
-CharVect* ForgingDetectorMPI::sendCharVectToProcess(CharVect* charVect, int procToSend)
+void ForgingDetectorMPI::sendCharVectToProcess(CharVect* charVect, int procToSend)
 {
     MPI_Send(&charVect->c, CharVect::CHARS_SIZE, MPI_DOUBLE, procToSend, 0, MPI_COMM_WORLD);
     MPI_Send(&charVect->pos.x, 1, MPI_INT, procToSend, 0, MPI_COMM_WORLD);
