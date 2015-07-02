@@ -3,6 +3,13 @@
 #include <sstream>
 #include <fstream>
 #include <iostream>
+#include <Timer.h>
+
+#ifdef _DEBUG_
+const bool PRINT_TIME = true;
+#else
+const bool PRINT_TIME = false;
+#endif
 
 /**
  * @func saveImageAs
@@ -12,6 +19,7 @@
  */
 void ImgUtils::saveImageAs(Bitmap image, std::string imgPath)
 {
+    Timer time(PRINT_TIME, __PRETTY_FUNCTION__, __LINE__);
     Bitmap newImage(image);
     std::stringstream newFile;
     newFile << imgPath;

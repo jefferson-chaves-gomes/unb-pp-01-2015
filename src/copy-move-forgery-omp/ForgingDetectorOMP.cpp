@@ -53,38 +53,34 @@ const int MAX_SHIFT = 2;
 bool ForgingDetectorOMP::isTampered(Bitmap const& image, int bSize, int ompNumThreads, omp_sched_t ompSchedule)
 {
     // passo 0: definindo a quantidade threads que serão usadas no processamento bem como o tipo de escalonamento
-
-    logger("DEBUG - env ompNumThreads:    " << ompNumThreads);
-    logger("DEBUG - env ompSchedule:      " << ompSchedule);
-
     omp_set_num_threads(ompNumThreads);
     omp_set_schedule(ompSchedule, DEFAULT_OMP_CHUNK);
-    logger("[MSG " << ++dbgmsg << "] Iniciando processamento paralelo com OpenMP com " << ompNumThreads << " threads...");
+    logger("[MSG " << ++dbgmsg << "] Iniciando processamento paralelo com OpenMP com " << ompNumThreads << " threads e schedule " << ompSchedule);
 
     // passo 1: extrair as caracteristicas dos blocos da imagem
     logger("[MSG " << ++dbgmsg << "] Criando vetores de caracteristicas...");
-    ListCharVectPtr vList;
-    charactVector(vList, image, bSize);
+    ListCharVectPtr lstCharacteristicVector;
+    charactVector(lstCharacteristicVector, image, bSize);
 
     // passo 2: buscar blocos similares
     logger("[MSG " << ++dbgmsg << "] Buscando blocos similares...");
-    ListSimilarBlocks simList;
-    createSimilarBlockList(image, bSize, vList, simList);
+    ListSimilarBlocks lstSimilarBlocks;
+    createSimilarBlockList(image, bSize, lstCharacteristicVector, lstSimilarBlocks);
 
     // passo 3: Se nao ha blocos similares, a imagem nao foi adulterada por copy-move
-    if(!simList.size())
+    if(!lstSimilarBlocks.size())
         return false;
 
     logger("[MSG " << ++dbgmsg << "] Buscando deslocamento mais recorrente...");
-    DeltaPos mainShift(getMainShiftVector(simList));
+    DeltaPos mainShift(getMainShiftVector(lstSimilarBlocks));
 
     logger("[MSG " << ++dbgmsg << "] Filtrando regioes espurias...");
-    filterSpuriousRegions(simList, mainShift);
+    filterSpuriousRegions(lstSimilarBlocks, mainShift);
 
     /* passo 4: detectar adulteracao */
     logger("[MSG " << ++dbgmsg << "] Criando imagem com as areas similares...");
     Bitmap detectImage(image.getWidth(), image.getHeight());
-    createImageWithSimilarAreas(detectImage, image, bSize, simList);
+    createImageWithSimilarAreas(detectImage, image, bSize, lstSimilarBlocks);
 
     logger("[MSG " << ++dbgmsg << "] Fazendo operacao de abertura na imagem...");
     detectImage = imageOpeningOperation(detectImage, bSize);
@@ -92,7 +88,7 @@ bool ForgingDetectorOMP::isTampered(Bitmap const& image, int bSize, int ompNumTh
     logger("[MSG " << ++dbgmsg << "] Verificando se imagem foi alterada...");
     Bitmap forgedImage(image.getWidth(), image.getHeight());
     // salvar a imagem criada
-    if(!isImageForged(image, detectImage, forgedImage))
+    if(!(image, detectImage, forgedImage))
         return false;
 
     logger("[MSG " << ++dbgmsg << "] Criando imagem forjada...");
@@ -140,7 +136,11 @@ void ForgingDetectorOMP::charactVector(ListCharVectPtr& listChar, Bitmap const& 
 
     // bloco deve estar dentro dos limites da imagem
     if(width < bSize || height < bSize)
-        return;
+    {
+        std::cout << "O tamanho do bloco informado é maior que as dimenssoes da imagem (" << width << "x" << height
+                << ") . O bloco deve estar dentro dos limites da imagem" << std::endl;
+        exit(EXIT_SUCCESS);
+    }
 
     int bTotalX = width - bSize + 1;
     int bTotalY = height - bSize + 1;
@@ -148,7 +148,6 @@ void ForgingDetectorOMP::charactVector(ListCharVectPtr& listChar, Bitmap const& 
     logger("A imagem possui " << bTotalX * bTotalY << " blocos.");
 
     Timer blockTimer;
-
 #pragma omp parallel default(none) shared(bTotalX, bTotalY, listChar, image, bSize)
     for(int bx = 0; bx < bTotalX; bx++)
     {
@@ -164,17 +163,16 @@ void ForgingDetectorOMP::charactVector(ListCharVectPtr& listChar, Bitmap const& 
             }
         }
     }
-    logger("== TIME to getCharVectListForBlock: " << blockTimer.elapsedMicroseconds());
 
     if(!listChar.size())
     {
         std::cout << "Nao foi possivel criar o vetor de caracteristicas." << std::endl;
         exit(EXIT_SUCCESS);
     }
-
+    logger("== TIME to getCharVectListForBlock: " << blockTimer.elapsedMicroseconds());
     Timer sortTimer;
     listChar.sort(CharVect::lessOrEqualsToPtr);
-    logger("== TIME to listChar.sort: " << blockTimer.elapsedMicroseconds());
+    logger("== TIME to listChar.sort: " << sortTimer.elapsedMicroseconds());
 }
 
 void ForgingDetectorOMP::getCharVectListForBlock(CharVect& charVect, Bitmap const& image, int blkPosX, int blkPosY,
@@ -283,13 +281,15 @@ void ForgingDetectorOMP::createSimilarBlockList(Bitmap const& image, int bSize, 
 
         // calcular diferencas
         bool diffVector = true;
-        for(int i = 0; i < CharVect::CHARS_SIZE && diffVector; i++)
+        for(int i = 0; i < (CharVect::CHARS_SIZE && diffVector); i++)
         {
             diff[i] = ABS((prev->c[i] - (*it)->c[i]));
             diffVector = diffVector && (diff[i] < vectorP[i]);
         }
 
-        if((diffVector) && (diff[0] + diff[1] + diff[2] < t1) && (diff[3] + diff[4] + diff[5] + diff[6] < t2)
+        if((diffVector)
+                && (diff[0] + diff[1] + diff[2] < t1)
+                && (diff[3] + diff[4] + diff[5] + diff[6] < t2)
                 && ABS(getShift(prev->pos, (*it)->pos)) > vectOffsetSize)
         {
             // blocos b1 e b2 sao similares
@@ -368,12 +368,19 @@ void ForgingDetectorOMP::createImageWithSimilarAreas(Bitmap& detectImage, Bitmap
     int width = image.getWidth();
     int height = image.getHeight();
     // criar imagem binaria com as areas similares encontradas
+
+//#pragma omp parallel default(none) shared(detectImage, width, height)
     for(int i = 0; i < width; i++)
     {
+//#pragma omp for schedule(runtime)
         for(int j = 0; j < height; j++)
+        {
+//#pragma omp critical
             detectImage.setPixel(i, j, 0, 0, 0);
+        }
     }
 
+//#pragma omp parallel default(none) shared(simList, detectImage, bSize)
     for(ListSimilarBlocks::const_iterator it = simList.begin(); it != simList.end(); it++)
     {
         int b1x = it->b1.x;
@@ -383,10 +390,14 @@ void ForgingDetectorOMP::createImageWithSimilarAreas(Bitmap& detectImage, Bitmap
 
         for(int i = 0; i < bSize; i++)
         {
+//#pragma omp for schedule(runtime)
             for(int j = 0; j < bSize; j++)
             {
+//#pragma omp critical
+                {
                 detectImage.setPixel(i + b1x, j + b1y, 255, 255, 255);
                 detectImage.setPixel(i + b2x, j + b2y, 255, 255, 255);
+                }
             }
         }
     }
