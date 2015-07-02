@@ -53,10 +53,10 @@ public:
     //     c1:   // media R
     //     c2:   // media G
     //     c3:   // media B
-    //     c4:   // soma(part(1))/soma(part(1)+part(2)) regiao tipo 1
-    //     c5:   // soma(part(1))/soma(part(1)+part(2)) regiao tipo 2
-    //     c6:   // soma(part(1))/soma(part(1)+part(2)) regiao tipo 3
-    //     c7:   // soma(part(1))/soma(part(1)+part(2)) regiao tipo 4
+    //     c4:   // soma(part(0)) / soma(part(0) + part(01)) regiao tipo 1
+    //     c5:   // soma(part(1)) / soma(part(1) + part(11)) regiao tipo 2
+    //     c6:   // soma(part(2)) / soma(part(2) + part(21)) regiao tipo 3
+    //     c7:   // soma(part(3)) / soma(part(3) + part(31)) regiao tipo 4
 
     CharVect();
     CharVect(CharVect const&);
