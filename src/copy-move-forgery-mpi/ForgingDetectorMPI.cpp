@@ -16,6 +16,7 @@
 //#define _DEBUG_
 #ifdef _DEBUG_
 #define logger(token) \
+    if(MPISettings::IS_PROC_ID_MASTER()) \
     { \
         std::stringstream o; \
         o << token; \
@@ -82,14 +83,20 @@ bool ForgingDetectorMPI::byCharact(Bitmap const& image, int bSize)
     if(!simList.size() && MPISettings::IS_PROC_ID_MASTER())
         return false;
 
-    if(!MPISettings::IS_PROC_ID_MASTER())
-        return false;
-
     logger("[MSG " << ++dbgmsg << "] Buscando deslocamento mais recorrente...");
-    DeltaPos mainShift(getMainShiftVector(simList));
+    DeltaPos mainShift;
+    if(MPISettings::IS_PROC_ID_MASTER())
+        mainShift = getMainShiftVector(simList);
+
+    MPI_Bcast(&mainShift.dx, 1, MPI_INT, MPISettings::PROC_MASTER, MPI_COMM_WORLD);
+    MPI_Bcast(&mainShift.dy, 1, MPI_INT, MPISettings::PROC_MASTER, MPI_COMM_WORLD);
 
     logger("[MSG " << ++dbgmsg << "] Filtrando regioes espurias...");
+
     filterSpuriousRegions(simList, mainShift);
+
+    if(!MPISettings::IS_PROC_ID_MASTER())
+        return false;
 
     /* passo 4: detectar adulteracao */
     logger("[MSG " << ++dbgmsg << "] Criando imagem com as areas similares...");
@@ -336,6 +343,7 @@ void ForgingDetectorMPI::createSimilarBlockList(
                 itBegin = vList.erase(itBegin);
                 itBegin--;
             }
+            // Este mesmo item deve ser mandado para o processo atual e o proximo (valor de 'i')
             sendCharVectToProcess(*itBegin, i);
         }
     }
@@ -385,8 +393,6 @@ void ForgingDetectorMPI::createSimilarBlockList(
     }
 
     int vecSize = 0;
-    Pos b1;
-    Pos b2;
     // inicia a transferencia de secoes de caracteristicas
     if(MPISettings::IS_PROC_ID_MASTER())
     {
@@ -396,11 +402,8 @@ void ForgingDetectorMPI::createSimilarBlockList(
             MPI_Recv(&vecSize, 1, MPI_INT, i, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
             for(; vecSize > 0; vecSize--)
             {
-                MPI_Recv(&b1.x, 1, MPI_INT, i, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-                MPI_Recv(&b1.y, 1, MPI_INT, i, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-                MPI_Recv(&b2.x, 1, MPI_INT, i, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-                MPI_Recv(&b2.y, 1, MPI_INT, i, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-                simList.push_back(SimilarBlocks(b1, b2));
+                simList.push_back(
+                        receiveSimilarBlocksFromProcess(i));
             }
         }
     }
@@ -409,12 +412,7 @@ void ForgingDetectorMPI::createSimilarBlockList(
         vecSize = simList.size();
         MPI_Send(&vecSize, 1, MPI_INT, MPISettings::PROC_MASTER, 0, MPI_COMM_WORLD);
         for(ListSimilarBlocks::iterator it = simList.begin(); it!=simList.end(); it++)
-        {
-            MPI_Send(&it->b1.x, 1, MPI_INT, MPISettings::PROC_MASTER, 0, MPI_COMM_WORLD);
-            MPI_Send(&it->b1.y, 1, MPI_INT, MPISettings::PROC_MASTER, 0, MPI_COMM_WORLD);
-            MPI_Send(&it->b2.x, 1, MPI_INT, MPISettings::PROC_MASTER, 0, MPI_COMM_WORLD);
-            MPI_Send(&it->b2.y, 1, MPI_INT, MPISettings::PROC_MASTER, 0, MPI_COMM_WORLD);
-        }
+            sendSimilarBlocksToProcess(*it, MPISettings::PROC_MASTER);
         simList.clear();
     }
 }
@@ -447,6 +445,70 @@ DeltaPos ForgingDetectorMPI::getMainShiftVector(ListSimilarBlocks const& blocks)
     }
 
     return main;
+}
+
+void ForgingDetectorMPI::filterSpuriousRegions(ListSimilarBlocks& simList, DeltaPos const& mainShift)
+{
+    Timer time(PRINT_TIME, __PRETTY_FUNCTION__, __LINE__);
+
+//    ListSimilarBlocks::iterator it = simList.begin();
+//    int vecSize = simList.size() / MPISettings::PROC_SIZE();
+//    // Divide o vetor entre os processos em partes iguais
+//    if(MPISettings::IS_PROC_ID_MASTER())
+//    {
+//        // Processo 0 fica com o resto da lista
+//        for(int i=1; i<MPISettings::PROC_SIZE() ; i++)
+//        {
+//            if(simList.size() < i)
+//            {
+//                int j = 0;
+//                MPI_Send(&j, 1, MPI_INT, i, 0, MPI_COMM_WORLD);
+//                continue;
+//            }
+//
+//            MPI_Send(&vecSize, 1, MPI_INT, i, 0, MPI_COMM_WORLD);
+//            for(int j = vecSize; it!=simList.end() && j > 0; it++, j--)
+//            {
+//                sendSimilarBlocksToProcess(*it, i);
+//                it = simList.erase(it);
+//                it--;
+//            }
+//        }
+//    }
+//    else
+//    {
+//        MPI_Recv(&vecSize, 1, MPI_INT, MPISettings::PROC_MASTER, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+//        for(; vecSize > 0; vecSize--)
+//            simList.push_back(receiveSimilarBlocksFromProcess( MPISettings::PROC_MASTER));
+//    }
+
+    // Algoritmo principal de filtragem
+    for (ListSimilarBlocks::iterator it = simList.begin(); it != simList.end();)
+    {
+        if(isBlockSimilarSpurious(it->delta, mainShift))
+            it = simList.erase(it);
+        else
+            it++;
+    }
+
+//    // Processo 0 recebe todos os valores novamente
+//    if(MPISettings::IS_PROC_ID_MASTER())
+//    {
+//        for(int i=1; i<MPISettings::PROC_SIZE() ; i++)
+//        {
+//            MPI_Recv(&vecSize, 1, MPI_INT, i, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+//            for(; vecSize > 0; vecSize--)
+//                simList.push_back(receiveSimilarBlocksFromProcess(i));
+//        }
+//    }
+//    else
+//    {
+//        vecSize = simList.size();
+//        MPI_Send(&vecSize, 1, MPI_INT, MPISettings::PROC_MASTER, 0, MPI_COMM_WORLD);
+//        for(it = simList.begin(); it!=simList.end(); it++)
+//            sendSimilarBlocksToProcess(*it, MPISettings::PROC_MASTER);
+//        simList.clear();
+//    }
 }
 
 void ForgingDetectorMPI::getCharVectListForBlock(CharVect& charVect, Bitmap const& image, int blkPosX, int blkPosY, int blkSize)
@@ -535,16 +597,23 @@ bool ForgingDetectorMPI::isBlockSimilarSpurious(DeltaPos const& current, DeltaPo
     return (ABS((current.dx - mainShift.dx)) > MAX_SHIFT || ABS((current.dy - mainShift.dy)) > MAX_SHIFT);
 }
 
-void ForgingDetectorMPI::filterSpuriousRegions(ListSimilarBlocks& simList, DeltaPos const& mainShift)
+SimilarBlocks ForgingDetectorMPI::receiveSimilarBlocksFromProcess(int procToReceive)
 {
-    Timer time(PRINT_TIME, __PRETTY_FUNCTION__, __LINE__);
-    for (ListSimilarBlocks::iterator it = simList.begin(); it != simList.end();)
-    {
-    	if(isBlockSimilarSpurious(it->delta, mainShift))
-    		it = simList.erase(it);
-    	else
-    		it++;
-    }
+    Pos b1, b2;
+    MPI_Recv(&b1.x, 1, MPI_INT, procToReceive, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+    MPI_Recv(&b1.y, 1, MPI_INT, procToReceive, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+    MPI_Recv(&b2.x, 1, MPI_INT, procToReceive, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+    MPI_Recv(&b2.y, 1, MPI_INT, procToReceive, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+
+    return SimilarBlocks(b1, b2);
+}
+
+void ForgingDetectorMPI::sendSimilarBlocksToProcess(SimilarBlocks & blocks, int procToSend)
+{
+    MPI_Send(&blocks.b1.x, 1, MPI_INT, procToSend, 0, MPI_COMM_WORLD);
+    MPI_Send(&blocks.b1.y, 1, MPI_INT, procToSend, 0, MPI_COMM_WORLD);
+    MPI_Send(&blocks.b2.x, 1, MPI_INT, procToSend, 0, MPI_COMM_WORLD);
+    MPI_Send(&blocks.b2.y, 1, MPI_INT, procToSend, 0, MPI_COMM_WORLD);
 }
 
 /**

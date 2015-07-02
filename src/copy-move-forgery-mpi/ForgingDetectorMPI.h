@@ -39,6 +39,9 @@ protected:
 
     static CharVect* receiveCharVectFromProcess(int procToReceive);
     static void sendCharVectToProcess(CharVect* charVect, int procToSend);
+
+    static SimilarBlocks receiveSimilarBlocksFromProcess(int procToReceive);
+    static void sendSimilarBlocksToProcess(SimilarBlocks & blocks, int procToSend);
 };
 
 #endif
