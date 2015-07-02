@@ -350,6 +350,8 @@ void ForgingDetectorMPI::createSimilarBlockList(
             vList.push_back(charVect);
         }
 
+        itBegin = vList.begin();
+        itEnd = vList.end();
     }
 
     // percorrer toda a lista de blocos; execucao em O(n)
