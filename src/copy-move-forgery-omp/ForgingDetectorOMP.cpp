@@ -260,13 +260,34 @@ void ForgingDetectorOMP::addVectLexOrder(ListCharVectPtr& vecOrdered, CharVect* 
     vecOrdered.push_back(valToAdd);
 }
 
+bool ForgingDetectorOMP::saveSimilarBlock(CharVect * curItTask, CharVect * prevItTask, int vectOffsetSize)
+{
+    double diff[CharVect::CHARS_SIZE] = { 0, 0, 0, 0, 0, 0, 0 };
+    // calcular diferencas
+    bool diffVector = true;
+    for(int i = 0; i < CharVect::CHARS_SIZE && diffVector; i++)
+    {
+        diff[i] = ABS((prevItTask->c[i] - curItTask->c[i]));
+        diffVector = diffVector && (diff[i] < vectorP[i]);
+    }
+
+    if((diffVector)
+        && (diff[0] + diff[1] + diff[2] < t1)
+        && (diff[3] + diff[4] + diff[5] + diff[6] < t2)
+        && ABS(getShift(prevItTask->pos, curItTask->pos)) > vectOffsetSize)
+    {
+        return true;
+    }
+
+    return false;
+}
+
 void ForgingDetectorOMP::createSimilarBlockList(Bitmap const& image, int bSize, ListCharVectPtr const& vList,
         ListSimilarBlocks & simList)
 {
     Timer time(PRINT_TIME, __PRETTY_FUNCTION__, __LINE__);
     int width = image.getWidth();
     int height = image.getHeight();
-    double diff[CharVect::CHARS_SIZE] = { 0, 0, 0, 0, 0, 0, 0 };
 
     int vectOffsetSize(BASE_L);
     if(bSize + BASE_L >= width || bSize + BASE_L >= height)
@@ -275,26 +296,17 @@ void ForgingDetectorOMP::createSimilarBlockList(Bitmap const& image, int bSize, 
     // percorrer toda a lista de blocos; execucao em O(n)
     // somente sao comparados dois blocos consecutivos, pois ja estao ordenados
 
-    CharVect* prev;
-    for(ListCharVectPtr::const_iterator it = vList.begin(); it != vList.end(); prev = *(it++))
+    CharVect* previous;
+//#pragma omp parallel
+//#pragma omp single
+    for(ListCharVectPtr::const_iterator current = vList.begin(); current != vList.end(); previous = *(current++))
     {
-        if(it == vList.begin())
+        if(current == vList.begin())
             continue;
-
-        // calcular diferencas
-        bool diffVector = true;
-        for(int i = 0; i < CharVect::CHARS_SIZE && diffVector; i++)
-        {
-            diff[i] = ABS((prev->c[i] - (*it)->c[i]));
-            diffVector = diffVector && (diff[i] < vectorP[i]);
-        }
-
-        if((diffVector) && (diff[0] + diff[1] + diff[2] < t1) && (diff[3] + diff[4] + diff[5] + diff[6] < t2)
-                && ABS(getShift(prev->pos, (*it)->pos)) > vectOffsetSize)
-        {
-            // blocos b1 e b2 sao similares
-            simList.push_back(SimilarBlocks(prev->pos, (*it)->pos));
-        }
+//#pragma omp task default(none) shared(simList, vectorP, vectOffsetSize) firstprivate(previous, current)
+        if(saveSimilarBlock((*current), previous, vectOffsetSize))
+//#pragma critical
+            simList.push_back(SimilarBlocks(previous->pos, (*current)->pos));
     }
 }
 
