@@ -72,9 +72,6 @@ bool ForgingDetectorMPI::byCharact(Bitmap const& image, int bSize)
         return false;
     }
 
-//    if(!MPISettings::IS_PROC_ID_MASTER())
-//        return false;
-
     /* passo 2: buscar blocos similares */
     logger("[MSG " << ++dbgmsg << "] Buscando blocos similares...");
     ListSimilarBlocks simList;
@@ -82,7 +79,10 @@ bool ForgingDetectorMPI::byCharact(Bitmap const& image, int bSize)
 
     /* passo 3: */
     // Se nao ha blocos similares, a imagem nao foi adulterada por copy-move
-    if(!simList.size())
+    if(!simList.size() && MPISettings::IS_PROC_ID_MASTER())
+        return false;
+
+    if(!MPISettings::IS_PROC_ID_MASTER())
         return false;
 
     logger("[MSG " << ++dbgmsg << "] Buscando deslocamento mais recorrente...");
@@ -383,6 +383,70 @@ void ForgingDetectorMPI::createSimilarBlockList(
                     (*itBegin)->pos));
         }
     }
+
+    int vecSize = 0;
+    Pos b1;
+    Pos b2;
+    // inicia a transferencia de secoes de caracteristicas
+    if(MPISettings::IS_PROC_ID_MASTER())
+    {
+        // Processo 0 fica com o resto da lista
+        for(int i=1; i<MPISettings::PROC_SIZE() ; i++)
+        {
+            MPI_Recv(&vecSize, 1, MPI_INT, i, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+            for(; vecSize > 0; vecSize--)
+            {
+                MPI_Recv(&b1.x, 1, MPI_INT, i, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+                MPI_Recv(&b1.y, 1, MPI_INT, i, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+                MPI_Recv(&b2.x, 1, MPI_INT, i, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+                MPI_Recv(&b2.y, 1, MPI_INT, i, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+                simList.push_back(SimilarBlocks(b1, b2));
+            }
+        }
+    }
+    else
+    {
+        vecSize = simList.size();
+        MPI_Send(&vecSize, 1, MPI_INT, MPISettings::PROC_MASTER, 0, MPI_COMM_WORLD);
+        for(ListSimilarBlocks::iterator it = simList.begin(); it!=simList.end(); it++)
+        {
+            MPI_Send(&it->b1.x, 1, MPI_INT, MPISettings::PROC_MASTER, 0, MPI_COMM_WORLD);
+            MPI_Send(&it->b1.y, 1, MPI_INT, MPISettings::PROC_MASTER, 0, MPI_COMM_WORLD);
+            MPI_Send(&it->b2.x, 1, MPI_INT, MPISettings::PROC_MASTER, 0, MPI_COMM_WORLD);
+            MPI_Send(&it->b2.y, 1, MPI_INT, MPISettings::PROC_MASTER, 0, MPI_COMM_WORLD);
+        }
+        simList.clear();
+    }
+}
+
+/**
+ * @func getMainShiftVector
+ * @brief verifica todos os pares de blocos similares e retorna o mais frequente
+ *   vetor deslocamento entre eles
+ * @param blocks lista de blocos
+ * @return bloco que representa o principal shift
+ */
+
+DeltaPos ForgingDetectorMPI::getMainShiftVector(ListSimilarBlocks const& blocks)
+{
+    Timer time(PRINT_TIME, __PRETTY_FUNCTION__, __LINE__);
+    int count(0);
+    DeltaPos main(0,0);
+    typedef std::map<DeltaPos, int> Histogram;
+    std::map<DeltaPos, int> histograms;
+    /* criar histograma de deltas */
+
+    for(ListSimilarBlocks::const_iterator it = blocks.begin(); it!=blocks.end(); it++)
+    {
+        int& freq(histograms[it->delta]);
+        if(++freq > count)
+        {
+            main = it->delta;
+            count = freq;
+        }
+    }
+
+    return main;
 }
 
 void ForgingDetectorMPI::getCharVectListForBlock(CharVect& charVect, Bitmap const& image, int blkPosX, int blkPosY, int blkSize)
@@ -498,35 +562,6 @@ int ForgingDetectorMPI::getShift(Pos const& pos1, Pos const& pos2)
     int v = pos1.y - pos2.y;
 
     return (int) sqrt((h * h) + (v * v));
-}
-
-/**
- * @func getMainShiftVector
- * @brief verifica todos os pares de blocos similares e retorna o mais frequente
- *   vetor deslocamento entre eles
- * @param blocks lista de blocos
- * @return bloco que representa o principal shift
- */
-
-DeltaPos ForgingDetectorMPI::getMainShiftVector(ListSimilarBlocks const& blocks)
-{
-    Timer time(PRINT_TIME, __PRETTY_FUNCTION__, __LINE__);
-    int count(0);
-    DeltaPos main(0,0);
-    std::map<DeltaPos, int> histograms;
-    /* criar histograma de deltas */
-
-    for(ListSimilarBlocks::const_iterator it = blocks.begin(); it!=blocks.end(); it++)
-    {
-        int& freq(histograms[it->delta]);
-        if(++freq > count)
-        {
-            main = it->delta;
-            count = freq;
-        }
-    }
-
-    return main;
 }
 
 void ForgingDetectorMPI::createImageWithSimilarAreas(Bitmap& detectImage, Bitmap const& image, int bSize, ListSimilarBlocks const& simList)
