@@ -308,6 +308,7 @@ void ForgingDetectorOMP::createSimilarBlockList(Bitmap const& image, int bSize, 
 //#pragma critical
             simList.push_back(SimilarBlocks(previous->pos, (*current)->pos));
     }
+
 }
 
 bool ForgingDetectorOMP::isBlockSimilarSpurious(DeltaPos const& current, DeltaPos const& mainShift)
