@@ -25,6 +25,7 @@
 								<option id="gnu.cpp.compiler.exe.debug.option.debugging.level.1260389897" name="Debug Level" superClass="gnu.cpp.compiler.exe.debug.option.debugging.level" value="gnu.cpp.compiler.debugging.level.max" valueType="enumerated"/>
 								<option id="gnu.cpp.compiler.option.preprocessor.def.1592933585" name="Defined symbols (-D)" superClass="gnu.cpp.compiler.option.preprocessor.def" valueType="definedSymbols">
 									<listOptionValue builtIn="false" value="MPI_ENABLED"/>
+									<listOptionValue builtIn="false" value="_DEBUG_"/>
 								</option>
 								<option id="gnu.cpp.compiler.option.include.paths.2131566485" name="Include paths (-I)" superClass="gnu.cpp.compiler.option.include.paths" valueType="includePath">
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/copy-move-forgery}&quot;"/>
@@ -39,6 +40,7 @@
 								<option id="gnu.c.compiler.exe.debug.option.debugging.level.249806424" name="Debug Level" superClass="gnu.c.compiler.exe.debug.option.debugging.level" value="gnu.c.debugging.level.max" valueType="enumerated"/>
 								<option id="gnu.c.compiler.option.preprocessor.def.symbols.1654003662" name="Defined symbols (-D)" superClass="gnu.c.compiler.option.preprocessor.def.symbols" valueType="definedSymbols">
 									<listOptionValue builtIn="false" value="MPI_ENABLED"/>
+									<listOptionValue builtIn="false" value="_DEBUG_"/>
 								</option>
 								<option id="gnu.c.compiler.option.include.paths.1219970670" name="Include paths (-I)" superClass="gnu.c.compiler.option.include.paths" valueType="includePath">
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/copy-move-forgery}&quot;"/>

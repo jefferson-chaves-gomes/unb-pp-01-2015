@@ -258,13 +258,33 @@ void ForgingDetectorOMP::addVectLexOrder(ListCharVectPtr& vecOrdered, CharVect* 
     vecOrdered.push_back(valToAdd);
 }
 
+bool ForgingDetectorOMP::saveSimilarBlock(CharVect * curItTask, CharVect * prevItTask, int vectOffsetSize)
+{
+    double diff[CharVect::CHARS_SIZE] = { 0, 0, 0, 0, 0, 0, 0 };
+    // calcular diferencas
+    bool diffVector = true;
+    for(int i = 0; i < CharVect::CHARS_SIZE && diffVector; i++)
+    {
+        diff[i] = ABS((prevItTask->c[i] - curItTask->c[i]));
+        diffVector = diffVector && (diff[i] < vectorP[i]);
+    }
+
+    if((diffVector)
+        && (diff[0] + diff[1] + diff[2] < t1)
+        && (diff[3] + diff[4] + diff[5] + diff[6] < t2)
+        && ABS(getShift(prevItTask->pos, curItTask->pos)) > vectOffsetSize)
+    {
+        return true;
+    }
+    return false;
+}
+
 void ForgingDetectorOMP::createSimilarBlockList(Bitmap const& image, int bSize, ListCharVectPtr const& vList,
         ListSimilarBlocks & simList)
 {
     Timer time(PRINT_TIME, __PRETTY_FUNCTION__, __LINE__);
     int width = image.getWidth();
     int height = image.getHeight();
-    double diff[CharVect::CHARS_SIZE] = { 0, 0, 0, 0, 0, 0, 0 };
 
     int vectOffsetSize(BASE_L);
     if(bSize + BASE_L >= width || bSize + BASE_L >= height)
@@ -273,29 +293,20 @@ void ForgingDetectorOMP::createSimilarBlockList(Bitmap const& image, int bSize, 
     // percorrer toda a lista de blocos; execucao em O(n)
     // somente sao comparados dois blocos consecutivos, pois ja estao ordenados
 
-    CharVect* prev;
-    for(ListCharVectPtr::const_iterator it = vList.begin(); it != vList.end(); prev = *(it++))
+    CharVect* previous;
+//#pragma omp parallel
+//#pragma omp single
+    for(ListCharVectPtr::const_iterator current = vList.begin(); current != vList.end(); previous = *(current++))
     {
-        if(it == vList.begin())
+        if(current == vList.begin())
             continue;
 
-        // calcular diferencas
-        bool diffVector = true;
-        for(int i = 0; i < (CharVect::CHARS_SIZE && diffVector); i++)
-        {
-            diff[i] = ABS((prev->c[i] - (*it)->c[i]));
-            diffVector = diffVector && (diff[i] < vectorP[i]);
-        }
-
-        if((diffVector)
-                && (diff[0] + diff[1] + diff[2] < t1)
-                && (diff[3] + diff[4] + diff[5] + diff[6] < t2)
-                && ABS(getShift(prev->pos, (*it)->pos)) > vectOffsetSize)
-        {
-            // blocos b1 e b2 sao similares
-            simList.push_back(SimilarBlocks(prev->pos, (*it)->pos));
-        }
+//#pragma omp task default(none) shared(simList, vectorP, vectOffsetSize) firstprivate(previous, current)
+        if(saveSimilarBlock((*current), previous, vectOffsetSize))
+//#pragma critical
+            simList.push_back(SimilarBlocks(previous->pos, (*current)->pos));
     }
+
 }
 
 bool ForgingDetectorOMP::isBlockSimilarSpurious(DeltaPos const& current, DeltaPos const& mainShift)
@@ -367,20 +378,16 @@ void ForgingDetectorOMP::createImageWithSimilarAreas(Bitmap& detectImage, Bitmap
     Timer time(PRINT_TIME, __PRETTY_FUNCTION__, __LINE__);
     int width = image.getWidth();
     int height = image.getHeight();
+    
     // criar imagem binaria com as areas similares encontradas
-
-//#pragma omp parallel default(none) shared(detectImage, width, height)
     for(int i = 0; i < width; i++)
     {
-//#pragma omp for schedule(runtime)
         for(int j = 0; j < height; j++)
         {
-//#pragma omp critical
             detectImage.setPixel(i, j, 0, 0, 0);
         }
     }
 
-//#pragma omp parallel default(none) shared(simList, detectImage, bSize)
     for(ListSimilarBlocks::const_iterator it = simList.begin(); it != simList.end(); it++)
     {
         int b1x = it->b1.x;
@@ -390,14 +397,10 @@ void ForgingDetectorOMP::createImageWithSimilarAreas(Bitmap& detectImage, Bitmap
 
         for(int i = 0; i < bSize; i++)
         {
-//#pragma omp for schedule(runtime)
             for(int j = 0; j < bSize; j++)
             {
-//#pragma omp critical
-                {
                 detectImage.setPixel(i + b1x, j + b1y, 255, 255, 255);
                 detectImage.setPixel(i + b2x, j + b2y, 255, 255, 255);
-                }
             }
         }
     }

@@ -38,7 +38,10 @@ protected:
     static bool isImageForged(Bitmap const& image, Bitmap const& detectImage, Bitmap& mergedImage);
 
     static CharVect* receiveCharVectFromProcess(int procToReceive);
-    static CharVect* sendCharVectToProcess(CharVect* charVect, int procToSend);
+    static void sendCharVectToProcess(CharVect* charVect, int procToSend);
+
+    static SimilarBlocks receiveSimilarBlocksFromProcess(int procToReceive);
+    static void sendSimilarBlocksToProcess(SimilarBlocks & blocks, int procToSend);
 };
 
 #endif

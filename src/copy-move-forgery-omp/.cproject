@@ -44,6 +44,7 @@
 									<listOptionValue builtIn="false" value="OMP_ENABLED"/>
 									<listOptionValue builtIn="false" value="_DEBUG_"/>
 								</option>
+								<option id="gnu.cpp.compiler.option.warnings.allwarn.1971340515" name="All warnings (-Wall)" superClass="gnu.cpp.compiler.option.warnings.allwarn" value="false" valueType="boolean"/>
 								<inputType id="cdt.managedbuild.tool.gnu.cpp.compiler.input.101262593" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.input"/>
 							</tool>
 							<tool command="gcc -fopenmp" id="cdt.managedbuild.tool.gnu.c.compiler.macosx.exe.debug.387950087" name="GCC C Compiler" superClass="cdt.managedbuild.tool.gnu.c.compiler.macosx.exe.debug">
@@ -58,6 +59,7 @@
 								<option id="gnu.c.compiler.option.preprocessor.def.symbols.715248969" name="Defined symbols (-D)" superClass="gnu.c.compiler.option.preprocessor.def.symbols" valueType="definedSymbols">
 									<listOptionValue builtIn="false" value="OMP_ENABLED"/>
 								</option>
+								<option id="gnu.c.compiler.option.warnings.allwarn.1887463426" name="All warnings (-Wall)" superClass="gnu.c.compiler.option.warnings.allwarn" value="false" valueType="boolean"/>
 								<inputType id="cdt.managedbuild.tool.gnu.c.compiler.input.935167361" superClass="cdt.managedbuild.tool.gnu.c.compiler.input"/>
 							</tool>
 						</toolChain>
