@@ -88,7 +88,7 @@ bool ForgingDetectorOMP::isTampered(Bitmap const& image, int bSize, int ompNumTh
     logger("[MSG " << ++dbgmsg << "] Verificando se imagem foi alterada...");
     Bitmap forgedImage(image.getWidth(), image.getHeight());
     // salvar a imagem criada
-    if(!(image, detectImage, forgedImage))
+    if(!isImageForged(image, detectImage, forgedImage))
         return false;
 
     logger("[MSG " << ++dbgmsg << "] Criando imagem forjada...");
@@ -258,7 +258,7 @@ void ForgingDetectorOMP::addVectLexOrder(ListCharVectPtr& vecOrdered, CharVect* 
     vecOrdered.push_back(valToAdd);
 }
 
-bool ForgingDetectorOMP::saveSimilarBlock(CharVect * curItTask, CharVect * prevItTask, int vectOffsetSize)
+bool ForgingDetectorOMP::isSimilarBlock(CharVect * curItTask, CharVect * prevItTask, int vectOffsetSize)
 {
     double diff[CharVect::CHARS_SIZE] = { 0, 0, 0, 0, 0, 0, 0 };
     // calcular diferencas
@@ -290,19 +290,18 @@ void ForgingDetectorOMP::createSimilarBlockList(Bitmap const& image, int bSize, 
     if(bSize + BASE_L >= width || bSize + BASE_L >= height)
         vectOffsetSize = bSize;
 
-    // percorrer toda a lista de blocos; execucao em O(n)
-    // somente sao comparados dois blocos consecutivos, pois ja estao ordenados
-
     CharVect* previous;
 //#pragma omp parallel
 //#pragma omp single
+    // percorrer toda a lista de blocos; execucao em O(n)
+    // somente sao comparados dois blocos consecutivos, pois ja estao ordenados
     for(ListCharVectPtr::const_iterator current = vList.begin(); current != vList.end(); previous = *(current++))
     {
         if(current == vList.begin())
             continue;
 
 //#pragma omp task default(none) shared(simList, vectorP, vectOffsetSize) firstprivate(previous, current)
-        if(saveSimilarBlock((*current), previous, vectOffsetSize))
+        if(isSimilarBlock((*current), previous, vectOffsetSize))
 //#pragma critical
             simList.push_back(SimilarBlocks(previous->pos, (*current)->pos));
     }
@@ -372,13 +371,13 @@ DeltaPos ForgingDetectorOMP::getMainShiftVector(ListSimilarBlocks const& blocks)
     return main;
 }
 
-void ForgingDetectorOMP::createImageWithSimilarAreas(Bitmap& detectImage, Bitmap const& image, int bSize,
-        ListSimilarBlocks const& simList)
+void ForgingDetectorOMP::createImageWithSimilarAreas(Bitmap& detectImage, Bitmap const& image, int bSize, ListSimilarBlocks const& simList)
 {
     Timer time(PRINT_TIME, __PRETTY_FUNCTION__, __LINE__);
+
     int width = image.getWidth();
     int height = image.getHeight();
-    
+
     // criar imagem binaria com as areas similares encontradas
     for(int i = 0; i < width; i++)
     {

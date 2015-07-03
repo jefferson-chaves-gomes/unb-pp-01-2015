@@ -36,7 +36,7 @@ protected:
     static DeltaPos getMainShiftVector(ListSimilarBlocks const& blocks);
     static void createImageWithSimilarAreas(Bitmap& detectImage, Bitmap const& image, int bSize, ListSimilarBlocks const& simList);
     static bool isImageForged(Bitmap const& image, Bitmap const& detectImage, Bitmap& mergedImage);
-    static bool saveSimilarBlock(CharVect * curItTask, CharVect * prevItTask, int vectOffsetSize);
+    static bool isSimilarBlock(CharVect * curItTask, CharVect * prevItTask, int vectOffsetSize);
 };
 
 #endif
