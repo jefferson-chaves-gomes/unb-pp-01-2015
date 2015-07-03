@@ -3,40 +3,55 @@
 
 #include <string>
 #include "utils.h"
+#include <stdint.h>
 
 typedef struct bitmap_file_header
 {
-    unsigned short type;
-    unsigned int size;
-    unsigned short reserved1;
-    unsigned short reserved2;
-    unsigned int off_bits;
+    uint16_t type;
+    uint32_t size;
+    uint16_t reserved1;
+    uint16_t reserved2;
+    uint32_t off_bits;
 
-    unsigned int struct_size()
+    uint64_t struct_size()
     {
-        return sizeof(type) + sizeof(size) + sizeof(reserved1) + sizeof(reserved2) + sizeof(off_bits);
+        return
+            sizeof(type) +
+            sizeof(size) +
+            sizeof(reserved1) +
+            sizeof(reserved2) +
+            sizeof(off_bits);
     }
 } BMPFileHeader;
 
 typedef struct bitmap_information_header
 {
-    unsigned int size;
-    unsigned int width;
-    unsigned int height;
-    unsigned short planes;
-    unsigned short bit_count;
-    unsigned int compression;
-    unsigned int size_image;
-    unsigned int x_pels_per_meter;
-    unsigned int y_pels_per_meter;
-    unsigned int clr_used;
-    unsigned int clr_important;
+    uint32_t size;
+    int32_t width;
+    int32_t height;
+    uint16_t planes;
+    uint16_t bit_count;
+    uint32_t compression;
+    uint32_t size_image;
+    int32_t x_pels_per_meter;
+    int32_t y_pels_per_meter;
+    uint32_t clr_used;
+    uint32_t clr_important;
 
     unsigned int struct_size()
     {
-        return sizeof(size) + sizeof(width) + sizeof(height) + sizeof(planes) + sizeof(bit_count) + sizeof(compression)
-                + sizeof(size_image) + sizeof(x_pels_per_meter) + sizeof(y_pels_per_meter) + sizeof(clr_used)
-                + sizeof(clr_important);
+        return
+            sizeof(size) +
+            sizeof(width) +
+            sizeof(height) +
+            sizeof(planes) +
+            sizeof(bit_count) +
+            sizeof(compression) +
+            sizeof(size_image) +
+            sizeof(x_pels_per_meter) +
+            sizeof(y_pels_per_meter) +
+            sizeof(clr_used) +
+            sizeof(clr_important);
     }
 } BMPInfoHeader;
 
@@ -67,7 +82,7 @@ private:
 
 public:
     unsigned int bytes_per_pixel_;
-    unsigned char* data_;
+    uint8_t* data_;
     unsigned int length_;
     Bitmap();
     Bitmap(const std::string& _filename);
@@ -111,8 +126,10 @@ private:
 
     /* Funcoes uteis para manipulacao do stream de bytes */
     static bool big_endian();
-    static unsigned short flip(const unsigned short& v);
-    static unsigned int flip(const unsigned int& v);
+    static int16_t flip(int16_t const& v);
+    static uint16_t flip(uint16_t const& v);
+    static int32_t flip(int32_t const& v);
+    static uint32_t flip(uint32_t const& v);
     template<typename T>
     static void read_from_stream(std::ifstream& stream, T& t);
     template<typename T>
