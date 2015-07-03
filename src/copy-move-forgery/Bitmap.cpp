@@ -184,7 +184,7 @@ void Bitmap::saveImage(const std::string& file_name)
     /* configura o header com os atributos da imagem */
     infoHeader.width = width_;
     infoHeader.height = height_;
-    infoHeader.bit_count = static_cast<unsigned short>(bytes_per_pixel_ << 3);
+    infoHeader.bit_count = static_cast<uint16_t>(bytes_per_pixel_ << 3);
     infoHeader.clr_important = 0;
     infoHeader.clr_used = 0;
     infoHeader.compression = 0;
@@ -411,42 +411,29 @@ void BitmapFile::writeInfoHeader(std::ofstream& stream, const BMPInfoHeader& inf
     write_to_stream(stream, infoHeader.clr_important);
 }
 
-/*
- void Bitmap::reverse_channels()
- {
- if(3 != bytes_per_pixel_) return;
- for(unsigned char* it = data_; it < (data_ + length_); it += bytes_per_pixel_)
- {
- unsigned char tmp = *(it + 0);
- *(it + 0) = *(it + 2);
- *(it + 2) = tmp;
- }
- }
-
- template<typename T>
- T Bitmap::clamp(const T& v, const T& lower_range, const T& upper_range)
- {
- if (v < lower_range)
- return lower_range;
- else if (v > upper_range)
- return upper_range;
- else
- return v;
- }
- */
-
 bool BitmapFile::big_endian()
 {
     unsigned int v = 0x01;
     return (1 != reinterpret_cast<char*>(&v)[0]);
 }
 
-unsigned short BitmapFile::flip(const unsigned short& v)
+int16_t BitmapFile::flip(int16_t const& v)
 {
     return ((v >> 8) | (v << 8));
 }
 
-unsigned int BitmapFile::flip(const unsigned int& v)
+uint16_t BitmapFile::flip(uint16_t const& v)
+{
+    return ((v >> 8) | (v << 8));
+}
+
+int32_t BitmapFile::flip(const int32_t & v)
+{
+    return (((v & 0xFF000000) >> 0x18) | ((v & 0x000000FF) << 0x18) |
+        ((v & 0x00FF0000) >> 0x08) | ((v & 0x0000FF00) << 0x08));
+}
+
+uint32_t BitmapFile::flip(const uint32_t & v)
 {
     return (((v & 0xFF000000) >> 0x18) | ((v & 0x000000FF) << 0x18) |
         ((v & 0x00FF0000) >> 0x08) | ((v & 0x0000FF00) << 0x08));
