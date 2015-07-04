@@ -44,7 +44,7 @@ TEST_F(ForgingDetectorMPITest, charactVector)
     int BLOCK_SIZE = 47;
 
     Timer timeNew;
-    ListCharVectPtr vListNew; ForgingDetectorMPI::charactVector(vListNew, BITMAP, BITMAP.getWidth(), BITMAP.getHeight(), BLOCK_SIZE);
+    ListCharVectPtr vListNew; ForgingDetectorMPI::charactVector(vListNew, BITMAP_NORMAL, BITMAP_NORMAL.getWidth(), BITMAP_NORMAL.getHeight(), BLOCK_SIZE);
     long double elapsedNew = timeNew.elapsedMicroseconds();
 
     MPI_Barrier(MPI_COMM_WORLD);
@@ -52,7 +52,7 @@ TEST_F(ForgingDetectorMPITest, charactVector)
     if(MPISettings::IS_PROC_ID_MASTER())
     {
         Timer timeOld;
-        ListCharVect vListOld; ForgingDetector::charactVector(vListOld, BITMAP, BLOCK_SIZE);
+        ListCharVect vListOld; ForgingDetector::charactVector(vListOld, BITMAP_NORMAL, BLOCK_SIZE);
         long double elapsedOld= timeOld.elapsedMicroseconds();
 
         std::cout << "Old: " << elapsedOld << std::endl;

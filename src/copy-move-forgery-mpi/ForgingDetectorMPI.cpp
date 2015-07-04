@@ -259,6 +259,8 @@ void ForgingDetectorMPI::charactVector(ListCharVectPtr& listChar, Bitmap const& 
 
                 procToReceive = (j + i) % PROC_SIZE;
 
+                itToMerge = listChar.begin();
+
                 MPI_Recv(&vecSize, 1, MPI_INT, procToReceive, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
                 for(; vecSize > 0; vecSize--)
                 {
