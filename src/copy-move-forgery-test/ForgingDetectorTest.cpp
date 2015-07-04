@@ -1,6 +1,6 @@
-#include "UtilsTest.h"
 #include <time.h>       /* time */
 #include <commons.h>
+#include "TestUtils.h"
 
 class ForgingDetectorTest : public ::testing::Test, public ForgingDetector
 {

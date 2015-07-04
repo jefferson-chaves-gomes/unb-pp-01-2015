@@ -1,4 +1,4 @@
-#include "UtilsTest.h"
+#include "TestUtils.h"
 
 class BitmapTest : public ::testing::Test, public ForgingDetector
 {

@@ -18,7 +18,7 @@ const Bitmap BITMAP_NORMAL(IMG_PATH_NORMAL);
 const std::string IMG_PATH_SMALL("../copy-move-forgery/resource/small.bmp");
 const Bitmap BITMAP_SMALL(IMG_PATH_SMALL);
 
-class UtilsTest
+class TestUtils
 {
 public:
 
@@ -38,6 +38,16 @@ public:
         {
             std::cout << "Pos: " << it->pos.x << "," << it->pos.y << " # ";
             printCharVect(*it);
+        }
+    }
+
+
+    static void printCharVectListPtr(ListCharVectPtr& charVectList)
+    {
+        for(ListCharVectPtr::iterator it = charVectList.begin(); it != charVectList.end(); it++)
+        {
+            std::cout << "Pos: " << (*it)->pos.x << "," << (*it)->pos.y << " # ";
+            printCharVect(*(*it));
         }
     }
 
