@@ -59,15 +59,8 @@ TEST_F(ForgingDetectorMPITest, charactVector)
         std::cout << "New: " << elapsedNew << std::endl;
         std::cout << "Speedup: " << (elapsedOld / elapsedNew) << std::endl;
 
-//        TestUtils::printCharVectList(vListOld);
-//
-//        std::cout << "#############################" << std::endl;
-//
-//        TestUtils::printCharVectListPtr(vListNew);
-
         ASSERT_EQ(vListOld.size(), vListNew.size());
 
         assertEqualsCharVectList(vListOld, vListNew);
     }
-
 }
