@@ -33,3 +33,28 @@ bool SimilarBlocks::operator!=(SimilarBlocks const& other)
 {
     return !((*this) == other);
 }
+
+bool SimilarBlocks::lessOrEqualsToPtr(SimilarBlocks const* obj1, SimilarBlocks const* obj2)
+{
+    int diff;
+
+    diff = obj1->b1.x - obj2->b1.x;
+    if(diff) return diff > 0;
+    diff = obj1->b1.y - obj2->b1.y;
+    if(diff) return diff > 0;
+    diff = obj1->b2.x - obj2->b2.x;
+    if(diff) return diff > 0;
+    diff = obj1->b2.y - obj2->b2.y;
+    if(diff) return diff > 0;
+    diff = obj1->delta.dx - obj2->delta.dx;
+    if(diff) return diff > 0;
+    diff = obj1->delta.dy - obj2->delta.dy;
+    if(diff) return diff > 0;
+
+    return true;
+}
+
+bool SimilarBlocks::lessOrEqualsTo(SimilarBlocks const& obj1, SimilarBlocks const& obj2)
+{
+    return SimilarBlocks::lessOrEqualsToPtr(&obj1, &obj2);
+}

@@ -21,8 +21,7 @@ protected:
 
     void assertEqualsSimilarBlocks(ListSimilarBlocks& vectLeft, ListSimilarBlocks& vectRight)
     {
-        ASSERT_TRUE(vectLeft.size() != 0);
-        ASSERT_TRUE(vectRight.size() != 0);
+        ASSERT_TRUE(vectLeft.size() == vectRight.size());
 //        int count(0);
 
         for(ListSimilarBlocks::iterator left = vectLeft.begin(), right = vectRight.begin();
@@ -100,15 +99,19 @@ TEST_F(ForgingDetectorMPITest, createSimilarBlockList)
         ListCharVect vListOld; ForgingDetector::charactVector(vListOld, BITMAP_NORMAL, BLOCK_SIZE);
 
         Timer timeOld;
-        ListSimilarBlocks simBlkOld; ForgingDetector::createSimilarBlockList(BITMAP_NORMAL, BLOCK_SIZE, vListOld, simBlkOld);
+        ListSimilarBlocks simBlkOld;
+        ForgingDetector::createSimilarBlockList(BITMAP_NORMAL, BLOCK_SIZE, vListOld, simBlkOld);
         long double elapsedOld = timeOld.elapsedMicroseconds();
 
         std::cout << "Old: " << elapsedOld << std::endl;
         std::cout << "New: " << elapsedNew << std::endl;
         std::cout << "Speedup: " << (elapsedOld / elapsedNew) << std::endl;
 
+        simBlkOld.sort(SimilarBlocks::lessOrEqualsTo);
+        simBlkNew.sort(SimilarBlocks::lessOrEqualsTo);
+
         ASSERT_EQ(simBlkOld.size(), simBlkNew.size());
 
-//        assertEqualsSimilarBlocks(simBlkOld, simBlkNew);
+        assertEqualsSimilarBlocks(simBlkOld, simBlkNew);
     }
 }

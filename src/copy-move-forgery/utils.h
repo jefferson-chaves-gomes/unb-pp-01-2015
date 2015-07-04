@@ -19,6 +19,8 @@ public:
     bool operator==(SimilarBlocks const& other);
     bool operator!=(SimilarBlocks const& other);
     void setValues(Pos const& b1, Pos const& b2);
+    static bool lessOrEqualsToPtr(SimilarBlocks const* obj1, SimilarBlocks const* obj2);
+    static bool lessOrEqualsTo(SimilarBlocks const& obj1, SimilarBlocks const& obj2);
 };
 
 typedef std::list<SimilarBlocks>  ListSimilarBlocks;
