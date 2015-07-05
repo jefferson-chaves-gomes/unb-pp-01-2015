@@ -19,6 +19,7 @@ public:
 
     static void charactVector(ListCharVect& listChar, Bitmap const& image, int bSize);
     static void createSimilarBlockList(Bitmap const& image, int bSize, ListCharVect const& vList, ListSimilarBlocks &simList);
+    static void filterSpuriousRegions(ListSimilarBlocks& simList, DeltaPos const& mainShift);
 
 protected:
     ForgingDetector()
@@ -31,7 +32,6 @@ protected:
     static void charactVectorBySections(ListCharVect& listChar, Bitmap const& image, int bSize, unsigned int sections);
     static void getCharVectListForBlock(CharVect& charVect, Bitmap const& image, int blkPosX, int blkPosY, int blkSize);
     static void addVectLexOrder(ListCharVect& orderedVector, CharVect& charVect);
-    static void filterSpuriousRegions(ListSimilarBlocks& simList, DeltaPos const& mainShift);
 
     static bool isBlockSimilarSpurious(DeltaPos const& current, DeltaPos const& mainShift);
     static int getShift(Pos const& pos1, Pos const& pos2);

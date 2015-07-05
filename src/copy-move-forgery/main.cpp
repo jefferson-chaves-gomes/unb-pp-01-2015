@@ -132,7 +132,8 @@ void startSerialProcess(int argc, char *argv[])
     if (argc == 3)
         blockSize = atoi(argv[2]);
 
-    bool tampered = ForgingDetectorOld::charactVector(Bitmap(argv[1]), blockSize);
+    bool tampered = ForgingDetector::isTampered(Bitmap(argv[1]), blockSize);
+//    bool tampered = ForgingDetectorOld::charactVector(Bitmap(argv[1]), blockSize);
     printResult(tampered, std::string(argv[1]));
 }
 #endif

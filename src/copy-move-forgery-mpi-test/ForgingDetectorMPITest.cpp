@@ -84,23 +84,67 @@ protected:
 //    }
 //}
 
-TEST_F(ForgingDetectorMPITest, createSimilarBlockList)
+//TEST_F(ForgingDetectorMPITest, createSimilarBlockList)
+//{
+//    int BLOCK_SIZE = 16;
+//    if(MPISettings::IS_PROC_ID_MASTER())
+//    {
+//        ListCharVectPtr vListNew;
+//        ForgingDetectorMPI::charactVector(vListNew, BITMAP_NORMAL, BITMAP_NORMAL.getWidth(), BITMAP_NORMAL.getHeight(), BLOCK_SIZE);
+//
+//        ListCharVect vListOld;
+//        ForgingDetector::charactVector(vListOld, BITMAP_NORMAL, BLOCK_SIZE);
+//
+//        Timer timeNew;
+//        ListSimilarBlocks simBlkNew;
+//        createSimilarBlockList(BITMAP_NORMAL, BLOCK_SIZE, vListNew, simBlkNew, getVectOffsetSize(BITMAP_NORMAL.getWidth(), BITMAP_NORMAL.getHeight(), BLOCK_SIZE));
+//        long double elapsedNew = timeNew.elapsedMicroseconds();
+//
+//        Timer timeOld;
+//        ListSimilarBlocks simBlkOld;
+//        ForgingDetector::createSimilarBlockList(BITMAP_NORMAL, BLOCK_SIZE, vListOld, simBlkOld);
+//        long double elapsedOld = timeOld.elapsedMicroseconds();
+//
+//        std::cout << "Old: " << elapsedOld << std::endl;
+//        std::cout << "New: " << elapsedNew << std::endl;
+//        std::cout << "Speedup: " << (elapsedOld / elapsedNew) << std::endl;
+//
+//        simBlkOld.sort(SimilarBlocks::lessOrEqualsTo);
+//        simBlkNew.sort(SimilarBlocks::lessOrEqualsTo);
+//
+//        ASSERT_EQ(simBlkOld.size(), simBlkNew.size());
+//
+//        assertEqualsSimilarBlocks(simBlkOld, simBlkNew);
+//    }
+//}
+
+TEST_F(ForgingDetectorMPITest, filterSpuriousRegions)
 {
     int BLOCK_SIZE = 16;
-    ListCharVectPtr vListNew; ForgingDetectorMPI::charactVector(vListNew, BITMAP_NORMAL, BITMAP_NORMAL.getWidth(), BITMAP_NORMAL.getHeight(), BLOCK_SIZE);
 
-    Timer timeNew;
-    ListSimilarBlocks simBlkNew;
-    createSimilarBlockList(BITMAP_NORMAL, BLOCK_SIZE, vListNew, simBlkNew, getVectOffsetSize(BITMAP_NORMAL.getWidth(), BITMAP_NORMAL.getHeight(), BLOCK_SIZE));
-    long double elapsedNew = timeNew.elapsedMicroseconds();
+    ListCharVectPtr vListNew;
+    ForgingDetectorMPI::charactVector(vListNew, BITMAP_NORMAL, BITMAP_NORMAL.getWidth(), BITMAP_NORMAL.getHeight(), BLOCK_SIZE);
 
     if(MPISettings::IS_PROC_ID_MASTER())
     {
-        ListCharVect vListOld; ForgingDetector::charactVector(vListOld, BITMAP_NORMAL, BLOCK_SIZE);
+        ListCharVect vListOld;
+        ForgingDetector::charactVector(vListOld, BITMAP_NORMAL, BLOCK_SIZE);
 
-        Timer timeOld;
+        ListSimilarBlocks simBlkNew;
+        createSimilarBlockList(BITMAP_NORMAL, BLOCK_SIZE, vListNew, simBlkNew, getVectOffsetSize(BITMAP_NORMAL.getWidth(), BITMAP_NORMAL.getHeight(), BLOCK_SIZE));
+
         ListSimilarBlocks simBlkOld;
         ForgingDetector::createSimilarBlockList(BITMAP_NORMAL, BLOCK_SIZE, vListOld, simBlkOld);
+
+        DeltaPos mainShift;
+        mainShift = getMainShiftVector(simBlkNew);
+
+        Timer timeNew;
+        filterSpuriousRegions(simBlkNew, mainShift);
+        long double elapsedNew = timeNew.elapsedMicroseconds();
+
+        Timer timeOld;
+        ForgingDetector::filterSpuriousRegions(simBlkOld, mainShift);
         long double elapsedOld = timeOld.elapsedMicroseconds();
 
         std::cout << "Old: " << elapsedOld << std::endl;
