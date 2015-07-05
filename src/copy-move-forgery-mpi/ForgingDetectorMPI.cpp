@@ -87,8 +87,7 @@ bool ForgingDetectorMPI::byCharact(Bitmap const& image, int bSize)
         return false;
 
     logger("[MSG " << ++dbgmsg << "] Buscando deslocamento mais recorrente...");
-    DeltaPos mainShift;
-    mainShift = getMainShiftVector(simList);
+    DeltaPos mainShift(getMainShiftVector(simList));
 
     logger("[MSG " << ++dbgmsg << "] Filtrando regioes espurias...");
     filterSpuriousRegions(simList, mainShift);
@@ -348,7 +347,6 @@ DeltaPos ForgingDetectorMPI::getMainShiftVector(ListSimilarBlocks const& blocks)
     Timer time(PRINT_TIME, __PRETTY_FUNCTION__, __LINE__);
     int count(0);
     DeltaPos main(0,0);
-    typedef std::map<DeltaPos, int> Histogram;
     std::map<DeltaPos, int> histograms;
     /* criar histograma de deltas */
 
