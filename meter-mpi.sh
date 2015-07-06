@@ -1,7 +1,7 @@
 #!/bin/bash
 
 filesArray=(./resource/meter/*mb.bmp)
-processArray=(2 4 6 8 10)
+processArray=(1 2 4 6 8 10)
 
 for i in "${processArray[@]}"
 do
