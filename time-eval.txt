@@ -1,0 +1,106 @@
+
+STARTING...!
+
+ ------------------------------------ Serial Process ----------------------------------- 
+
+[4582935]	./resource/meter/image-01-01mb.bmp
+[8133682]	./resource/meter/image-02-02mb.bmp
+[15820772]	./resource/meter/image-03-04mb.bmp
+[37126480]	./resource/meter/image-04-08mb.bmp
+[58514158]	./resource/meter/image-05-16mb.bmp
+
+
+
+ ----------------------------- MPI with 2 Process ----------------------------- 
+
+[4186326]	./resource/meter/image-01-01mb.bmp
+[5471995]	./resource/meter/image-02-02mb.bmp
+[11821220]	./resource/meter/image-03-04mb.bmp
+[25856842]	./resource/meter/image-04-08mb.bmp
+[42036315]	./resource/meter/image-05-16mb.bmp
+
+
+ ----------------------------- MPI with 4 Process ----------------------------- 
+
+[4030228]	./resource/meter/image-01-01mb.bmp
+[4986739]	./resource/meter/image-02-02mb.bmp
+[11645153]	./resource/meter/image-03-04mb.bmp
+[25744934]	./resource/meter/image-04-08mb.bmp
+[38646075]	./resource/meter/image-05-16mb.bmp
+
+
+ ----------------------------- MPI with 6 Process ----------------------------- 
+
+[3917144]	./resource/meter/image-01-01mb.bmp
+[5625084]	./resource/meter/image-02-02mb.bmp
+[10726416]	./resource/meter/image-03-04mb.bmp
+[27673709]	./resource/meter/image-04-08mb.bmp
+[42103407]	./resource/meter/image-05-16mb.bmp
+
+
+ ----------------------------- MPI with 8 Process ----------------------------- 
+
+[3951783]	./resource/meter/image-01-01mb.bmp
+[5173484]	./resource/meter/image-02-02mb.bmp
+[11267707]	./resource/meter/image-03-04mb.bmp
+[26095908]	./resource/meter/image-04-08mb.bmp
+[39740096]	./resource/meter/image-05-16mb.bmp
+
+
+ ----------------------------- MPI with 10 Process ----------------------------- 
+
+[3325502]	./resource/meter/image-01-01mb.bmp
+[5582370]	./resource/meter/image-02-02mb.bmp
+[11040981]	./resource/meter/image-03-04mb.bmp
+[29896404]	./resource/meter/image-04-08mb.bmp
+[43673177]	./resource/meter/image-05-16mb.bmp
+
+
+
+ ----------------------------- OMP with 2 Threads ----------------------------- 
+
+[3127274]	./resource/meter/image-01-01mb.bmp
+[5344887]	./resource/meter/image-02-02mb.bmp
+[10315282]	./resource/meter/image-03-04mb.bmp
+[26485291]	./resource/meter/image-04-08mb.bmp
+[39826680]	./resource/meter/image-05-16mb.bmp
+
+
+ ----------------------------- OMP with 4 Threads ----------------------------- 
+
+[2762568]	./resource/meter/image-01-01mb.bmp
+[4694369]	./resource/meter/image-02-02mb.bmp
+[9282441]	./resource/meter/image-03-04mb.bmp
+[24317259]	./resource/meter/image-04-08mb.bmp
+[36273938]	./resource/meter/image-05-16mb.bmp
+
+
+ ----------------------------- OMP with 6 Threads ----------------------------- 
+
+[2809358]	./resource/meter/image-01-01mb.bmp
+[4732559]	./resource/meter/image-02-02mb.bmp
+[9305634]	./resource/meter/image-03-04mb.bmp
+[24641359]	./resource/meter/image-04-08mb.bmp
+[37118727]	./resource/meter/image-05-16mb.bmp
+
+
+ ----------------------------- OMP with 8 Threads ----------------------------- 
+
+[2790926]	./resource/meter/image-01-01mb.bmp
+[4782824]	./resource/meter/image-02-02mb.bmp
+[9290024]	./resource/meter/image-03-04mb.bmp
+[24603312]	./resource/meter/image-04-08mb.bmp
+[37220529]	./resource/meter/image-05-16mb.bmp
+
+
+ ----------------------------- OMP with 10 Threads ----------------------------- 
+
+[2924184]	./resource/meter/image-01-01mb.bmp
+[4743334]	./resource/meter/image-02-02mb.bmp
+[9363854]	./resource/meter/image-03-04mb.bmp
+[24527624]	./resource/meter/image-04-08mb.bmp
+[36385214]	./resource/meter/image-05-16mb.bmp
+
+
+FINISHED!
+
