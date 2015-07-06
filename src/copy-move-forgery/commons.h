@@ -4,8 +4,6 @@
 #include <stddef.h>
 #include <list>
 
-#define HELP                "-help"
-
 #define BLOCKSHIFT          1
 #define BASE_L              50
 #define MASTER_THREAD       0

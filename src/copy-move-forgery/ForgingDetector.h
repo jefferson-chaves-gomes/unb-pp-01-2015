@@ -29,7 +29,7 @@ protected:
     {
     }
     /* metodos de deteccao */
-    static void charactVectorBySections(ListCharVect& listChar, Bitmap const& image, int bSize, unsigned int sections);
+    static void charactVectorBySections(ListCharVect& listChar, Bitmap const& image, unsigned int bSize, unsigned int sections);
     static void getCharVectListForBlock(CharVect& charVect, Bitmap const& image, int blkPosX, int blkPosY, int blkSize);
     static void addVectLexOrder(ListCharVect& orderedVector, CharVect& charVect);
 

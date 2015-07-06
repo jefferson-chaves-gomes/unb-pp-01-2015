@@ -53,8 +53,11 @@ const int MAX_SHIFT = 2;
  * @param bSize dimensao do bloco
  * @return true, foi detectada adulteracao; false, se imagem eh original
  */
-bool ForgingDetectorMPI::byCharact(Bitmap const& image, int bSize)
+bool ForgingDetectorMPI::isTampered(Bitmap const& image, int bSize)
 {
+    if(MPISettings::IS_PROC_ID_MASTER())
+        logger("[MSG " << ++dbgmsg << "] Iniciando processamento paralelo com OpenMPI com " << MPISettings::PROC_SIZE() << " processos");
+
     unsigned int width = image.getWidth();
     unsigned int height = image.getHeight();
 

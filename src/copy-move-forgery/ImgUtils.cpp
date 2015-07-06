@@ -25,7 +25,7 @@ void ImgUtils::saveImageAs(Bitmap image, std::string imgPath)
     newFile << imgPath;
     newImage.saveImage(newFile.str());
 
-    std::cout << "New image generated: " << newFile.str() << std::endl;
+//    std::cout << "New image generated: " << newFile.str() << std::endl;
 }
 
 /**

@@ -16,6 +16,17 @@ Timer::Timer(bool print_, std::string const& function_, int line_, std::string c
 {
 }
 
+Timer::Timer(bool print_, std::string const& function_) :
+    print(print_),
+    function(function_),
+    line(0),
+    message(""),
+    startTime(boost::posix_time::microsec_clock::local_time()
+                    .time_of_day()
+                    .total_microseconds())
+{
+}
+
 Timer::Timer() :
     print(false),
     line(0),
@@ -33,7 +44,7 @@ Timer::~Timer()
         return;
 #endif
     if(print)
-        std::cout << "[" << elapsedMicroseconds() << "] " << function << ":" << line << (message.empty() ? "" : " => ")  << message << std::endl;
+        std::cout << "[" << elapsedMicroseconds() << "] \t" << function << ":" << line << (message.empty() ? "" : " => ")  << message << std::endl;
 }
 
 long long Timer::elapsedMicroseconds()

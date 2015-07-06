@@ -100,7 +100,6 @@ bool ForgingDetector::isTampered(Bitmap const& image, int bSize)
     return true;
 }
 
-
 /**
  * @func charactVector
  * @brief percorre a imagem em blocos e gera vetor de caracteristicas
@@ -156,7 +155,7 @@ void ForgingDetector::charactVector(ListCharVect& listChar, Bitmap const& image,
     listChar.sort(CharVect::lessOrEqualsTo);
 }
 
-void ForgingDetector::charactVectorBySections(ListCharVect& listChar, Bitmap const& image, int bSize, unsigned int sections)
+void ForgingDetector::charactVectorBySections(ListCharVect& listChar, Bitmap const& image, unsigned int bSize, unsigned int sections)
 {
     Timer time(PRINT_TIME, __PRETTY_FUNCTION__, __LINE__);
 
@@ -164,7 +163,7 @@ void ForgingDetector::charactVectorBySections(ListCharVect& listChar, Bitmap con
     if(image.getWidth() < bSize || image.getHeight() < bSize)
         return;
 
-    const int scope = (image.getHeight() - bSize) + 1;
+    const unsigned int scope = (image.getHeight() - bSize) + 1;
 
     if(sections == 0)
         sections = 1;
@@ -174,18 +173,18 @@ void ForgingDetector::charactVectorBySections(ListCharVect& listChar, Bitmap con
     int sizeLast = (scope) % sections;
     int size = (scope) / sections;
 
-    int bTotalXOrign = image.getWidth() - bSize + 1;
-    int bTotalYOrign = image.getHeight() - bSize + 1;
+//    int bTotalXOrign = image.getWidth() - bSize + 1;
+//    int bTotalYOrign = image.getHeight() - bSize + 1;
 
     logger("A imagem possui " << bTotalXOrign * bTotalYOrign << " blocos.");
 
-    for(int i=0; i<sections; i++)
+    for(unsigned int i = 0; i < sections; i++)
     {
         Bitmap section;
-        if(sizeLast!=0 && i == sections-1)
-            section = image.getLines(size*i, size+sizeLast-1+bSize);
+        if(sizeLast != 0 && i == sections - 1)
+            section = image.getLines(size * i, size + sizeLast - 1 + bSize);
         else
-            section = image.getLines(size*i, size-1+bSize);
+            section = image.getLines(size * i, size - 1 + bSize);
 
         int bTotalX = section.getWidth() - bSize + 1;
         int bTotalY = section.getHeight() - bSize + 1;
@@ -196,7 +195,7 @@ void ForgingDetector::charactVectorBySections(ListCharVect& listChar, Bitmap con
             for(int by = 0; by < bTotalY; by++)
             {
                 // criar vetor de caracteristicas
-                CharVect charVect(bx, by + size*i);
+                CharVect charVect(bx, by + size * i);
                 getCharVectListForBlock(charVect, section, bx, by, bSize);
 
                 // adicionar o bloco lido ao conjunto de vetores de caracteristicas

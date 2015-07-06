@@ -13,6 +13,7 @@ class Timer
 
 public:
     Timer(bool print_, std::string const& function_, int line_, std::string const& message_ = "");
+    Timer(bool print_, std::string const& function_);
     Timer();
     ~Timer();
     long long elapsedMicroseconds();
