@@ -54,7 +54,7 @@ void startMPIProcess(int argc, char **argv)
     bool tampered = ForgingDetectorMPI::isTampered(image, bSize);
 
     if(MPISettings::IS_PROC_ID_MASTER()) // foi necessario fazer isto devido o destrutur nao ser chamado
-        std::cout << "[" << time.elapsedMicroseconds() << "] \t" << __PRETTY_FUNCTION__ << ":0" << std::endl;
+        std::cout << "[" << time.elapsedMicroseconds() << "]\t" << argv[1] << std::endl;
 
 //    if(MPISettings::IS_PROC_ID_MASTER())
 //        printResult(tampered, std::string(argv[1]));
