@@ -6,6 +6,7 @@
 class Timer
 {
     bool print;
+    bool meter;
     const std::string function;
     int line;
     const std::string message;
@@ -13,7 +14,7 @@ class Timer
 
 public:
     Timer(bool print_, std::string const& function_, int line_, std::string const& message_ = "");
-    Timer(bool print_, std::string const& function_);
+    Timer(bool meter_, std::string const& message_ = "");
     Timer();
     ~Timer();
     long long elapsedMicroseconds();

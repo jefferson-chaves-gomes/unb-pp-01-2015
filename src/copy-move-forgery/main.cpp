@@ -50,7 +50,7 @@ void startMPIProcess(int argc, char **argv)
         image.load_bitmap(imagePath);
     }
 
-    Timer time(true, __PRETTY_FUNCTION__); // nao entendi pq o destrutor nao é chamado apos eu usar esse construtor....
+    Timer time(true, argv[1]); // nao entendi pq o destrutor nao é chamado apos eu usar esse construtor....
     bool tampered = ForgingDetectorMPI::isTampered(image, bSize);
 
     if(MPISettings::IS_PROC_ID_MASTER()) // foi necessario fazer isto devido o destrutur nao ser chamado
@@ -69,7 +69,7 @@ void startOmpProcess(int argc, char *argv[])
     int blockSize, ompNumThreads, ompSchedOrdinal;
     readOmpArgs(argc, argv, blockSize, ompNumThreads, ompSchedOrdinal);
     omp_sched_t ompSchedule = static_cast<omp_sched_t>(ompSchedOrdinal);
-    Timer time(true, __PRETTY_FUNCTION__);
+    Timer time(true, argv[1]);
     bool tampered = ForgingDetectorOMP::isTampered(Bitmap(argv[1]), blockSize, ompNumThreads, ompSchedule);
 //    printResult(tampered, argv[1]);
 }
@@ -115,7 +115,7 @@ void startSerialProcess(int argc, char *argv[])
     if (argc == 3)
         blockSize = atoi(argv[2]);
 
-    Timer time(true, __PRETTY_FUNCTION__);
+    Timer time(true, argv[1]);
     bool tampered = ForgingDetector::isTampered(Bitmap(argv[1]), blockSize);
 //    printResult(tampered, std::string(argv[1]));
 }
