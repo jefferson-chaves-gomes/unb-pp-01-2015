@@ -127,6 +127,7 @@ bool ForgingDetectorOMP::isTampered(Bitmap const& image, int bSize, int ompNumTh
 
 void ForgingDetectorOMP::charactVector(ListCharVectPtr& listChar, Bitmap const& image, int bSize)
 {
+//    Timer time(true, __PRETTY_FUNCTION__, __LINE__);
     Timer time(PRINT_TIME, __PRETTY_FUNCTION__, __LINE__);
 
     listChar.clear();

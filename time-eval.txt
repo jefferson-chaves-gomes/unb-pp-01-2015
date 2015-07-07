@@ -1,13 +1,13 @@
-
+	
 STARTING...!
 
  ----------------------------- Serial Process --------------------------------- 
 
-[4582935]	./resource/meter/image-01-01mb.bmp
-[8133682]	./resource/meter/image-02-02mb.bmp
-[15820772]	./resource/meter/image-03-04mb.bmp
-[37126480]	./resource/meter/image-04-08mb.bmp
-[58514158]	./resource/meter/image-05-16mb.bmp
+[4582935]	./resource/meter/image-01-01mb.bmp - [3584150] static void ForgingDetector::charactVector
+[8133682]	./resource/meter/image-02-02mb.bmp - [7080040] static void ForgingDetector::charactVector
+[15820772]	./resource/meter/image-03-04mb.bmp - [14403960] static void ForgingDetector::charactVector
+[37126480]	./resource/meter/image-04-08mb.bmp - [28871640] static void ForgingDetector::charactVector
+[58514158]	./resource/meter/image-05-16mb.bmp - [51793725] static void ForgingDetector::charactVector 
 
 
 *******************************************************************************
@@ -15,51 +15,51 @@ STARTING...!
 
  ----------------------------- MPI with 1 Process ----------------------------- 
 
-[4628923]	./resource/meter/image-01-01mb.bmp
-[8249815]	./resource/meter/image-02-02mb.bmp
-[16193521]	./resource/meter/image-03-04mb.bmp
-[37971352]	./resource/meter/image-04-08mb.bmp
-[59834369]	./resource/meter/image-05-16mb.bmp
+[4628923]	./resource/meter/image-01-01mb.bmp - [3593995] static void ForgingDetectorMPI::charactVector
+[8249815]	./resource/meter/image-02-02mb.bmp - [7380963] static void ForgingDetectorMPI::charactVector
+[16193521]	./resource/meter/image-03-04mb.bmp - [14561065] static void ForgingDetectorMPI::charactVector
+[37971352]	./resource/meter/image-04-08mb.bmp - [29356932] static void ForgingDetectorMPI::charactVector
+[59834369]	./resource/meter/image-05-16mb.bmp - [52455515] static void ForgingDetectorMPI::charactVector
 
  ----------------------------- MPI with 2 Process ----------------------------- 
 
-[4186326]	./resource/meter/image-01-01mb.bmp
-[5471995]	./resource/meter/image-02-02mb.bmp
-[11821220]	./resource/meter/image-03-04mb.bmp
-[25856842]	./resource/meter/image-04-08mb.bmp
-[42036315]	./resource/meter/image-05-16mb.bmp
+[4186326]	./resource/meter/image-01-01mb.bmp - [3306408] static void ForgingDetectorMPI::charactVector
+[5471995]	./resource/meter/image-02-02mb.bmp - [4373655] static void ForgingDetectorMPI::charactVector
+[11821220]	./resource/meter/image-03-04mb.bmp - [10145261] static void ForgingDetectorMPI::charactVector
+[25856842]	./resource/meter/image-04-08mb.bmp - [19761065] static void ForgingDetectorMPI::charactVector
+[42036315]	./resource/meter/image-05-16mb.bmp - [34839252] static void ForgingDetectorMPI::charactVector
 
  ----------------------------- MPI with 4 Process ----------------------------- 
 
-[4030228]	./resource/meter/image-01-01mb.bmp
-[4986739]	./resource/meter/image-02-02mb.bmp
-[11645153]	./resource/meter/image-03-04mb.bmp
-[25744934]	./resource/meter/image-04-08mb.bmp
-[38646075]	./resource/meter/image-05-16mb.bmp
+[4030228]	./resource/meter/image-01-01mb.bmp - [3114596] static void ForgingDetectorMPI::charactVector
+[4986739]	./resource/meter/image-02-02mb.bmp - [5905025] static void ForgingDetectorMPI::charactVector
+[9650020]	./resource/meter/image-03-04mb.bmp - [8227542] static void ForgingDetectorMPI::charactVector
+[25744934]	./resource/meter/image-04-08mb.bmp - [18665070] static void ForgingDetectorMPI::charactVector
+[38646075]	./resource/meter/image-05-16mb.bmp - [32300302] static void ForgingDetectorMPI::charactVector
 
  ----------------------------- MPI with 6 Process ----------------------------- 
 
-[3917144]	./resource/meter/image-01-01mb.bmp
-[5625084]	./resource/meter/image-02-02mb.bmp
-[10726416]	./resource/meter/image-03-04mb.bmp
-[27673709]	./resource/meter/image-04-08mb.bmp
-[42103407]	./resource/meter/image-05-16mb.bmp
+[3250678]	./resource/meter/image-01-01mb.bmp - [2297819] static void ForgingDetectorMPI::charactVector
+[5625084]	./resource/meter/image-02-02mb.bmp - [5164088] static void ForgingDetectorMPI::charactVector
+[10726416]	./resource/meter/image-03-04mb.bmp - [9260722] static void ForgingDetectorMPI::charactVector
+[27673709]	./resource/meter/image-04-08mb.bmp - [21177193] static void ForgingDetectorMPI::charactVector
+[42103407]	./resource/meter/image-05-16mb.bmp - [36434751] static void ForgingDetectorMPI::charactVector
 
  ----------------------------- MPI with 8 Process ----------------------------- 
 
-[3951783]	./resource/meter/image-01-01mb.bmp
-[5173484]	./resource/meter/image-02-02mb.bmp
-[11267707]	./resource/meter/image-03-04mb.bmp
-[26095908]	./resource/meter/image-04-08mb.bmp
-[39740096]	./resource/meter/image-05-16mb.bmp
+[3951783]	./resource/meter/image-01-01mb.bmp - [2989115] static void ForgingDetectorMPI::charactVector
+[5173484]	./resource/meter/image-02-02mb.bmp - [4351196] static void ForgingDetectorMPI::charactVector
+[10325904]	./resource/meter/image-03-04mb.bmp - [9001671] static void ForgingDetectorMPI::charactVector
+[26095908]	./resource/meter/image-04-08mb.bmp - [20008391] static void ForgingDetectorMPI::charactVector
+[39740096]	./resource/meter/image-05-16mb.bmp - [34247723] static void ForgingDetectorMPI::charactVector
 
  ----------------------------- MPI with 10 Process ----------------------------- 
 
-[3325502]	./resource/meter/image-01-01mb.bmp
-[5582370]	./resource/meter/image-02-02mb.bmp
-[11040981]	./resource/meter/image-03-04mb.bmp
-[29896404]	./resource/meter/image-04-08mb.bmp
-[43673177]	./resource/meter/image-05-16mb.bmp
+[4066305]	./resource/meter/image-01-01mb.bmp - [3126796] static void ForgingDetectorMPI::charactVector
+[5582370]	./resource/meter/image-02-02mb.bmp - [4874409] static void ForgingDetectorMPI::charactVector
+[11040981]	./resource/meter/image-03-04mb.bmp - [9857729] static void ForgingDetectorMPI::charactVector
+[28700199]	./resource/meter/image-04-08mb.bmp - [20920854] static void ForgingDetectorMPI::charactVector
+[43673177]	./resource/meter/image-05-16mb.bmp - [43157153] static void ForgingDetectorMPI::charactVector
 
 
 *******************************************************************************
@@ -67,51 +67,51 @@ STARTING...!
 
  ----------------------------- OMP with 1 Threads ----------------------------- 
 
-[4565273]	./resource/meter/image-01-01mb.bmp
-[8149057]	./resource/meter/image-02-02mb.bmp
-[15798795]	./resource/meter/image-03-04mb.bmp
-[36914966]	./resource/meter/image-04-08mb.bmp
-[58918988]	./resource/meter/image-05-16mb.bmp
+[4565273]	./resource/meter/image-01-01mb.bmp - [3531352] static void ForgingDetectorOMP::charactVector
+[8149057]	./resource/meter/image-02-02mb.bmp - [6979174] static void ForgingDetectorOMP::charactVector
+[15798795]	./resource/meter/image-03-04mb.bmp - [14300171] static void ForgingDetectorOMP::charactVector
+[36914966]	./resource/meter/image-04-08mb.bmp - [28844146] static void ForgingDetectorOMP::charactVector
+[58918988]	./resource/meter/image-05-16mb.bmp - [51856901] static void ForgingDetectorOMP::charactVector
 
  ----------------------------- OMP with 2 Threads ----------------------------- 
 
-[3127274]	./resource/meter/image-01-01mb.bmp
-[5344887]	./resource/meter/image-02-02mb.bmp
-[10315282]	./resource/meter/image-03-04mb.bmp
-[26485291]	./resource/meter/image-04-08mb.bmp
-[39826680]	./resource/meter/image-05-16mb.bmp
+[3127274]	./resource/meter/image-01-01mb.bmp - [2116895] static void ForgingDetectorOMP::charactVector
+[5344887]	./resource/meter/image-02-02mb.bmp - [4220382] static void ForgingDetectorOMP::charactVector
+[10231756]	./resource/meter/image-03-04mb.bmp - [8678200] static void ForgingDetectorOMP::charactVector
+[26321177]	./resource/meter/image-04-08mb.bmp - [17993816] static void ForgingDetectorOMP::charactVector
+[39826680]	./resource/meter/image-05-16mb.bmp - [34135292] static void ForgingDetectorOMP::charactVector
 
  ----------------------------- OMP with 4 Threads ----------------------------- 
 
-[2762568]	./resource/meter/image-01-01mb.bmp
-[4694369]	./resource/meter/image-02-02mb.bmp
-[9282441]	./resource/meter/image-03-04mb.bmp
-[24317259]	./resource/meter/image-04-08mb.bmp
-[36273938]	./resource/meter/image-05-16mb.bmp
+[2762568]	./resource/meter/image-01-01mb.bmp - [1835028] static void ForgingDetectorOMP::charactVector
+[4694369]	./resource/meter/image-02-02mb.bmp - [4131755] static void ForgingDetectorOMP::charactVector
+[9282441]	./resource/meter/image-03-04mb.bmp - [7707772] static void ForgingDetectorOMP::charactVector
+[24317259]	./resource/meter/image-04-08mb.bmp - [16694994] static void ForgingDetectorOMP::charactVector
+[36273938]	./resource/meter/image-05-16mb.bmp - [30171102] static void ForgingDetectorOMP::charactVector
 
  ----------------------------- OMP with 6 Threads ----------------------------- 
 
-[2809358]	./resource/meter/image-01-01mb.bmp
-[4732559]	./resource/meter/image-02-02mb.bmp
-[9305634]	./resource/meter/image-03-04mb.bmp
-[24641359]	./resource/meter/image-04-08mb.bmp
-[37118727]	./resource/meter/image-05-16mb.bmp
+[2809358]	./resource/meter/image-01-01mb.bmp - [2150819] static void ForgingDetectorOMP::charactVector
+[4732559]	./resource/meter/image-02-02mb.bmp - [3681295] static void ForgingDetectorOMP::charactVector
+[9305634]	./resource/meter/image-03-04mb.bmp - [7853178] static void ForgingDetectorOMP::charactVector
+[24641359]	./resource/meter/image-04-08mb.bmp - [16628720] static void ForgingDetectorOMP::charactVector
+[37118727]	./resource/meter/image-05-16mb.bmp - [29733673] static void ForgingDetectorOMP::charactVector
 
  ----------------------------- OMP with 8 Threads ----------------------------- 
 
-[2790926]	./resource/meter/image-01-01mb.bmp
-[4782824]	./resource/meter/image-02-02mb.bmp
-[9290024]	./resource/meter/image-03-04mb.bmp
-[24603312]	./resource/meter/image-04-08mb.bmp
-[37220529]	./resource/meter/image-05-16mb.bmp
+[2790926]	./resource/meter/image-01-01mb.bmp - [1862818] static void ForgingDetectorOMP::charactVector
+[4782824]	./resource/meter/image-02-02mb.bmp - [3598288] static void ForgingDetectorOMP::charactVector
+[9290024]	./resource/meter/image-03-04mb.bmp - [7702643] static void ForgingDetectorOMP::charactVector
+[24603312]	./resource/meter/image-04-08mb.bmp - [16680144] static void ForgingDetectorOMP::charactVector
+[37220529]	./resource/meter/image-05-16mb.bmp - [29922901] static void ForgingDetectorOMP::charactVector
 
  ----------------------------- OMP with 10 Threads ----------------------------- 
 
-[2924184]	./resource/meter/image-01-01mb.bmp
-[4743334]	./resource/meter/image-02-02mb.bmp
-[9363854]	./resource/meter/image-03-04mb.bmp
-[24527624]	./resource/meter/image-04-08mb.bmp
-[36385214]	./resource/meter/image-05-16mb.bmp
+[2873154]	./resource/meter/image-01-01mb.bmp - [1875402] static void ForgingDetectorOMP::charactVector
+[4743334]	./resource/meter/image-02-02mb.bmp - [3652568] static void ForgingDetectorOMP::charactVector
+[9363854]	./resource/meter/image-03-04mb.bmp - [8045681] static void ForgingDetectorOMP::charactVector
+[24527624]	./resource/meter/image-04-08mb.bmp - [16745114] static void ForgingDetectorOMP::charactVector
+[36385214]	./resource/meter/image-05-16mb.bmp - [29925624] static void ForgingDetectorOMP::charactVector
 
 
 FINISHED!
