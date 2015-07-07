@@ -150,7 +150,7 @@ A lista definitiva de blocos similares é obtida e a imagem é convertida para pre
 \subsection{Ambiente de desenvolvimento}
 \label{desenv}
 
-Para as simulações foi utilizado um computador com processador Intel Core i7-4500U CPU @ 1.80GHz (com dois núcleos e quatro \textit{threads}) e 8GB de memória RAM. A máquina possui instalado o sistema operacional Ubuntu 14.04 64 bits.
+Para as simulações foi utilizado um computador com processador Intel Core i7-4500U CPU @ 1.80GHz (com dois núcleos e suporte a \textit{hyper-threading}) e 8GB de memória RAM. A máquina possui instalado o sistema operacional Ubuntu 14.04 64 bits.
 
 A aplicação é desenvolvida na linguagem C++. O desenvolvimento primordial assegura os resultados previstos, porém a execução é feita de maneira sequencial. Com a expectativa de melhora no desempenho, são utilizadas as técnicas OpenMP e MPI para execução paralela em duas implementações incrementais da aplicação.
 
@@ -272,7 +272,7 @@ img-05	& 71,16\%	& 38,70\%	& 23,68\%	& 18,82\%	& 13,70\%	& \\ \hline
 \section{Considerações finais}
 \label{final}
 
-Analisando o \textit{speed-up} obtido com OpenMP e MPI, é possível observar que o tempo de execução em paralelo possui ganhos significativos com relação ao tempo de execução sequencial. A execução paralela atinge o \textit{speed-up} ótimo de 1,73 na implementação OpenMP e 1,67 na implementação MPI, ambas quando são utilizadas 4 \textit{threads}/processos. Isto ocorre devido ao fato de haver quatro \textit{cores} existente na máquina de testes quando é explorada a capacidade de \textit{hyper-threading} do processador.
+Analisando o \textit{speed-up} obtido com OpenMP e MPI, é possível observar que o tempo de execução em paralelo possui ganhos significativos com relação ao tempo de execução sequencial. A execução paralela atinge o \textit{speed-up} ótimo de 1,73 na implementação OpenMP e 1,67 na implementação MPI, ambas quando são utilizadas 4 \textit{threads}/processos. Isto ocorre devido ao fato de haver dois \textit{cores} existentes na máquina de testes quando é explorada a capacidade de \textit{hyper-threading} do processador.
 
 O algoritmo paralelizado com OpenMP se mostrou mais eficiente, devido ao fato de não haver a necessidades de tráfego de dados via rede, como é necessário ao MPI. Procedimentos que possuem interdependência de dados e complexidade inferior à distribuição/centralização dos dados com MPI se mostraram ineficientes, ou seja, o custo de tráfego dos dados é maior do que o custo do processamento dos dados em si.
 

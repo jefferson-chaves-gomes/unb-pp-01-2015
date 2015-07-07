@@ -62,7 +62,7 @@
 {\large Jefferson Chaves Gomes \\ \texttt{}} \\
 {\large Felipe Lopes de Souza \\ \texttt{}} \\
 \vspace*{0.2cm}
-\vspace*{0.2cm}}
+}
 %\date{\today}
 \date[07/07/2015]{07 de Julho de 2015}
 
@@ -250,11 +250,11 @@ Haverá ao menos duas regiões similares em uma imagem adulterada
 }
 
 \section{Aplicação desenvolvida}
-\frame{\frametitle{Implementação}
+\frame{\frametitle{Ambiente de execução e testes}
 \begin{itemize}
 	\item Processador Intel Core i7-4500U CPU @ 1.80GHz
 	\begin{itemize}
-		\item dois núcleos e quatro \textit{threads}
+		\item dois núcleos e suporte \textit{hyper-threading}
 	\end{itemize}
 	\item 8GB de memória RAM
 	\item SO Ubuntu 14.04 64 bits.
@@ -291,7 +291,8 @@ O algoritmo de \textit{shift vector}
 \pause
 
 \begin{itemize}
-	\item Geração do vetor de características: $O(n^2)$
+	\item Geração do vetor de características: $O(n^4)$
+	\item Ordenação de blocos: $O(n lg_2 n)$
 	\item Demais tarefas: $O(n)$
 \end{itemize}
 }
@@ -430,8 +431,8 @@ img-05	& 71,16\%	& 38,70\%	& 23,68\%	& 18,82\%	& 13,70\%	& \\ \hline
 	\begin{itemize}
 		\item OpenMP: 1,73
 		\item MPI: 1,67
-		\item quatro \textit{threads}
-		\item capacidade de \textit{hyperthreading}
+		\item dois \textit{cores}
+		\item capacidade de \textit{hyper-threading}
 	\end{itemize}
 \end{itemize}
 }
