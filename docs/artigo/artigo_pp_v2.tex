@@ -131,7 +131,7 @@ Os passos necessários para o algoritmo de \textit{shift-vector} na classificação
 
 A imagem de entrada é subdividida em blocos de dimensões $bxb$. Ao total, a imagem, de dimensões MxN, será descrita por $S = (M - b + 1)(N - b + 1)$ blocos. Para cada bloco é calculado um vetor de características $V = (c_1, ..., c_7)$, onde $c_1...c_3$ são as médias dos valores RGB e $c_4...c_7$ são uma normalização dos pixels da imagem para um tom de cinza.
 
-O bloco é então dividido em duas partes, sendo considerado em quatro direções de luminância (vertical, horizontal e duas diagonais). Cada bloco é calculado e adicionado a uma matriz com as linhas lexicograficamente ordenadas. A adição já garante a ordenação, o que evita que a matriz seja pós-processada para este propósito. Os blocos consecutivos são comparados dois-a-dois e é calculada a similaridade entre eles. A similaridade entre os blocos $B_i$ e $B_j$ é calculada pela diferença entre seus vetores $V_i$ e $V_j$, sendo que $Diff(k) = |c_k(i) - c_k(j)|$. Dois blocos são considerados similares se quatro condições básicas são satisfeitas, onde os valores $P(k)$, $t_1$, $t_2$ e $L$ são limiares pré-definidos:
+O bloco é então dividido em duas partes, sendo considerado em quatro direções de luminância (vertical, horizontal e duas diagonais). Cada bloco é calculado e adicionado a uma matriz com as linhas lexicograficamente ordenadas. A ordenação dos blocos é feita com o algoritmo \textit{quicksort}. Os blocos consecutivos são comparados dois-a-dois e é calculada a similaridade entre eles. A similaridade entre os blocos $B_i$ e $B_j$ é calculada pela diferença entre seus vetores $V_i$ e $V_j$, sendo que $Diff(k) = |c_k(i) - c_k(j)|$. Dois blocos são considerados similares se quatro condições básicas são satisfeitas, onde os valores $P(k)$, $t_1$, $t_2$ e $L$ são limiares pré-definidos:
 
 \begin{itemize}
 \item $Diff(k) < P(k)$
@@ -191,7 +191,7 @@ img-05	& 58514158 \\ \hline
 \end{tabular}
 \end{table}
 
-O algoritmo de criação do vetor de características possui complexidade igual a $O(n^2)$. Esta é a tarefa mais cara, chegando a consumir 90\% do esforço de processamento da aplicação. As tarefas de ordenação de blocos, criação de histograma e eliminação de falso-positivos possuem complexidade linear e apresentam dependência de dados entre iterações sucessivas.
+O algoritmo de criação do vetor de características possui complexidade igual a $O(n^4)$. Esta é a tarefa mais cara, chegando a consumir 90\% do esforço de processamento da aplicação. A tarefa de ordenação de blocos possui complexidade igual a $O(n lg_2 n)$; a criação de histograma e eliminação de falso-positivos possuem complexidade linear e apresentam dependência de dados entre iterações sucessivas.
 
 A Figura \ref{f.public} apresenta um exemplo de detecção de uma adulteração do tipo \textit{copy-move forgery} em uma imagem.
 
@@ -272,16 +272,16 @@ img-05	& 71,16\%	& 38,70\%	& 23,68\%	& 18,82\%	& 13,70\%	& \\ \hline
 \section{Considerações finais}
 \label{final}
 
-Analisando o \textit{speed-up} obtido com OpenMP e MPI, é possível observar que o tempo de execução em paralelo possui ganhos significativos com relação ao tempo de execução sequencial. A execução paralela atinge o \textit{speed-up} ótimo de 1,73 na implementação OpenMP e 1,67 na implementação MPI, ambas quando são utilizadas 4 \textit{threads}/processos. Isto ocorre devido ao fato de haver quatro \textit{cores} existente na máquina de testes quando é explorada a capacidade de \textit{hyperthreading} do processador.
+Analisando o \textit{speed-up} obtido com OpenMP e MPI, é possível observar que o tempo de execução em paralelo possui ganhos significativos com relação ao tempo de execução sequencial. A execução paralela atinge o \textit{speed-up} ótimo de 1,73 na implementação OpenMP e 1,67 na implementação MPI, ambas quando são utilizadas 4 \textit{threads}/processos. Isto ocorre devido ao fato de haver quatro \textit{cores} existente na máquina de testes quando é explorada a capacidade de \textit{hyper-threading} do processador.
 
 O algoritmo paralelizado com OpenMP se mostrou mais eficiente, devido ao fato de não haver a necessidades de tráfego de dados via rede, como é necessário ao MPI. Procedimentos que possuem interdependência de dados e complexidade inferior à distribuição/centralização dos dados com MPI se mostraram ineficientes, ou seja, o custo de tráfego dos dados é maior do que o custo do processamento dos dados em si.
 
-Tanto no OpenMP quanto no MPI foi possível perceber que a eficiência manteve níveis constantes à medida em que o número de \textit{threads} e o tamanho da entrada aumentavam. Por esse motivo, conclui-se que a paralelização do algoritmo de detecção de \textit{copy-move forgery} possui escalabilidade fraca.
+Tanto no OpenMP quanto no MPI foi possível perceber a degradação da eficiência conforme eram adicionados novos processos em todos os casos de simulação. Isto é resultado da limitação do hardware e demonstra que o problema da paralelização do algoritmo de detecção de \textit{copy-move forgery} não é escalável.
 
 
 %\section{Referências}
 
 \bibliographystyle{sbc}
-\bibliography{artigo_pp_v2.bib}
+\bibliography{artigo_pp}
 
 \end{document}
