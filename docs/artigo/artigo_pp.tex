@@ -210,8 +210,9 @@ Durante o processo de implementação e testes, foi constatado que o escalonamento
 Na implementação OpenMP, cada processo recebeu a responsabilidade de calcular as características de um bloco por vez. As cinco imagens foram utilizadas como entrada da aplicação e o número de \textit{threads} utilizadas na detecção foi incrementado em duas unidades a cada interação. Os resultados obtidos podem ser visualizados na Tabela \ref{tab.omp}.
 
 \begin{table}[!h]
-\renewcommand{\arraystretch}{1.3}
+%\renewcommand{\arraystretch}{1.3}
 \caption{Desempenho da execução com paralelismo em OpenMP}
+\resizebox{\textwidth}{!}{%
 \label{tab.omp}
 \centering
 \begin{tabular}{l|c|c|c|c|c|l}     
@@ -231,7 +232,7 @@ img-02	& 76,23\%	& 43,39\%	& 28,69\%	& 21,29\%	& 17,18\%	& \\
 img-03	& 77,20\%	& 42,55\%	& 28,29\%	& 21,25\%	& 16,87\%	& Eficiência \\
 img-04	& 70,12\%	& 37,95\%	& 24,96\%	& 18,75\%	& 15,05\%	& \\
 img-05	& 73,96\%	& 40,60\%	& 26,45\%	& 19,78\%	& 16,19\%	& \\ \hline
-\end{tabular}
+\end{tabular}}
 \end{table}
 
 \subsection{Paralelismo em MPI}
@@ -242,8 +243,9 @@ Na implementação MPI, uma seção linear da imagem é transmitida a cada processo e
 Semelhantemente, as cinco imagens foram utilizadas como entrada da aplicação e o número de \textit{threads} utilizadas na detecção foi incrementado em duas unidades a cada iteração. Os resultados obtidos podem ser visualizados na Tabela \ref{tab.omp}.
 
 \begin{table}[!h]
-\renewcommand{\arraystretch}{1.3}
+%\renewcommand{\arraystretch}{1.3}
 \caption{Desempenho da execução com paralelismo em MPI}
+\resizebox{\textwidth}{!}{%
 \label{tab.mpi}
 \centering
 \begin{tabular}{l|c|c|c|c|c|l}     
@@ -263,7 +265,7 @@ img-02	& 75,38\%	& 41,35\%	& 24,44\%	& 19,93\%	& 14,77\%	& \\
 img-03	& 68,49\%	& 41,95\%	& 25,16\%	& 19,60\%	& 14,66\%	& Eficiência \\
 img-04	& 73,42\%	& 36,87\%	& 22,86\%	& 18,18\%	& 13,23\%	& \\
 img-05	& 71,16\%	& 38,70\%	& 23,68\%	& 18,82\%	& 13,70\%	& \\ \hline
-\end{tabular}
+\end{tabular}}
 \end{table}
 
 
@@ -272,7 +274,7 @@ img-05	& 71,16\%	& 38,70\%	& 23,68\%	& 18,82\%	& 13,70\%	& \\ \hline
 
 Analisando o \textit{speed-up} obtido com OpenMP e MPI, é possível observar que o tempo de execução em paralelo possui ganhos significativos com relação ao tempo de execução sequencial. A execução paralela atinge o \textit{speed-up} ótimo de 1,73 na implementação OpenMP e 1,67 na implementação MPI, ambas quando são utilizadas 4 \textit{threads}/processos. Isto ocorre devido ao fato de haver quatro \textit{cores} existente na máquina de testes quando é explorada a capacidade de \textit{hyperthreading} do processador.
 
-O algoritmo paralelizado com OpenMP se mostrou mais eficiente, devido ao fato de não haver a necessidades de tráfego de dados via rede, como é necessário ao MPI. Ainda, o OpenMP
+O algoritmo paralelizado com OpenMP se mostrou mais eficiente, devido ao fato de não haver a necessidades de tráfego de dados via rede, como é necessário ao MPI. Procedimentos que possuem interdependência de dados e complexidade inferior à distribuição/centralização dos dados com MPI se mostraram ineficientes, ou seja, o custo de tráfego dos dados é maior do que o custo do processamento dos dados em si.
 
 Tanto no OpenMP quanto no MPI foi possível perceber que a eficiência manteve níveis constantes à medida em que o número de \textit{threads} e o tamanho da entrada aumentavam. Por esse motivo, conclui-se que a paralelização do algoritmo de detecção de \textit{copy-move forgery} possui escalabilidade fraca.
 
