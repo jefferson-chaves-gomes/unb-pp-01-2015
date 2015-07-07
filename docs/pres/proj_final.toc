@@ -1,0 +1,7 @@
+\beamer@endinputifotherversion {3.24pt}
+\select@language {portuges}
+\beamer@sectionintoc {1}{Introdu\c c\~ao}{3}{0}{1}
+\beamer@sectionintoc {2}{Algoritmo shift-vector}{11}{0}{2}
+\beamer@sectionintoc {3}{Aplica\c c\~ao desenvolvida}{18}{0}{3}
+\beamer@sectionintoc {4}{Implementa\c c\~ao paralela}{25}{0}{4}
+\beamer@sectionintoc {5}{Considera\c c\~oes finais}{31}{0}{5}

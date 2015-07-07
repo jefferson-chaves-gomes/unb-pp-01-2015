@@ -1,0 +1,468 @@
+\documentclass{beamer}
+
+%%% Sugestões de Temas
+% http://deic.uab.es/~iblanes/beamer_gallery/
+\useoutertheme{infolines}
+\usepackage{beamerthemesplit}
+%\usetheme{Antibes}
+%\usetheme{Berkeley}
+\usetheme{Berlin}
+%\usetheme{Boadilla}
+%\usetheme{CambridgeUS}
+%\usetheme{Darmstadt}
+%\usetheme{Dresden}
+%\usetheme{Frankfurt}
+%\usetheme{Madrid}
+%\usetheme{PaloAlto}
+
+\usecolortheme{dolphin}
+%\usecolortheme{lily}
+%\usecolortheme{orchid}
+%\usecolortheme{whale}
+%\usecolortheme{wolverine}
+
+\usefonttheme{professionalfonts}
+%\usefonttheme{structurebold}
+
+\usepackage[english,brazil,portuges]{babel} %hifenização em português e inglês
+\usepackage[T1]{fontenc} %caracteres acentuados
+\usepackage{ae}
+\usepackage[ansinew]{inputenc}
+\usepackage{graphicx,color}
+%\usepackage[ruled,linesnumbered,portuguese]{algorithm2e}%noend
+\usepackage{ifpdf}
+\usepackage{amssymb}
+
+%\usepackage{algorithmic}
+%\usepackage{mathtools}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%definições prévias do documento
+\renewcommand{\arraystretch}{1.5}
+%\setbeamerfont{family=\rmfamily}
+
+\definecolor{custom_blue}{HTML}{395DBF}
+
+\newcommand{\sectionframe}[1]{
+\begin{frame}
+\begin{center}
+\Huge \textcolor{custom_blue}{\textbf{#1}}
+\end{center}
+\end{frame}
+}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%% Início da Apresentação %%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\title{Paralelismo em algoritmos de detecção de adulterações em imagens digitais}
+%\subtitle{}
+\author[Vitor Filincowsky Ribeiro, Jefferson Chaves Gomes, Felipe Lopes de Souza]{
+{\large Vitor Filincowsky Ribeiro \\ \texttt{}} \\
+{\large Jefferson Chaves Gomes \\ \texttt{}} \\
+{\large Felipe Lopes de Souza \\ \texttt{}} \\
+\vspace*{0.2cm}
+\vspace*{0.2cm}}
+%\date{\today}
+\date[07/07/2015]{07 de Julho de 2015}
+
+\begin{document}
+
+%%%%%%%%%%%%%%% Folha de título %%%%%%%%%%%%%%%
+%\frame{
+\begin{frame}[plain]
+	\begin{center}
+	\includegraphics[height=0.1\textheight]{unb_logo.png} \hspace*{0.0cm}
+	  \vspace*{0.2cm}	  
+	  \scriptsize	\\	  
+	  Universidade de Brasília \\
+	  Instituto de Ciências Exatas \\
+	  Departamento de Ciência da Computação\\
+	  Programa de Pós-Graduação em Informática\\
+	  \vspace*{0.2cm}
+	  Programação Paralela
+	  \vspace*{0.2cm}
+	  \titlepage
+	\end{center}
+\end{frame}
+%\frame{\titlepage}
+
+%%%%%%%%%%%%%%% Agenda de apresentação %%%%%%%%%%%%%%%
+\frame{\frametitle{Agenda}\scriptsize \tableofcontents}
+
+%%%%%%%%%%%%%%% INTRODUÇÃO %%%%%%%%%%%%%%%
+\section{Introdução}
+
+\frame{\frametitle{Introdução}
+\begin{itemize}
+	\item Popularização das fotografias digitais
+	\item Desenvolvimento de aplicativos de edição de imagens
+	\item Utilização maliciosa
+\end{itemize}
+}
+
+\frame{\frametitle{Introdução}
+
+\begin{center}
+	\includegraphics[scale=0.4]{dpkr_navy.png}
+\end{center}
+}
+
+\frame{\frametitle{Introdução}
+\begin{itemize}
+	\item Mecanismos anti-adulteração
+	\item Detecção de adulterações
+	\item Complexidade de hardware
+	\item Alto custo computacional
+\end{itemize}
+}
+
+\frame{\frametitle{Justificativa}
+
+Identificação de adulterações
+
+\begin{itemize}
+	\item Análise espacial
+	\item Extração de vetores, comparação de blocos de bytes, transformações matemáticas, operações matriciais...
+	\item Importante esforço computacional
+\end{itemize}
+}
+
+\frame{\frametitle{Justificativa}
+
+\begin{block}{Motivação}
+	\begin{itemize}
+		\item Determinação de níveis aceitáveis de performance
+		\item Apresentação de resposta em tempo real
+	\end{itemize}
+\end{block}
+
+\pause
+
+\begin{block}{Proposta}
+	\begin{itemize}
+		\item Paralelismo na execução
+		\item Processamento distribuído
+	\end{itemize}
+\end{block}
+}
+
+\frame{\frametitle{Objetivos}
+
+\begin{block}{}
+Avaliar a performance resultante da paralelização e distribuição de um algoritmo de identificação de adulterações em imagens digitais
+\end{block}
+
+\pause
+
+\begin{itemize}
+	\item Detecção de fraudes do tipo \textit{copy-move forgery} em uma imagem digital com a utilização de um algoritmo de \textit{shift vector};
+	\item Técnicas de paralelismo e processamento distribuído
+	\item Avaliação de desempenho
+\end{itemize}
+}
+
+\section{Algoritmo shift-vector}
+\frame{\frametitle{\textit{Copy-move forgery}}
+
+\begin{center}
+	\includegraphics[scale=0.7]{iran_missile.png}
+\end{center}
+}
+
+\frame{\frametitle{\textit{Copy-move forgery}}
+
+Haverá ao menos duas regiões similares em uma imagem adulterada
+
+\begin{center}
+	\includegraphics[scale=0.6]{desloc.png}
+\end{center}
+}
+
+\frame{\frametitle{Extração dos vetores característicos}
+
+\begin{itemize}
+	\item Imagem subdividida em blocos bxb
+	\begin{itemize}
+		\item Imagem de dimensões MxN
+		\item $S = (M - b + 1)(N - b + 1)$ blocos
+	\end{itemize}
+	\item Cálculo de vetor de características
+	\begin{itemize}
+		\item Informações sobre cores, níveis de cinza e deslocamento dos blocos
+		\item Média dos valores RGB
+		\item Conversão para escala de cinza		
+	\end{itemize}
+	\item Divisão em quatro direções de luminância
+\end{itemize}
+
+\begin{center}
+	\includegraphics[scale=0.6]{luminance.png}
+\end{center}
+}
+
+\frame{\frametitle{Busca por blocos similares}
+\begin{itemize}
+	\item Ordenação lexicográfica dos blocos
+	\begin{itemize}
+		\item Matriz de dimensões $S$x$b^2$
+		\item Comparação de blocos consecutivos $V_i$ e $V_j$
+		\item Cálculo de similaridade
+	\end{itemize}
+\end{itemize}
+}
+
+\frame{\frametitle{Eliminação dos falso-positivos}
+
+\begin{itemize}
+	\item Blocos similares não implicam duplicação de região
+	\item Regiões duplicadas: blocos possuem o mesmo \textit{shift}
+\end{itemize}
+
+\begin{center}
+	\includegraphics[scale=0.6]{shifts.png}
+\end{center}
+}
+
+\frame{\frametitle{Eliminação dos falso-positivos}
+\begin{itemize}
+	\item Histograma criado para armazenar \textit{shifts}
+	\item $H(d') = H(dx', dy')$: frequência de ocorrências
+	\item $d = max(freq(H(d')))$
+	\item Remoção de blocos similares incorretos
+\end{itemize}
+}
+
+\frame{\frametitle{Determinação de adulteração}
+\begin{itemize}
+	\item Imagem binária
+	\item Operação de abertura (erosão + dilatação)
+	\begin{itemize}
+		\item Eliminação de elementos espúrios
+		\item Se há regiões conectadas, a imagem é adulterada
+	\end{itemize}
+	\item \textit{Merge} da imagem binária com a imagem de entrada
+\end{itemize}
+
+\begin{center}
+	\includegraphics[scale=0.3]{morf.png}
+\end{center}
+}
+
+\section{Aplicação desenvolvida}
+\frame{\frametitle{Implementação}
+\begin{itemize}
+	\item Processador Intel Core i7-4500U CPU @ 1.80GHz
+	\begin{itemize}
+		\item dois núcleos e quatro \textit{threads}
+	\end{itemize}
+	\item 8GB de memória RAM
+	\item SO Ubuntu 14.04 64 bits.
+	\item Linguagem de programação: C++
+\end{itemize}
+}
+
+\frame{\frametitle{Implementação serial}
+Desenvolvimento primordial assegura os resultados previstos
+\begin{itemize}
+	\item Execução sequencial
+\end{itemize}
+
+Expectativa de melhora no desempenho
+\begin{itemize}
+	\item Implementações incrementais da aplicação
+	\item Execução paralela com OpenMP e MPI
+\end{itemize}
+}
+
+\frame{\frametitle{Implementação serial}
+
+O algoritmo de \textit{shift vector}
+
+\begin{itemize}
+	\item Imagens divididas em blocos
+	\item Cálculo do vetor de características
+	\item Ordenação dos blocos
+	\item Comparação de pares de blocos consecutivos
+	\item Histograma de similaridade
+	\item Descarte de falso-positivos
+\end{itemize}
+
+\pause
+
+\begin{itemize}
+	\item Geração do vetor de características: $O(n^2)$
+	\item Demais tarefas: $O(n)$
+\end{itemize}
+}
+
+\frame{\frametitle{Implementação serial}
+
+\begin{itemize}
+	\item Cinco imagens de diferentes tamanhos
+	\item Imagem \textit{img-05}: 4.971.033 blocos de 16x16 pixels
+\end{itemize}
+
+\begin{table}
+\centering
+\begin{tabular}{l|c|c|c}
+Label	& Tamanho (MB)	& Largura (px)	& Altura (px)\\ \hline
+img-01	& 1,1			& 1250			& 300 \\
+img-02	& 2,2			& 1250			& 575 \\
+img-03	& 4,3			& 1560			& 925 \\
+img-04	& 8,5			& 2070			& 1368 \\
+img-05	& 15,1			& 2592			& 1944 \\ \hline
+\end{tabular}
+\end{table}
+}
+
+\frame{\frametitle{Implementação serial}
+
+\begin{table}
+\centering
+\begin{tabular}{l|c}
+Imagem	& Tempo ($\mu s$) \\ \hline
+img-01	& 4582935 \\
+img-02	& 8133682 \\
+img-03	& 15820772 \\
+img-04	& 37126480 \\
+img-05	& 58514158 \\ \hline
+\end{tabular}
+\end{table}
+}
+
+\frame{
+\begin{center}
+	\includegraphics[scale=0.3]{public.png}
+\end{center}
+}
+
+\section{Implementação paralela}
+
+\frame{\frametitle{OpenMP}
+\begin{block}{}
+Comportamento paralelo em programas com acesso a áreas de memória compartilhada
+\end{block}
+
+\pause
+
+\begin{itemize}
+	\item Escalonamento dinâmico foi o mais eficiente na quase totalidade das aferições
+	\item Cálculo das características de um bloco por vez
+	\item Número de \textit{threads} incrementado em duas unidades a cada iteração
+\end{itemize}
+}
+
+\frame{\frametitle{OpenMP}
+
+\begin{table}
+\tiny
+\centering
+\begin{tabular}{l|c|c|c|c|c|l}     
+Imagem	& 2			& 4			& 6			& 8			& 10			& Threads \\ \hline
+img-01	& 3127274	& 2762568	& 2809358	& 2790926	& 2873154	& \\
+img-02	& 5344887	& 4694369	& 4732559	& 4782824	& 4743334	& \\
+img-03	& 10231756	& 9282441	& 9305634	& 9290024	& 9363854	& Tempo ($\mu s$) \\
+img-04	& 26321177	& 24317259	& 24641359	& 24603312	& 24527624	& \\
+img-05	& 39826680	& 36273938	& 37118727	& 37220529	& 36385214	& \\ \hline
+img-01	& 1,45		& 1,65		& 1,62		& 1,63		& 1,58		& \\
+img-02	& 1,52		& 1,73		& 1,72		& 1,70		& 1,71		& \\
+img-03	& 1,54		& 1,70		& 1,69		& 1,70		& 1,68		& \textit{speed-up} \\
+img-04	& 1,40		& 1,51		& 1,49		& 1,50		& 1,50		& \\
+img-05	& 1,47		& 1,62		& 1,58		& 1,58		& 1,61		& \\ \hline
+img-01	& 72,99\%	& 41,31\%	& 27,08\%	& 20,44\%	& 15,88\%	& \\
+img-02	& 76,23\%	& 43,39\%	& 28,69\%	& 21,29\%	& 17,18\%	& \\
+img-03	& 77,20\%	& 42,55\%	& 28,29\%	& 21,25\%	& 16,87\%	& Eficiência \\
+img-04	& 70,12\%	& 37,95\%	& 24,96\%	& 18,75\%	& 15,05\%	& \\
+img-05	& 73,96\%	& 40,60\%	& 26,45\%	& 19,78\%	& 16,19\%	& \\ \hline
+\end{tabular}
+\end{table}
+}
+
+\frame{\frametitle{MPI}
+\begin{block}{}
+\begin{itemize}
+	\item Programas paralelos utilizando o modelo de memória distribuída
+	\item Transmissão de mensagens entre programas paralelos que executam em ambientes multiprocessados
+\end{itemize}
+\end{block}
+
+\pause
+
+\begin{itemize}
+	\item Seções lineares da imagem transmitidas a cada processo
+	\item Divisão das seções em janelas de 16x16 pixels
+\end{itemize}
+}
+
+\frame{\frametitle{MPI}
+
+\begin{table}
+\tiny
+\centering
+\begin{tabular}{l|c|c|c|c|c|l}     
+Imagem	& 2			& 4			& 6			& 8			& 10			& Threads \\ \hline
+img-01	& 4186326	& 4030228	& 3250678	& 3951783	& 4066305	& \\
+img-02	& 5471995	& 4986739	& 5625084	& 5173484	& 5582370	& \\
+img-03	& 11821220	& 9650020	& 10726416	& 10325904	& 11040981	& Tempo ($\mu s$) \\
+img-04	& 25856842	& 25744934	& 27673709	& 26095908	& 28700199	& \\
+img-05	& 42036315	& 38646075	& 42103407	& 39740096	& 43673177	& \\ \hline
+img-01	& 1,10		& 1,14		& 1,42		& 1,17		& 1,13		& \\
+img-02	& 1,50		& 1,65		& 1,46		& 1,59		& 1,47		& \\
+img-03	& 1,36		& 1,67		& 1,50		& 1,56		& 1,46		& \textit{speed-up} \\
+img-04	& 1,46		& 1,47		& 1,37		& 1,45		& 1,32		& \\
+img-05	& 1,42		& 1,54		& 1,42		& 1,50		& 1,37		& \\ \hline
+img-01	& 55,28\%	& 28,71\%	& 23,73\%	& 14,64\%	& 11,38\%	& \\
+img-02	& 75,38\%	& 41,35\%	& 24,44\%	& 19,93\%	& 14,77\%	& \\
+img-03	& 68,49\%	& 41,95\%	& 25,16\%	& 19,60\%	& 14,66\%	& Eficiência \\
+img-04	& 73,42\%	& 36,87\%	& 22,86\%	& 18,18\%	& 13,23\%	& \\
+img-05	& 71,16\%	& 38,70\%	& 23,68\%	& 18,82\%	& 13,70\%	& \\ \hline
+\end{tabular}
+\end{table}
+}
+
+\section{Considerações finais}
+
+\frame{\frametitle{Conclusões}
+\begin{itemize}
+	\item Execução paralela: ganhos significativos com relação à execução sequencial
+	\item \textit{Speed-up} máximo
+	\begin{itemize}
+		\item OpenMP: 1,73
+		\item MPI: 1,67
+		\item quatro \textit{threads}
+		\item capacidade de \textit{hyperthreading}
+	\end{itemize}
+\end{itemize}
+}
+
+\frame{\frametitle{Conclusões}
+\begin{itemize}
+	\item OpenMP se mostrou mais eficiente
+	\begin{itemize}
+		\item Não há tráfego de dados via rede
+	\end{itemize}
+	\item MPI é menos eficiente
+	\begin{itemize}
+		\item Interdependência de dados e complexidade inferior à distribuição/centralização
+		\item Custo de tráfego maior do que custo de processamento
+	\end{itemize}
+\end{itemize}
+
+\pause
+
+\begin{itemize}
+	\item Eficiência constante
+	\begin{itemize}
+		\item Aumento no número de \textit{threads}
+		\item Aumento do tamanho da entrada
+	\end{itemize}
+	\item Detecção de \textit{copy-move forgery} possui escalabilidade fraca
+\end{itemize}
+}
+
+
+%%%%% FIM %%%%%
+\sectionframe{Obrigado!}
+
+\end{document}
