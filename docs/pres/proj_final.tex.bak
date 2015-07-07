@@ -62,7 +62,7 @@
 {\large Jefferson Chaves Gomes \\ \texttt{}} \\
 {\large Felipe Lopes de Souza \\ \texttt{}} \\
 \vspace*{0.2cm}
-\vspace*{0.2cm}}
+}
 %\date{\today}
 \date[07/07/2015]{07 de Julho de 2015}
 
@@ -156,7 +156,7 @@ Avaliar a performance resultante da paralelização e distribuição de um algoritmo
 \pause
 
 \begin{itemize}
-	\item Detecção de fraudes do tipo \textit{copy-move forgery} em uma imagem digital com a utilização de um algoritmo de \textit{shift vector};
+	\item Detecção de fraudes do tipo \textit{copy-move forgery} em uma imagem digital com a utilização de um algoritmo de \textit{shift vector}
 	\item Técnicas de paralelismo e processamento distribuído
 	\item Avaliação de desempenho
 \end{itemize}
@@ -250,11 +250,11 @@ Haverá ao menos duas regiões similares em uma imagem adulterada
 }
 
 \section{Aplicação desenvolvida}
-\frame{\frametitle{Implementação}
+\frame{\frametitle{Ambiente de execução e testes}
 \begin{itemize}
 	\item Processador Intel Core i7-4500U CPU @ 1.80GHz
 	\begin{itemize}
-		\item dois núcleos e quatro \textit{threads}
+		\item dois núcleos e suporte \textit{hyper-threading}
 	\end{itemize}
 	\item 8GB de memória RAM
 	\item SO Ubuntu 14.04 64 bits.
@@ -291,7 +291,8 @@ O algoritmo de \textit{shift vector}
 \pause
 
 \begin{itemize}
-	\item Geração do vetor de características: $O(n^2)$
+	\item Geração do vetor de características: $O(n^4)$
+	\item Ordenação de blocos: $O(n lg_2 n)$
 	\item Demais tarefas: $O(n)$
 \end{itemize}
 }
@@ -396,6 +397,18 @@ img-05	& 73,96\%	& 40,60\%	& 26,45\%	& 19,78\%	& 16,19\%	& \\ \hline
 }
 
 \frame{\frametitle{MPI}
+\begin{center}
+	\includegraphics[scale=0.25]{mpi_diag.png}
+\end{center}
+}
+
+\frame{\frametitle{MPI}
+\begin{center}
+	\includegraphics[scale=0.3]{mpi_diag2.png}
+\end{center}
+}
+
+\frame{\frametitle{MPI}
 
 \begin{table}
 \tiny
@@ -430,8 +443,8 @@ img-05	& 71,16\%	& 38,70\%	& 23,68\%	& 18,82\%	& 13,70\%	& \\ \hline
 	\begin{itemize}
 		\item OpenMP: 1,73
 		\item MPI: 1,67
-		\item quatro \textit{threads}
-		\item capacidade de \textit{hyperthreading}
+		\item dois \textit{cores}
+		\item capacidade de \textit{hyper-threading}
 	\end{itemize}
 \end{itemize}
 }
@@ -452,12 +465,12 @@ img-05	& 71,16\%	& 38,70\%	& 23,68\%	& 18,82\%	& 13,70\%	& \\ \hline
 \pause
 
 \begin{itemize}
-	\item Eficiência constante
+	\item Eficiência diminui
 	\begin{itemize}
 		\item Aumento no número de \textit{threads}
 		\item Aumento do tamanho da entrada
 	\end{itemize}
-	\item Detecção de \textit{copy-move forgery} possui escalabilidade fraca
+	\item Detecção de \textit{copy-move forgery} não é escalável
 \end{itemize}
 }
 
